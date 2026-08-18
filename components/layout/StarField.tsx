@@ -1,0 +1,72 @@
+const STAR_COUNT = 160;
+
+function seededRandom(seed: number) {
+  const x = Math.sin(seed * 999.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+type Star = {
+  left: number;
+  top: number;
+  size: number;
+  duration: number;
+  delay: number;
+  bright: boolean;
+};
+
+function buildStars(): Star[] {
+  return Array.from({ length: STAR_COUNT }, (_, i) => {
+    const left = seededRandom(i * 1.37 + 1) * 100;
+    const top = seededRandom(i * 2.71 + 7) * 50;
+    const sizeRoll = seededRandom(i * 3.53 + 13);
+    const bright = sizeRoll > 0.82;
+    const size = (bright ? 2.4 : 1.2) + sizeRoll * 1.8;
+    const duration = 2 + seededRandom(i * 4.11 + 19) * 3.5;
+    const delay = seededRandom(i * 5.87 + 23) * 5;
+    return { left, top, size, duration, delay, bright };
+  });
+}
+
+const stars = buildStars();
+
+export function StarField() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-black"
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(65% 50% at 50% 0%, rgba(86,134,172,0.32), transparent 72%)," +
+            "radial-gradient(55% 40% at 15% 85%, rgba(61,102,136,0.22), transparent 75%)," +
+            "radial-gradient(50% 40% at 90% 60%, rgba(126,163,196,0.16), transparent 75%)",
+        }}
+      />
+      <div className="absolute inset-0 h-[200%] w-full animate-star-drift">
+        {[0, 50].map((offset) =>
+          stars.map((s, i) => (
+            <span
+              key={`${offset}-${i}`}
+              className={`absolute rounded-full animate-twinkle ${
+                s.bright ? "bg-white" : "bg-chrome-100"
+              }`}
+              style={{
+                left: `${s.left}%`,
+                top: `${s.top + offset}%`,
+                width: s.size,
+                height: s.size,
+                animationDuration: `${s.duration}s`,
+                animationDelay: `${s.delay}s`,
+                boxShadow: s.bright
+                  ? "0 0 8px 2px rgba(169, 194, 219, 0.9)"
+                  : "0 0 4px 1px rgba(238, 241, 243, 0.7)",
+              }}
+            />
+          )),
+        )}
+      </div>
+    </div>
+  );
+}
