@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { useCart } from "@/lib/cart-context";
 import type { Product } from "@/lib/types";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { calculateDiscounts } from "@/lib/discounts";
+
+const overlayVariants = { closed: { opacity: 0 }, open: { opacity: 1 } };
+const panelVariants = { closed: { x: "100%" }, open: { x: "0%" } };
 
 export function CartDrawer({ products }: { products: Product[] }) {
   const { items, isOpen, closeCart, updateQty, removeItem } = useCart();
@@ -29,21 +33,36 @@ export function CartDrawer({ products }: { products: Product[] }) {
 
   return (
     <>
-      <div
+      <motion.div
         onClick={closeCart}
         aria-hidden
-        className={`fixed inset-0 z-50 bg-black/60 transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className="fixed inset-0 z-50 bg-black/60"
+        style={{ pointerEvents: isOpen ? "auto" : "none" }}
+        variants={overlayVariants}
+        animate={isOpen ? "open" : "closed"}
+        initial="closed"
+        transition={{ duration: 0.25, ease: "easeOut" }}
       />
 
-      <div
+      <motion.div
         role="dialog"
         aria-label="Cart"
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-border bg-surface transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-border bg-surface"
+        variants={panelVariants}
+        animate={isOpen ? "open" : "closed"}
+        initial="closed"
+        transition={{ type: "spring", stiffness: 340, damping: 34, mass: 1 }}
       >
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-[2px]"
+          style={{
+            background:
+              "linear-gradient(180deg, var(--color-holo-violet), var(--color-holo-blue), var(--color-holo-pink), var(--color-holo-gold))",
+          }}
+          animate={isOpen ? { opacity: [0, 1, 0.6] } : { opacity: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+        />
         <div className="flex items-center justify-between border-b border-border-soft px-6 py-5">
           <h2 className="font-display text-lg font-black uppercase tracking-wide text-fg">
             Your Cart
@@ -83,7 +102,7 @@ export function CartDrawer({ products }: { products: Product[] }) {
                     </div>
                   ) : (
                     <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                      <span className="font-display text-[7px] font-semibold tracking-widest text-gradient-blue">
+                      <span className="font-display text-[7px] font-semibold tracking-widest text-gradient-holo">
                         RUINED
                       </span>
                     </div>
@@ -177,7 +196,7 @@ export function CartDrawer({ products }: { products: Product[] }) {
             </Link>
           </div>
         )}
-      </div>
+      </motion.div>
     </>
   );
 }

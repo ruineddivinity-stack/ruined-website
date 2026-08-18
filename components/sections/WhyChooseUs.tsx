@@ -36,8 +36,8 @@ export function WhyChooseUs() {
 
         <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((item) => (
-            <div key={item.title} className="flex flex-col items-start">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-steel-700/40 to-steel-700/10 text-steel-300">
+            <div key={item.title} className="group flex flex-col items-start">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-steel-700/40 to-steel-700/10 text-steel-300 transition-all duration-300 group-hover:scale-110">
                 <item.icon />
               </div>
               <h3 className="mt-5 text-base font-semibold text-fg">

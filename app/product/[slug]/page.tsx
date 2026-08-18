@@ -53,7 +53,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               />
             ) : (
               <div className="flex h-56 w-36 items-center justify-center rounded-xl border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                <span className="font-display text-sm font-semibold tracking-widest text-gradient-blue">
+                <span className="font-display text-sm font-semibold tracking-widest text-gradient-holo">
                   RUINED
                 </span>
               </div>

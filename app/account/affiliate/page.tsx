@@ -63,7 +63,7 @@ export default async function AffiliateDashboardPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-fg-faint">
                   Your Discount Code
                 </p>
-                <p className="mt-1 font-display text-xl font-black tracking-widest text-gradient-blue">
+                <p className="mt-1 font-display text-xl font-black tracking-widest text-gradient-holo">
                   {details?.code?.toUpperCase() ?? info.couponName}
                 </p>
                 <p className="mt-1 text-xs text-fg-muted">

@@ -9,11 +9,11 @@ export function Badge({
 }) {
   const tones = {
     steel: {
-      wrap: "bg-steel-600 text-white shadow-[0_0_14px_1px_rgba(86,134,172,0.55)]",
+      wrap: "bg-steel-600 text-white shadow-[0_0_14px_1px_rgba(31,200,221,0.55)]",
       dot: "bg-steel-300",
     },
     chrome: {
-      wrap: "bg-chrome-700 text-chrome-100 shadow-[0_0_14px_1px_rgba(139,150,161,0.45)]",
+      wrap: "bg-chrome-700 text-chrome-100 shadow-[0_0_14px_1px_rgba(146,150,168,0.45)]",
       dot: "bg-chrome-100",
     },
     danger: {

@@ -8,7 +8,7 @@ export function ProductCard({ product }: { product: Product }) {
   const badge = product.type === "bundle" ? "Bundle" : product.onSale ? "Sale" : null;
 
   return (
-    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_28px_2px_rgba(86,134,172,0.28)]">
+    <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_28px_2px_rgba(31,200,221,0.28)]">
       <Link
         href={`/product/${product.slug}`}
         className="absolute inset-0 z-0"
@@ -34,12 +34,11 @@ export function ProductCard({ product }: { product: Product }) {
           />
         ) : (
           <div className="flex h-32 w-20 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-            <span className="font-display text-[10px] font-semibold tracking-widest text-gradient-blue">
+            <span className="font-display text-[10px] font-semibold tracking-widest text-gradient-holo">
               RUINED
             </span>
           </div>
         )}
-        <QuickAddButton slug={product.slug} disabled={!product.inStock} />
       </div>
 
       <div className="pointer-events-none flex flex-1 flex-col p-5">
@@ -73,6 +72,10 @@ export function ProductCard({ product }: { product: Product }) {
               {product.size}
             </span>
           )}
+        </div>
+
+        <div className="pointer-events-auto mt-4">
+          <QuickAddButton slug={product.slug} disabled={!product.inStock} />
         </div>
       </div>
     </div>

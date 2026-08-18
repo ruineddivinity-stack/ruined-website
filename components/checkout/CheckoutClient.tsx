@@ -210,7 +210,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                 </div>
               ) : (
                 <div className="flex h-14 w-11 shrink-0 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                  <span className="font-display text-[6px] font-semibold tracking-widest text-gradient-blue">
+                  <span className="font-display text-[6px] font-semibold tracking-widest text-gradient-holo">
                     RUINED
                   </span>
                 </div>

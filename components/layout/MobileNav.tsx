@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import { useCart } from "@/lib/cart-context";
 import { AFFILIATE_CODE, AFFILIATE_RATE } from "@/lib/discounts";
+
+const overlayVariants = { closed: { opacity: 0 }, open: { opacity: 1 } };
+const panelVariants = { closed: { x: "100%" }, open: { x: "0%" } };
 
 type NavLink = {
   href: string;
@@ -39,25 +44,44 @@ export function MobileNav({ accountHref }: { accountHref: string }) {
 
   const drawer = (
     <>
-      <div
+      <motion.div
         onClick={() => setOpen(false)}
         aria-hidden
-        className={`fixed inset-0 z-[60] bg-black/60 transition-opacity duration-300 ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className="fixed inset-0 z-[60] bg-black/60"
+        style={{ pointerEvents: open ? "auto" : "none" }}
+        variants={overlayVariants}
+        animate={open ? "open" : "closed"}
+        initial="closed"
+        transition={{ duration: 0.25, ease: "easeOut" }}
       />
 
-      <div
+      <motion.div
         role="dialog"
         aria-label="Menu"
-        className={`fixed right-0 top-0 z-[60] flex h-full w-full max-w-xs flex-col border-l border-border bg-surface transition-transform duration-300 ease-out ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        className="fixed right-0 top-0 z-[60] flex h-full w-full max-w-xs flex-col border-l border-border bg-surface"
+        variants={panelVariants}
+        animate={open ? "open" : "closed"}
+        initial="closed"
+        transition={{ type: "spring", stiffness: 340, damping: 34, mass: 1 }}
       >
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-[2px]"
+          style={{
+            background:
+              "linear-gradient(180deg, var(--color-holo-violet), var(--color-holo-blue), var(--color-holo-pink), var(--color-holo-gold))",
+          }}
+          animate={open ? { opacity: [0, 1, 0.6] } : { opacity: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+        />
         <div className="flex items-center justify-between border-b border-border-soft px-6 py-5">
-          <span className="font-display text-xl font-black tracking-[0.15em] text-gradient-blue">
-            RUINED
-          </span>
+          <Image
+            src="/logo.png"
+            alt="RUINED"
+            width={2400}
+            height={1027}
+            className="h-7 w-auto"
+          />
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -135,7 +159,7 @@ export function MobileNav({ accountHref }: { accountHref: string }) {
             </span>
           </Link>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 

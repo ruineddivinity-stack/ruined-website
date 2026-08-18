@@ -31,7 +31,7 @@ export function TrustBadges() {
           {badges.map((b) => (
             <div
               key={b.title}
-              className="flex items-start gap-4 rounded-2xl border border-border bg-surface/60 p-5"
+              className="flex items-start gap-4 rounded-2xl border border-border bg-surface/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_24px_2px_rgba(31,200,221,0.25)]"
             >
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-b from-steel-700/50 to-steel-700/10 text-steel-300">
                 <b.icon />

@@ -39,9 +39,9 @@ export function StarField() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(65% 50% at 50% 0%, rgba(86,134,172,0.32), transparent 72%)," +
-            "radial-gradient(55% 40% at 15% 85%, rgba(61,102,136,0.22), transparent 75%)," +
-            "radial-gradient(50% 40% at 90% 60%, rgba(126,163,196,0.16), transparent 75%)",
+            "radial-gradient(65% 50% at 50% 0%, rgba(138,92,242,0.28), transparent 72%)," +
+            "radial-gradient(55% 40% at 15% 85%, rgba(31,200,221,0.20), transparent 75%)," +
+            "radial-gradient(50% 40% at 90% 60%, rgba(242,70,158,0.14), transparent 75%)",
         }}
       />
       <div className="absolute inset-0 h-[200%] w-full animate-star-drift">
@@ -60,8 +60,8 @@ export function StarField() {
                 animationDuration: `${s.duration}s`,
                 animationDelay: `${s.delay}s`,
                 boxShadow: s.bright
-                  ? "0 0 8px 2px rgba(169, 194, 219, 0.9)"
-                  : "0 0 4px 1px rgba(238, 241, 243, 0.7)",
+                  ? "0 0 8px 2px rgba(163, 238, 244, 0.9)"
+                  : "0 0 4px 1px rgba(241, 242, 247, 0.7)",
               }}
             />
           )),

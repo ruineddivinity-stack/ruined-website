@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { HoloBlob } from "@/components/layout/HoloBlob";
 
 export const metadata: Metadata = {
   title: "About | RUINED",
@@ -46,13 +47,10 @@ export default function AboutPage() {
 
         <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border border-border bg-gradient-to-b from-surface-2 to-black bg-noise">
-            <div
-              aria-hidden
-              className="absolute -top-20 right-[-10%] h-72 w-72 rounded-full bg-steel-700/25 blur-[120px]"
-            />
+            <HoloBlob className="-top-20 right-[-10%]" size={288} animated={false} />
             <div className="relative flex h-full flex-col items-center justify-center gap-4 text-center">
               <div className="flex h-40 w-28 items-center justify-center rounded-xl border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                <span className="font-display text-sm font-semibold tracking-widest text-gradient-blue">
+                <span className="font-display text-sm font-semibold tracking-widest text-gradient-holo">
                   RUINED
                 </span>
               </div>

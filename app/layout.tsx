@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { inter } from "./fonts";
 import { StarField } from "@/components/layout/StarField";
+import { LightRefraction } from "@/components/layout/LightRefraction";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { FloatingCartButton } from "@/components/layout/FloatingCartButton";
 import { SavingsModal } from "@/components/layout/SavingsModal";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Providers } from "./providers";
 import { getAllProducts } from "@/lib/woocommerce";
 import "./globals.css";
@@ -28,9 +30,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-black text-fg">
         <Providers>
           <StarField />
+          <LightRefraction />
           <AnnouncementBar />
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            <PageTransition>{children}</PageTransition>
+          </main>
           <Footer />
           <CartDrawer products={products} />
           <FloatingCartButton />

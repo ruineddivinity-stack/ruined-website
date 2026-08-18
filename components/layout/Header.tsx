@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Container } from "@/components/ui/Container";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { CartButton } from "@/components/layout/CartButton";
 import { AccountButton } from "@/components/layout/AccountButton";
@@ -17,13 +17,17 @@ export async function Header() {
   const session = await getSession();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border-soft bg-black/85 backdrop-blur">
-      <Container className="relative flex h-20 items-center justify-between py-4">
-        <Link
-          href="/"
-          className="font-display text-2xl font-black tracking-[0.15em] text-gradient-blue"
-        >
-          RUINED
+    <header className="sticky top-3 z-40 px-4 sm:top-4">
+      <div className="relative mx-auto flex h-16 max-w-5xl items-center justify-between rounded-full border border-steel-500/25 bg-surface/70 px-4 shadow-[0_0_30px_-6px_rgba(140,82,199,0.4)] backdrop-blur-xl sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center">
+          <Image
+            src="/logo.png"
+            alt="RUINED"
+            width={2400}
+            height={1027}
+            priority
+            className="h-8 w-auto sm:h-10"
+          />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -38,7 +42,7 @@ export async function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Button
             href="/shop"
             variant="secondary"
@@ -50,7 +54,7 @@ export async function Header() {
           <CartButton />
           <MobileNav accountHref={session ? "/account" : "/login"} />
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

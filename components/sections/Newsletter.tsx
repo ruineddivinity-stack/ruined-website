@@ -1,15 +1,13 @@
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { HoloBlob } from "@/components/layout/HoloBlob";
 
 export function Newsletter() {
   return (
     <section className="bg-black/65 py-24">
       <Container>
         <div className="relative overflow-hidden rounded-3xl border border-steel-500/30 bg-gradient-to-br from-steel-700/25 via-surface-2 to-black p-8 sm:p-12">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-steel-600/20 blur-[120px]"
-          />
+          <HoloBlob className="-left-24 -top-24" size={288} animated={false} />
 
           <div className="relative grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
             <div className="flex items-start gap-5">
@@ -26,7 +24,7 @@ export function Newsletter() {
                   <span className="h-1.5 w-1.5 rounded-full bg-steel-400" />
                   VIP Access
                 </span>
-                <h2 className="mt-2 font-display text-3xl font-black uppercase text-gradient-blue sm:text-4xl">
+                <h2 className="mt-2 font-display text-3xl font-black uppercase text-gradient-holo sm:text-4xl">
                   Restock Alerts
                 </h2>
                 <p className="mt-3 max-w-sm text-sm leading-relaxed text-fg-muted">

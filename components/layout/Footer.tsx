@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 
 const columns = [
@@ -34,9 +35,13 @@ export function Footer() {
     <footer className="border-t border-border-soft bg-surface/70">
       <Container className="grid grid-cols-2 gap-10 py-16 md:grid-cols-5">
         <div className="col-span-2">
-          <span className="font-display text-2xl font-black tracking-[0.15em] text-gradient-blue">
-            RUINED
-          </span>
+          <Image
+            src="/logo.png"
+            alt="RUINED"
+            width={2400}
+            height={1027}
+            className="h-9 w-auto"
+          />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-fg-muted">
             Third-party tested research peptides and compounds. For laboratory
             research use only — not for human consumption.

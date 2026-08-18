@@ -16,7 +16,7 @@ export function Testimonials() {
           {reviews.map((r) => (
             <div
               key={r.name}
-              className="flex w-[260px] shrink-0 flex-col rounded-2xl border border-border bg-black p-6 lg:w-auto"
+              className="flex w-[260px] shrink-0 flex-col rounded-2xl border border-border bg-black p-6 transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_24px_2px_rgba(31,200,221,0.25)] lg:w-auto"
             >
               <div className="flex gap-0.5 text-steel-400">
                 {Array.from({ length: 5 }).map((_, i) => (

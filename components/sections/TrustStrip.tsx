@@ -15,7 +15,7 @@ export function TrustStrip() {
           <div key={i} className="flex items-center gap-16">
             <span className="flex items-center gap-2.5">
               <item.icon className="shrink-0 text-steel-400" />
-              <span className="font-display text-sm font-medium tracking-[0.2em] text-gradient-blue">
+              <span className="font-display text-sm font-medium tracking-[0.2em] text-gradient-holo">
                 {item.label}
               </span>
             </span>

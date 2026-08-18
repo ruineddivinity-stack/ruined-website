@@ -3,14 +3,12 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { AnimatedResearcherStat } from "@/components/sections/AnimatedResearcherStat";
+import { HoloBlob } from "@/components/layout/HoloBlob";
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-black/65 bg-noise">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 right-[-10%] h-[560px] w-[560px] rounded-full bg-steel-700/20 blur-[140px]"
-      />
+      <HoloBlob className="-top-40 right-[-10%]" size={560} animated={false} />
       <Container className="grid min-h-[640px] grid-cols-1 items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <div>
           <Badge tone="steel">Third-Party Tested</Badge>
@@ -18,7 +16,7 @@ export function Hero() {
           <h1 className="mt-6 font-display text-5xl font-black uppercase leading-[1.05] tracking-tight text-fg sm:text-6xl">
             Research peptides,
             <br />
-            <span className="text-gradient-blue">verified to the batch.</span>
+            <span className="text-gradient-holo">verified to the batch.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-fg-muted">
@@ -42,6 +40,7 @@ export function Hero() {
         </div>
 
         <div className="relative flex items-center justify-center">
+          <HoloBlob className="-z-10 -top-16 left-1/2 -translate-x-1/2" size={560} />
           <div className="relative aspect-square w-full max-w-md rounded-[2rem] border border-border bg-gradient-to-b from-surface-2 to-black p-10">
             <div
               aria-hidden
@@ -49,7 +48,7 @@ export function Hero() {
             />
             <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
               <div className="flex h-40 w-28 items-center justify-center rounded-xl border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface bg-noise">
-                <span className="font-display text-sm font-semibold tracking-widest text-gradient-blue">
+                <span className="font-display text-sm font-semibold tracking-widest text-gradient-holo">
                   RUINED
                 </span>
               </div>
