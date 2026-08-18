@@ -1,9 +1,7 @@
 import "server-only";
-import { loginWithPassword } from "./wp-auth";
 
 const WORDPRESS_URL = process.env.WOOCOMMERCE_URL;
-const WP_ADMIN_EMAIL = process.env.WP_ADMIN_EMAIL;
-const WP_ADMIN_PASSWORD = process.env.WP_ADMIN_PASSWORD;
+const AFFILIATE_DASHBOARD_SECRET = process.env.WP_AFFILIATE_DASHBOARD_SECRET;
 
 export type CouponInfo = {
   couponName: string;
@@ -11,64 +9,43 @@ export type CouponInfo = {
   pendingPayouts: number;
 };
 
-let cachedAdminJwt: { token: string; fetchedAt: number } | null = null;
-const ADMIN_JWT_TTL_MS = 10 * 60 * 1000;
-
-async function getAdminJwt(forceFresh = false): Promise<string> {
-  if (!WP_ADMIN_EMAIL || !WP_ADMIN_PASSWORD) {
-    throw new Error("Missing WP_ADMIN_EMAIL / WP_ADMIN_PASSWORD env vars");
-  }
-
-  if (
-    !forceFresh &&
-    cachedAdminJwt &&
-    Date.now() - cachedAdminJwt.fetchedAt < ADMIN_JWT_TTL_MS
-  ) {
-    return cachedAdminJwt.token;
-  }
-
-  const result = await loginWithPassword(WP_ADMIN_EMAIL, WP_ADMIN_PASSWORD);
-  if ("error" in result) {
-    throw new Error(`Admin JWT login failed: ${result.error}`);
-  }
-
-  cachedAdminJwt = { token: result.jwt, fetchedAt: Date.now() };
-  return result.jwt;
-}
-
-async function affiliateFetch<T>(
-  path: string,
-  init?: RequestInit,
+async function dashboardAjax<T>(
+  action: string,
+  params: Record<string, string>,
 ): Promise<T> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
-
-  const attempt = async (jwt: string) =>
-    fetch(`${WORDPRESS_URL}/wp-json/woo-coupon-usage/v1/${path}`, {
-      ...init,
-      headers: {
-        ...init?.headers,
-        Authorization: `Bearer ${jwt}`,
-      },
-      cache: "no-store",
-    });
-
-  let res = await attempt(await getAdminJwt());
-  if (res.status === 401 || res.status === 403) {
-    // Admin JWT may have expired — retry once with a fresh one.
-    res = await attempt(await getAdminJwt(true));
+  if (!AFFILIATE_DASHBOARD_SECRET) {
+    throw new Error("Missing WP_AFFILIATE_DASHBOARD_SECRET env var");
   }
 
-  if (!res.ok) {
-    throw new Error(`Coupon Affiliates API error ${res.status}: ${path}`);
+  const body = new URLSearchParams({
+    action,
+    secret: AFFILIATE_DASHBOARD_SECRET,
+    ...params,
+  });
+
+  const res = await fetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+    cache: "no-store",
+  });
+
+  const json = await res.json().catch(() => null);
+  if (!json?.success) {
+    throw new Error(
+      `Coupon Affiliates bridge error (${action}): ${json?.data?.message ?? res.status}`,
+    );
   }
-  return res.json() as Promise<T>;
+  return json.data as T;
 }
 
 export async function getAffiliateCoupons(
   userLogin: string,
 ): Promise<number[]> {
-  const raw = await affiliateFetch<Array<string | number>>(
-    `users-coupons?user=${encodeURIComponent(userLogin)}`,
+  const raw = await dashboardAjax<Array<string | number>>(
+    "ruined_affiliate_coupons",
+    { username: userLogin },
   );
 
   if (!Array.isArray(raw)) return [];
@@ -76,8 +53,9 @@ export async function getAffiliateCoupons(
 }
 
 export async function getCouponInfo(couponId: number): Promise<CouponInfo> {
-  const raw = await affiliateFetch<Record<string, string | number>>(
-    `coupon-info?coupon_id=${couponId}`,
+  const raw = await dashboardAjax<Record<string, string | number>>(
+    "ruined_affiliate_coupon_info",
+    { coupon_id: String(couponId) },
   );
 
   return {
@@ -91,15 +69,11 @@ export async function requestPayout(
   couponId: number,
   userLogin: string,
 ): Promise<boolean> {
-  const result = await affiliateFetch<number | { success: boolean }>(
-    "request-payout",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ coupon_id: couponId, user: userLogin }),
-    },
+  const result = await dashboardAjax<{ success: boolean }>(
+    "ruined_affiliate_request_payout",
+    { coupon_id: String(couponId), username: userLogin },
   );
-  return result === 1 || (typeof result === "object" && result.success === true);
+  return result.success === true;
 }
 
 const AFFILIATE_APPLY_SECRET = process.env.WP_AFFILIATE_APPLY_SECRET;

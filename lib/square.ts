@@ -15,6 +15,7 @@ export async function chargeOrderWithSquare(
     secret: CHARGE_SECRET,
     order_id: String(orderId),
     source_id: sourceId,
+    environment: process.env.NEXT_PUBLIC_SQUARE_ENV === "production" ? "production" : "sandbox",
   });
 
   const res = await fetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
