@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 const HOLO_COLORS = ["#8c52c7", "#4f7df2", "#f262b6", "#f2c14e"] as const;
 
@@ -21,6 +22,7 @@ export function Logo3D() {
           camera={{ position: [0, 0, 4.4], fov: 32 }}
           gl={{ antialias: true, alpha: true }}
         >
+          <SceneEnvironment />
           <ambientLight intensity={0.35} />
           <hemisphereLight args={["#f1f2f7", "#030304", 0.45]} />
           <directionalLight position={[2, 3, 4]} intensity={0.55} />
@@ -32,6 +34,26 @@ export function Logo3D() {
       )}
     </div>
   );
+}
+
+function SceneEnvironment() {
+  const { gl, scene } = useThree();
+
+  const envMap = useMemo(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const rt = pmrem.fromScene(new RoomEnvironment(), 0.04);
+    pmrem.dispose();
+    return rt.texture;
+  }, [gl]);
+
+  useEffect(() => {
+    scene.environment = envMap;
+    return () => {
+      scene.environment = null;
+    };
+  }, [scene, envMap]);
+
+  return null;
 }
 
 function OrbitingLights() {
@@ -96,26 +118,24 @@ function LogoPlate() {
     <group ref={groupRef}>
       <mesh>
         <boxGeometry args={[width, height, depth]} />
-        <meshStandardMaterial color="#cbceda" metalness={0.9} roughness={0.28} />
+        <meshStandardMaterial color="#cbceda" metalness={0.85} roughness={0.18} />
       </mesh>
       <mesh position={[0, 0, depth / 2 + 0.004]}>
         <planeGeometry args={[width * 0.94, height * 0.94]} />
-        <meshStandardMaterial
+        <meshBasicMaterial
           map={texture}
           transparent
-          alphaTest={0.05}
-          metalness={0.35}
-          roughness={0.4}
+          alphaTest={0.1}
+          toneMapped={false}
         />
       </mesh>
       <mesh position={[0, 0, -depth / 2 - 0.004]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[width * 0.94, height * 0.94]} />
-        <meshStandardMaterial
+        <meshBasicMaterial
           map={texture}
           transparent
-          alphaTest={0.05}
-          metalness={0.35}
-          roughness={0.4}
+          alphaTest={0.1}
+          toneMapped={false}
         />
       </mesh>
     </group>
