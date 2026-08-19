@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { HoloBlob } from "@/components/layout/HoloBlob";
-import { HeroVialCluster } from "@/components/sections/HeroVialCluster";
+import { Logo3D } from "@/components/sections/Logo3D";
 import { ScrollLink } from "@/components/ui/ScrollLink";
 
 export const metadata: Metadata = {
@@ -95,9 +95,12 @@ export default function AffiliatesPage() {
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex flex-col items-center justify-center">
             <HoloBlob className="-z-10 -top-16 left-1/2 -translate-x-1/2" size={560} />
-            <HeroVialCluster />
+            <Logo3D />
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-fg-faint">
+              Move your cursor to explore
+            </p>
           </div>
         </Container>
       </section>
