@@ -7,7 +7,7 @@ import { HeroVialCluster } from "@/components/sections/HeroVialCluster";
 
 export function Hero() {
   return (
-    <section className="relative -mt-[125px] overflow-hidden bg-black/65 bg-glass pt-[125px] sm:-mt-[130px] sm:pt-[130px]">
+    <section className="relative -mt-[125px] overflow-hidden bg-[rgba(3,3,4,0.65)] bg-glass pt-[125px] sm:-mt-[130px] sm:pt-[130px]">
       <HoloBlob className="-z-10 -top-40 right-[-10%]" size={560} animated={false} />
       <Container className="grid min-h-[640px] grid-cols-1 items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <div>

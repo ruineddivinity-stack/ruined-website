@@ -4,7 +4,7 @@ import { NewsletterForm } from "@/components/sections/NewsletterForm";
 
 export function Newsletter() {
   return (
-    <section className="bg-black/65 py-24">
+    <section className="bg-[rgba(3,3,4,0.65)] py-24">
       <Container>
         <div className="relative overflow-hidden rounded-3xl border border-steel-500/30 bg-gradient-to-br from-steel-700/25 via-surface-2 to-black p-8 sm:p-12">
           <HoloBlob className="-left-24 -top-24" size={288} animated={false} />

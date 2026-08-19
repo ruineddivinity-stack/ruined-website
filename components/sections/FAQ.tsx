@@ -30,7 +30,7 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section className="bg-black/65 py-24">
+    <section className="bg-[rgba(3,3,4,0.65)] py-24">
       <Container className="max-w-3xl">
         <SectionHeading
           eyebrow="FAQ"

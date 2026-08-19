@@ -12,7 +12,7 @@ export async function BestSellers() {
     .slice(0, 4);
 
   return (
-    <section className="bg-black/65 py-24">
+    <section className="bg-[rgba(3,3,4,0.65)] py-24">
       <Container>
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <SectionHeading eyebrow="Catalog" title="Bestselling research compounds" />
