@@ -12,6 +12,7 @@ export function ContactForm() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -47,6 +48,12 @@ export function ContactForm() {
 
   const removePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+    addFiles(e.dataTransfer.files);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -128,7 +135,7 @@ export function ContactForm() {
 
       <div className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
-          Photos{" "}
+          Documentation Upload{" "}
           <span className="font-normal normal-case text-fg-faint">
             (optional — for damaged, defective, or incorrect items)
           </span>
@@ -144,13 +151,33 @@ export function ContactForm() {
           id="contact-photos"
         />
 
-        <label
-          htmlFor="contact-photos"
-          className="flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-xs font-semibold uppercase tracking-widest text-fg-muted transition-colors hover:border-steel-500 hover:text-fg"
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={handleDrop}
+          className={`flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-6 py-10 text-center transition-colors ${
+            dragActive
+              ? "border-steel-400 bg-steel-700/15"
+              : "border-border bg-surface/40"
+          }`}
         >
-          <UploadIcon />
-          Add Photos
-        </label>
+          <UploadIcon className="h-6 w-6 text-steel-300" />
+          <p className="text-sm text-fg-muted">
+            Drag &amp; drop files, or{" "}
+            <label
+              htmlFor="contact-photos"
+              className="cursor-pointer text-steel-400 underline underline-offset-2 hover:text-steel-300"
+            >
+              choose files to upload
+            </label>
+          </p>
+          <p className="text-xs text-fg-faint">
+            You can upload up to {MAX_PHOTOS} photos, 5MB each.
+          </p>
+        </div>
 
         {photos.length > 0 && (
           <ul className="mt-1 flex flex-wrap gap-2">
@@ -213,17 +240,16 @@ function Field({
   );
 }
 
-function UploadIcon() {
+function UploadIcon({ className }: { className?: string }) {
   return (
     <svg
-      width={14}
-      height={14}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={className}
     >
       <path d="M12 16V4M12 4 7 9M12 4l5 5" />
       <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
