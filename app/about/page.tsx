@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { HoloBlob } from "@/components/layout/HoloBlob";
+import { Logo3D } from "@/components/sections/Logo3D";
 
 export const metadata: Metadata = {
   title: "About | RUINED",
@@ -46,14 +47,10 @@ export default function AboutPage() {
         </p>
 
         <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border border-border bg-gradient-to-b from-surface-2 to-black bg-noise">
+          <div className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-b from-surface-2 to-black bg-noise px-6 py-10">
             <HoloBlob className="-top-20 right-[-10%]" size={288} animated={false} />
-            <div className="relative flex h-full flex-col items-center justify-center gap-4 text-center">
-              <div className="flex h-40 w-28 items-center justify-center rounded-xl border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                <span className="font-display text-sm font-semibold tracking-widest text-gradient-holo">
-                  RUINED
-                </span>
-              </div>
+            <div className="relative flex flex-col items-center gap-4 text-center">
+              <Logo3D />
               <p className="text-xs uppercase tracking-[0.25em] text-fg-faint">
                 Every batch, held to a standard
               </p>
