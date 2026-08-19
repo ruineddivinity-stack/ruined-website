@@ -68,31 +68,65 @@ const vials: Vial[] = [
   },
 ];
 
-function GlowLayer({
+const GLOW_CORE = "#f0eeff";
+
+function SilhouetteGlow({
+  src,
   color,
+  restBlur,
+  restScale,
+  restOpacity,
+  hoverBlur,
+  hoverScale,
+  hoverOpacity,
   hovered,
+  pulse,
   delay,
-  baseOpacity,
 }: {
+  src: string;
   color: string;
+  restBlur: number;
+  restScale: number;
+  restOpacity: number;
+  hoverBlur: number;
+  hoverScale: number;
+  hoverOpacity: number;
   hovered: boolean;
-  delay: number;
-  baseOpacity: number;
+  pulse?: boolean;
+  delay?: number;
 }) {
+  const maskStyle = {
+    backgroundColor: color,
+    WebkitMaskImage: `url(${src})`,
+    maskImage: `url(${src})`,
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+  } as const;
+
+  const hoverAnimate = pulse
+    ? {
+        opacity: [hoverOpacity * 0.55, hoverOpacity, hoverOpacity * 0.55],
+        scale: hoverScale,
+        filter: `blur(${hoverBlur}px)`,
+      }
+    : { opacity: hoverOpacity, scale: hoverScale, filter: `blur(${hoverBlur}px)` };
+
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none absolute inset-[10%] -z-10 rounded-full blur-2xl"
-      style={{
-        background: `radial-gradient(closest-side, ${color}, transparent 72%)`,
-      }}
+      className="pointer-events-none absolute inset-0 -z-10"
+      style={maskStyle}
       animate={
         hovered
-          ? { opacity: [baseOpacity, 0.95, baseOpacity] }
-          : { opacity: baseOpacity }
+          ? hoverAnimate
+          : { opacity: restOpacity, scale: restScale, filter: `blur(${restBlur}px)` }
       }
       transition={
-        hovered
+        hovered && pulse
           ? { duration: 2.2, repeat: Infinity, ease: "easeInOut", delay }
           : { duration: 0.5, ease: "easeOut" }
       }
@@ -122,9 +156,56 @@ function Vial({ vial }: { vial: Vial }) {
         whileHover={{ scale: 1.08 }}
         transition={{ type: "spring", stiffness: 260, damping: 18 }}
       >
-        <GlowLayer color={vial.glowColors[0]} hovered={hovered} delay={0} baseOpacity={0.55} />
-        <GlowLayer color={vial.glowColors[1]} hovered={hovered} delay={0.7} baseOpacity={0.3} />
-        <GlowLayer color={vial.glowColors[2]} hovered={hovered} delay={1.4} baseOpacity={0.22} />
+        <SilhouetteGlow
+          src={vial.src}
+          color={GLOW_CORE}
+          restBlur={9}
+          restScale={1.04}
+          restOpacity={0.5}
+          hoverBlur={20}
+          hoverScale={1.16}
+          hoverOpacity={0.85}
+          hovered={hovered}
+        />
+        <SilhouetteGlow
+          src={vial.src}
+          color={vial.glowColors[0]}
+          restBlur={14}
+          restScale={1.1}
+          restOpacity={0.4}
+          hoverBlur={26}
+          hoverScale={1.26}
+          hoverOpacity={0.8}
+          hovered={hovered}
+          pulse
+          delay={0}
+        />
+        <SilhouetteGlow
+          src={vial.src}
+          color={vial.glowColors[1]}
+          restBlur={16}
+          restScale={1.14}
+          restOpacity={0.22}
+          hoverBlur={30}
+          hoverScale={1.34}
+          hoverOpacity={0.65}
+          hovered={hovered}
+          pulse
+          delay={0.75}
+        />
+        <SilhouetteGlow
+          src={vial.src}
+          color={vial.glowColors[2]}
+          restBlur={18}
+          restScale={1.18}
+          restOpacity={0.15}
+          hoverBlur={34}
+          hoverScale={1.4}
+          hoverOpacity={0.55}
+          hovered={hovered}
+          pulse
+          delay={1.5}
+        />
         <Image
           src={vial.src}
           alt={vial.alt}
