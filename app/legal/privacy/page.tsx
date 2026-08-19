@@ -10,9 +10,9 @@ export default function PrivacyPage() {
     <LegalPage title="Privacy Policy" updated="August 19, 2026">
       <LegalSection heading="Overview">
         <p>
-          This Privacy Policy explains how RUINED (&quot;RUINED,&quot;
-          &quot;we,&quot; &quot;us,&quot; or &quot;our&quot;), operated by
-          [Legal Entity Name], collects, uses, discloses, and protects
+          This Privacy Policy explains how RUINEDRX, doing business as
+          RUINED (&quot;RUINED,&quot; &quot;we,&quot; &quot;us,&quot; or
+          &quot;our&quot;), collects, uses, discloses, and protects
           information when you visit ruinedrx.com (the &quot;Site&quot;) or
           place an order with us. By using the Site, you agree to the
           collection and use of information as described here.
@@ -140,10 +140,7 @@ export default function PrivacyPage() {
           personal information, and to opt out of certain uses of it. We
           do not sell or &quot;share&quot; personal information as those
           terms are defined under state privacy laws. To exercise any of
-          these rights, contact us using the details below. [This section
-          should be reviewed by counsel and updated to reflect specific
-          obligations under applicable state privacy laws, such as the
-          CCPA/CPRA, based on where your customers are located.]
+          these rights, contact us using the details below.
         </p>
       </LegalSection>
 
@@ -194,8 +191,8 @@ export default function PrivacyPage() {
             className="text-steel-400 underline underline-offset-2 hover:text-steel-300"
           >
             support@ruinedrx.com
-          </a>{" "}
-          or to [Legal Entity Name, Business Mailing Address].
+          </a>
+          .
         </p>
       </LegalSection>
     </LegalPage>

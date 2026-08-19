@@ -30,10 +30,9 @@ export default function ShippingPage() {
       <LegalSection heading="Shipping Area">
         <p>
           We currently ship within the United States only. We do not offer
-          international shipping at this time. [Confirm whether any
-          states, territories, or PO Box / freight-forwarder addresses are
-          excluded due to state-level restrictions on research-chemical
-          sales, and list them here.]
+          international shipping at this time. We reserve the right to
+          decline or cancel an order if we&apos;re unable to ship a given
+          product to your state or territory due to applicable law.
         </p>
       </LegalSection>
 

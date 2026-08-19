@@ -11,8 +11,8 @@ export default function TermsPage() {
       <LegalSection heading="1. Agreement to Terms">
         <p>
           These Terms of Service (&quot;Terms&quot;) form a binding
-          agreement between you and RUINED, operated by [Legal Entity
-          Name] (&quot;RUINED,&quot; &quot;we,&quot; &quot;us,&quot; or
+          agreement between you and RUINEDRX, doing business as RUINED
+          (&quot;RUINED,&quot; &quot;we,&quot; &quot;us,&quot; or
           &quot;our&quot;), governing your access to and use of
           ruinedrx.com and any purchase made through it (collectively, the
           &quot;Site&quot;). By accessing or using the Site, you agree to
@@ -190,14 +190,12 @@ export default function TermsPage() {
 
       <LegalSection heading="14. Governing Law & Dispute Resolution">
         <p>
-          These Terms are governed by the laws of the State of
-          [Governing Law State], without regard to its conflict-of-laws
-          principles. Any dispute arising out of or relating to these
-          Terms or the Site will be resolved exclusively in the state or
-          federal courts located in [Venue County/State], and you consent
-          to personal jurisdiction there. [If you intend to require
-          binding arbitration and a class-action waiver, that language
-          should be drafted and reviewed by counsel and inserted here.]
+          These Terms are governed by the laws of the state in which
+          RUINEDRX is organized and operates, without regard to its
+          conflict-of-laws principles. Any dispute arising out of or
+          relating to these Terms or the Site will be resolved exclusively
+          in the state or federal courts with jurisdiction over RUINEDRX,
+          and you consent to personal jurisdiction there.
         </p>
       </LegalSection>
 
