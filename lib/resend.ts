@@ -65,7 +65,7 @@ export async function sendBroadcastEmail({
   }
 
   if (sent === 0 && failed > 0 && lastError) {
-    throw new Error(`${lastError} (from="${FROM_EMAIL}")`);
+    throw new Error(lastError);
   }
 
   return { sent, failed };
