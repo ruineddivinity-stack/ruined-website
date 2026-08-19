@@ -70,9 +70,9 @@ const vials: Vial[] = [
 
 const GLOW_CORE = "#f0eeff";
 
-function SilhouetteGlow({
-  src,
+function EllipseGlow({
   color,
+  inset,
   restBlur,
   restScale,
   restOpacity,
@@ -83,8 +83,8 @@ function SilhouetteGlow({
   pulse,
   delay,
 }: {
-  src: string;
   color: string;
+  inset: number;
   restBlur: number;
   restScale: number;
   restOpacity: number;
@@ -95,18 +95,6 @@ function SilhouetteGlow({
   pulse?: boolean;
   delay?: number;
 }) {
-  const maskStyle = {
-    backgroundColor: color,
-    WebkitMaskImage: `url(${src})`,
-    maskImage: `url(${src})`,
-    WebkitMaskSize: "contain",
-    maskSize: "contain",
-    WebkitMaskRepeat: "no-repeat",
-    maskRepeat: "no-repeat",
-    WebkitMaskPosition: "center",
-    maskPosition: "center",
-  } as const;
-
   const hoverAnimate = pulse
     ? {
         opacity: [hoverOpacity * 0.55, hoverOpacity, hoverOpacity * 0.55],
@@ -118,8 +106,11 @@ function SilhouetteGlow({
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10"
-      style={maskStyle}
+      className="pointer-events-none absolute -z-10 rounded-full"
+      style={{
+        inset: `${inset}%`,
+        background: `radial-gradient(ellipse at center, ${color} 0%, ${color} 35%, transparent 75%)`,
+      }}
       animate={
         hovered
           ? hoverAnimate
@@ -156,51 +147,51 @@ function Vial({ vial }: { vial: Vial }) {
         whileHover={{ scale: 1.08 }}
         transition={{ type: "spring", stiffness: 260, damping: 18 }}
       >
-        <SilhouetteGlow
-          src={vial.src}
+        <EllipseGlow
           color={GLOW_CORE}
-          restBlur={9}
-          restScale={1.04}
-          restOpacity={0.5}
-          hoverBlur={20}
-          hoverScale={1.16}
-          hoverOpacity={0.85}
+          inset={15}
+          restBlur={10}
+          restScale={1}
+          restOpacity={0.65}
+          hoverBlur={22}
+          hoverScale={1.18}
+          hoverOpacity={0.95}
           hovered={hovered}
         />
-        <SilhouetteGlow
-          src={vial.src}
+        <EllipseGlow
           color={vial.glowColors[0]}
-          restBlur={14}
-          restScale={1.1}
-          restOpacity={0.4}
-          hoverBlur={26}
-          hoverScale={1.26}
-          hoverOpacity={0.8}
+          inset={5}
+          restBlur={16}
+          restScale={1.04}
+          restOpacity={0.55}
+          hoverBlur={30}
+          hoverScale={1.32}
+          hoverOpacity={0.85}
           hovered={hovered}
           pulse
           delay={0}
         />
-        <SilhouetteGlow
-          src={vial.src}
+        <EllipseGlow
           color={vial.glowColors[1]}
-          restBlur={16}
-          restScale={1.14}
-          restOpacity={0.22}
-          hoverBlur={30}
-          hoverScale={1.34}
-          hoverOpacity={0.65}
+          inset={-4}
+          restBlur={20}
+          restScale={1.08}
+          restOpacity={0.35}
+          hoverBlur={36}
+          hoverScale={1.42}
+          hoverOpacity={0.7}
           hovered={hovered}
           pulse
           delay={0.75}
         />
-        <SilhouetteGlow
-          src={vial.src}
+        <EllipseGlow
           color={vial.glowColors[2]}
-          restBlur={18}
-          restScale={1.18}
-          restOpacity={0.15}
-          hoverBlur={34}
-          hoverScale={1.4}
+          inset={-12}
+          restBlur={24}
+          restScale={1.12}
+          restOpacity={0.24}
+          hoverBlur={42}
+          hoverScale={1.52}
           hoverOpacity={0.55}
           hovered={hovered}
           pulse
