@@ -28,11 +28,13 @@ export async function sendContactEmail({
   email,
   subject,
   message,
+  attachments,
 }: {
   name: string;
   email: string;
   subject: string;
   message: string;
+  attachments?: { filename: string; content: Buffer }[];
 }): Promise<{ id: string | null }> {
   if (!RESEND_API_KEY) {
     throw new Error(
@@ -52,6 +54,7 @@ export async function sendContactEmail({
       <p><strong>Message:</strong></p>
       <p>${escapeHtml(message).replace(/\n/g, "<br />")}</p>
     `,
+    attachments,
   });
 
   if (error) {

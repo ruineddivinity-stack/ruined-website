@@ -1,26 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    setError(null);
+
+    const incoming = Array.from(fileList);
+    const nonImage = incoming.find((f) => !f.type.startsWith("image/"));
+    if (nonImage) {
+      setError("Only image files can be attached.");
+      return;
+    }
+    const tooLarge = incoming.find((f) => f.size > MAX_PHOTO_BYTES);
+    if (tooLarge) {
+      setError(`"${tooLarge.name}" is over the 5MB limit per photo.`);
+      return;
+    }
+
+    setPhotos((prev) => {
+      const combined = [...prev, ...incoming];
+      if (combined.length > MAX_PHOTOS) {
+        setError(`You can attach up to ${MAX_PHOTOS} photos.`);
+        return prev;
+      }
+      return combined;
+    });
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    const formData = new FormData();
+    formData.set("name", name);
+    formData.set("email", email);
+    formData.set("subject", subject);
+    formData.set("message", message);
+    photos.forEach((photo) => formData.append("photos", photo));
+
     const res = await fetch("/api/contact", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, subject, message }),
+      body: formData,
     });
 
     setLoading(false);
@@ -83,6 +126,54 @@ export function ContactForm() {
         />
       </label>
 
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
+          Photos{" "}
+          <span className="font-normal normal-case text-fg-faint">
+            (optional — for damaged, defective, or incorrect items)
+          </span>
+        </span>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => addFiles(e.target.files)}
+          className="hidden"
+          id="contact-photos"
+        />
+
+        <label
+          htmlFor="contact-photos"
+          className="flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-xs font-semibold uppercase tracking-widest text-fg-muted transition-colors hover:border-steel-500 hover:text-fg"
+        >
+          <UploadIcon />
+          Add Photos
+        </label>
+
+        {photos.length > 0 && (
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {photos.map((photo, i) => (
+              <li
+                key={`${photo.name}-${i}`}
+                className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-fg-muted"
+              >
+                <span className="max-w-[10rem] truncate">{photo.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  aria-label={`Remove ${photo.name}`}
+                  className="text-fg-faint hover:text-danger"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {error && <p className="text-sm text-danger">{error}</p>}
 
       <Button type="submit" disabled={loading} className="w-fit">
@@ -119,5 +210,23 @@ function Field({
         className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-fg placeholder:text-fg-faint focus:border-steel-500 focus:outline-none"
       />
     </label>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 16V4M12 4 7 9M12 4l5 5" />
+      <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+    </svg>
   );
 }

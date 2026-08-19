@@ -21,6 +21,15 @@ export default function ContactPage() {
           and a real person will get back to you.
         </p>
 
+        <div className="mt-8 max-w-xl rounded-2xl border border-danger/50 bg-danger/10 px-5 py-4">
+          <p className="text-xs leading-relaxed text-fg">
+            We do not respond to dosing, usage, or human-consumption
+            questions. Every product we supply is strictly for laboratory
+            research, and our support team cannot provide administration or
+            medical guidance of any kind.
+          </p>
+        </div>
+
         <div className="mt-14 grid grid-cols-1 gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <ContactForm />
