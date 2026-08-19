@@ -1,26 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { BULK_TIERS, SPEND_TIERS, AFFILIATE_CODE } from "@/lib/discounts";
+import { useState, type ReactNode, type ComponentType } from "react";
+import Link from "next/link";
+import {
+  BULK_TIERS,
+  SPEND_TIERS,
+  AFFILIATE_CODE,
+  STACKED_SAVINGS_PCT,
+} from "@/lib/discounts";
 
 export function SavingsModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const close = () => setIsOpen(false);
 
   return (
     <>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 z-40 flex items-center gap-2 rounded-full border border-steel-500/40 bg-surface-2/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fg shadow-lg shadow-black/50 backdrop-blur transition-transform hover:scale-105"
+        className="fixed bottom-24 right-6 z-40 flex items-center gap-2 rounded-full border border-steel-500/40 bg-surface-2/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fg shadow-[0_0_20px_2px_rgba(31,200,221,0.3)] backdrop-blur transition-transform hover:scale-105"
       >
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-steel-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-steel-400" />
+        </span>
         <TagIcon />
         How to Save $
       </button>
 
       <div
-        onClick={() => setIsOpen(false)}
+        onClick={close}
         aria-hidden
-        className={`fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-50 bg-[rgba(3,3,4,0.75)] backdrop-blur-sm transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -28,16 +39,25 @@ export function SavingsModal() {
       <div
         role="dialog"
         aria-label="How to save"
-        className={`fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 rounded-3xl border border-border bg-surface-2 shadow-2xl transition-all duration-300 ${
+        className={`fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 overflow-hidden rounded-3xl border border-steel-500/30 bg-surface-2 shadow-[0_0_60px_-10px_rgba(31,200,221,0.35)] transition-all duration-300 ${
           isOpen
             ? "-translate-y-1/2 opacity-100"
             : "pointer-events-none -translate-y-[45%] opacity-0"
         }`}
       >
-        <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full opacity-40 blur-[80px]"
+          style={{
+            background:
+              "conic-gradient(from 180deg, var(--color-holo-violet), var(--color-holo-blue), var(--color-holo-pink), var(--color-holo-gold), var(--color-holo-violet))",
+          }}
+        />
+
+        <div className="relative max-h-[85vh] overflow-y-auto p-6 sm:p-8">
           <button
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             aria-label="Close"
             className="absolute right-5 top-5 text-fg-muted hover:text-fg"
           >
@@ -47,34 +67,42 @@ export function SavingsModal() {
           <div className="flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-steel-500/40 bg-steel-700/20 px-4 py-1.5 text-xs font-semibold tracking-widest text-steel-300">
               <span className="h-1.5 w-1.5 rounded-full bg-steel-400" />
-              RUINED
+              RUINED SAVINGS
             </span>
           </div>
 
-          <h2 className="mt-5 text-center font-display text-2xl font-black uppercase tracking-tight text-fg sm:text-3xl">
-            How to save on your purchase
+          <h2 className="mt-5 text-center font-display text-3xl font-black uppercase tracking-tight text-gradient-holo sm:text-4xl">
+            Save Up to {STACKED_SAVINGS_PCT.kit}%
           </h2>
           <p className="mt-2 text-center text-xs uppercase tracking-widest text-fg-muted">
-            Get the most out of every order
+            Stack these on every order
           </p>
 
-          <div className="mt-8 flex flex-col gap-5">
+          <div className="mt-6 grid grid-cols-3 gap-2.5">
+            <StatChip value={`${STACKED_SAVINGS_PCT.bulk}%`} label="3+ Vials" />
+            <StatChip value={`${STACKED_SAVINGS_PCT.kit}%`} label="Full Kit" />
+            <StatChip value="10%" label="Any Order" />
+          </div>
+
+          <div className="mt-8 flex flex-col gap-4">
             <Section number={1} title="Buying Bulk">
-              <Row icon={GiftIcon}>
+              <Row icon={ThreeVialsIcon}>
                 <span className="font-semibold text-fg">
                   {BULK_TIERS.bulk.label}
-                </span>{" "}
-                <span className="text-steel-300">
-                  {BULK_TIERS.bulk.rate * 100}% off
                 </span>
+                <StackedSavings
+                  basePct={BULK_TIERS.bulk.rate * 100}
+                  stackedPct={STACKED_SAVINGS_PCT.bulk}
+                />
               </Row>
               <Row icon={BoxIcon}>
                 <span className="font-semibold text-fg">
                   {BULK_TIERS.kit.label}
-                </span>{" "}
-                <span className="text-steel-300">
-                  {BULK_TIERS.kit.rate * 100}% off
                 </span>
+                <StackedSavings
+                  basePct={BULK_TIERS.kit.rate * 100}
+                  stackedPct={STACKED_SAVINGS_PCT.kit}
+                />
               </Row>
             </Section>
 
@@ -91,7 +119,7 @@ export function SavingsModal() {
                 {[...SPEND_TIERS].reverse().map((tier) => (
                   <div
                     key={tier.min}
-                    className="rounded-xl border border-steel-600/50 bg-steel-700/15 px-3 py-3 text-center"
+                    className="rounded-xl border border-steel-600/50 bg-steel-700/15 px-3 py-3 text-center transition-colors hover:border-steel-500"
                   >
                     <p className="text-sm font-bold text-fg">
                       Spend ${tier.min}
@@ -102,9 +130,6 @@ export function SavingsModal() {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-fg-faint">
-                Affiliate codes also work with bulk discounts and kits.
-              </p>
             </Section>
 
             <Section number={3} title="Affiliate Codes">
@@ -114,7 +139,7 @@ export function SavingsModal() {
                 </span>
               </Row>
               <p className="mt-1 text-xs text-fg-muted">
-                Affiliate codes also work with bulk discounts and kits.
+                Codes stack with bulk discounts and kits.
               </p>
               <ul className="mt-3 flex flex-col gap-1.5 text-xs text-fg-muted">
                 <li>
@@ -128,9 +153,47 @@ export function SavingsModal() {
               </ul>
             </Section>
           </div>
+
+          <Link
+            href="/shop"
+            onClick={close}
+            className="btn-shimmer mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-black shadow-[0_0_0_1px_rgba(241,242,247,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_24px_4px_rgba(203,206,218,0.45)]"
+          >
+            Start Saving &mdash; Shop the Catalog
+          </Link>
         </div>
       </div>
     </>
+  );
+}
+
+function StatChip({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-xl border border-steel-600/40 bg-gradient-to-b from-steel-700/25 to-steel-700/5 py-3 text-center">
+      <p className="font-display text-lg font-black text-gradient-holo">
+        {value}
+      </p>
+      <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-wide text-fg-faint">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function StackedSavings({
+  basePct,
+  stackedPct,
+}: {
+  basePct: number;
+  stackedPct: number;
+}) {
+  return (
+    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
+      <span className="font-bold text-steel-300">Save {basePct}%</span>
+      <span className="text-fg-faint">or up to</span>
+      <span className="font-bold text-gradient-holo">{stackedPct}%</span>
+      <span className="text-fg-faint">with code {AFFILIATE_CODE}</span>
+    </div>
   );
 }
 
@@ -141,14 +204,19 @@ function Section({
 }: {
   number: number;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface/60 p-5">
-      <h3 className="text-[11px] font-bold uppercase tracking-widest text-fg-faint">
-        {number}. {title}
-      </h3>
-      <div className="mt-3">{children}</div>
+    <div className="rounded-2xl border border-border bg-surface/60 p-5 transition-colors duration-300 hover:border-steel-500/40">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-steel-400 to-steel-700 text-[11px] font-bold text-white">
+          {number}
+        </span>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-fg-faint">
+          {title}
+        </h3>
+      </div>
+      <div className="mt-3 flex flex-col gap-3">{children}</div>
     </div>
   );
 }
@@ -157,12 +225,12 @@ function Row({
   icon: Icon,
   children,
 }: {
-  icon: (props: { className?: string }) => React.ReactElement;
-  children: React.ReactNode;
+  icon: ComponentType<{ className?: string }>;
+  children: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-steel-700/50 to-steel-700/10 text-steel-300">
+    <div className="flex items-start gap-3 text-sm">
+      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-steel-700/50 to-steel-700/10 text-steel-300">
         <Icon />
       </span>
       <span>{children}</span>
@@ -209,6 +277,29 @@ function BoxIcon({ className }: { className?: string }) {
     <svg {...iconProps(className)}>
       <path d="M21 8 12 3 3 8v8l9 5 9-5Z" />
       <path d="M3 8l9 5 9-5M12 13v8" />
+    </svg>
+  );
+}
+
+function ThreeVialsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="1.25" y="8" width="4.5" height="3" rx="0.8" />
+      <rect x="0.75" y="10.5" width="5.5" height="11" rx="1.8" />
+      <rect x="9.75" y="4" width="4.5" height="3" rx="0.8" />
+      <rect x="9.25" y="6.5" width="5.5" height="15" rx="1.8" />
+      <rect x="18.25" y="8" width="4.5" height="3" rx="0.8" />
+      <rect x="17.75" y="10.5" width="5.5" height="11" rx="1.8" />
     </svg>
   );
 }

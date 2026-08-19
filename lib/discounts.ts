@@ -13,6 +13,12 @@ export const SPEND_TIERS = [
 export const AFFILIATE_CODE = "RX";
 export const AFFILIATE_RATE = 0.1;
 
+/** Advertised combined savings when a bulk tier is stacked with an affiliate code. */
+export const STACKED_SAVINGS_PCT = {
+  bulk: 18,
+  kit: 30,
+} as const;
+
 export function getBulkTier(qty: number) {
   if (qty >= BULK_TIERS.kit.min) return BULK_TIERS.kit;
   if (qty >= BULK_TIERS.bulk.min) return BULK_TIERS.bulk;
