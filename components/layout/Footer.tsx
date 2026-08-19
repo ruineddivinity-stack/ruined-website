@@ -46,6 +46,12 @@ export function Footer() {
             Third-party tested research peptides and compounds. For laboratory
             research use only — not for human consumption.
           </p>
+          <a
+            href="mailto:support@ruinedrx.com"
+            className="mt-4 inline-block text-sm text-fg-muted transition-colors hover:text-fg"
+          >
+            support@ruinedrx.com
+          </a>
         </div>
 
         {columns.map((col) => (

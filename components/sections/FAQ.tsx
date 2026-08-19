@@ -1,31 +1,58 @@
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
+import {
+  AFFILIATE_CODE,
+  AFFILIATE_RATE,
+  BULK_TIERS,
+  FREE_SHIPPING_THRESHOLD,
+  STACKED_SAVINGS_PCT,
+} from "@/lib/discounts";
 
 const faqs = [
   {
     q: "What are research peptides?",
-    a: "Peptides are short chains of amino acids used in laboratory research to study cellular pathways, protein interactions, and assay development. Everything in our catalog is manufactured and sold strictly as a research compound for laboratory and in-vitro use.",
+    a: "Peptides are short chains of amino acids used in laboratory research to study cellular pathways, protein interactions, and assay development. Everything in our catalog is manufactured and sold strictly as a research compound for laboratory and in-vitro use — not for human or animal consumption.",
   },
   {
-    q: "Is this for human or animal use?",
-    a: "No. Every product on this site is sold for laboratory research and in-vitro use only. Nothing here is intended for human or animal consumption, and none of our products have been evaluated by the FDA for safety or efficacy.",
+    q: "Do I need to verify anything before I can shop?",
+    a: "Yes. Before browsing, you'll confirm you're 21 or older and a verified researcher, lab, or institution purchasing for legitimate research purposes. See our Research Use Only Policy for the full certification.",
   },
   {
     q: "How is purity tested?",
-    a: "Every batch is screened for identity and purity using HPLC before it's listed, and held to a strict internal standard of 99%+.",
+    a: "Every batch is screened internally for identity and purity via HPLC before it's listed, held to a strict 99%+ standard. We're also building out a public library of independent third-party COAs — check our COAs page for current status.",
   },
   {
     q: "How fast do orders ship?",
-    a: "In-stock orders dispatch within 24 hours. You'll get tracking information by email as soon as your order leaves our facility.",
+    a: "In-stock orders placed before 2:00pm CT on a business day ship the same day, and are typically fully processed within 24–36 hours. Our shipping operations run Monday–Friday, so orders placed after hours or on weekends begin processing the next business day.",
+  },
+  {
+    q: "Do you offer free shipping?",
+    a: `Orders totaling $${FREE_SHIPPING_THRESHOLD} or more ship free within the United States.`,
+  },
+  {
+    q: "What's your return and refund policy?",
+    a: "All sales are final — we don't issue monetary refunds. If your order arrives damaged, defective, incorrect, or is confirmed lost in transit, contact us within 24 hours of delivery with photo documentation and we'll resolve it with a reshipment or store credit. See our Refund Policy for details.",
+  },
+  {
+    q: "Do you ship internationally?",
+    a: "No, we do not ship to researchers internationally at this time. We ship within the United States only.",
   },
   {
     q: "How should compounds be stored?",
     a: "Lyophilized compounds should be kept in a freezer (-20°C) prior to reconstitution, and refrigerated after reconstitution for research use.",
   },
   {
-    q: "Do you ship internationally?",
-    a: "We currently ship within the United States. Reach out on the Contact page for specifics on future availability.",
+    q: "What payment methods do you accept?",
+    a: "We accept major credit and debit cards at checkout through a secure, encrypted payment processor. We never store your card details on our servers.",
+  },
+  {
+    q: "Is there a discount code?",
+    a: `Yes — use code "${AFFILIATE_CODE}" at checkout for ${AFFILIATE_RATE * 100}% off any order. It also stacks with bulk pricing: ${BULK_TIERS.bulk.label} saves ${BULK_TIERS.bulk.rate * 100}% on its own, or up to ${STACKED_SAVINGS_PCT.bulk}% combined with the code.`,
+  },
+  {
+    q: "Can I become an affiliate?",
+    a: "Yes. Apply for your own discount code from your account dashboard, share it with your audience, and earn commission on every order placed with it. Visit our Affiliates page to get started.",
   },
 ];
 
