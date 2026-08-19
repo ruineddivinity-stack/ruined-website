@@ -2,11 +2,13 @@
 
 import { motion } from "framer-motion";
 
+const ACTIVE_PCT = 50;
+
 const stages = [
-  { pct: 0, label: "Sample Collected" },
-  { pct: 50, label: "In Transit to Lab" },
-  { pct: 100, label: "HPLC Testing" },
-];
+  { pct: 0, label: "Sample Collected", status: "done" },
+  { pct: ACTIVE_PCT, label: "In Transit to Lab", status: "active" },
+  { pct: 100, label: "HPLC Testing", status: "pending" },
+] as const;
 
 export function TestingTracker() {
   return (
@@ -17,27 +19,24 @@ export function TestingTracker() {
           <span className="relative inline-flex h-2 w-2 rounded-full bg-steel-400" />
         </span>
         <p className="text-[11px] font-semibold uppercase tracking-widest text-steel-300">
-          Every Batch, Tracked to the Lab
+          Current Batch &mdash; In Transit to Lab
         </p>
       </div>
 
       <div className="relative mx-auto mt-10 max-w-md">
         <div className="relative mx-4 h-px sm:mx-6">
-          <div className="absolute inset-0 h-px rounded-full bg-gradient-to-r from-steel-600 via-steel-400 to-steel-600" />
+          <div className="absolute inset-0 h-px rounded-full bg-border-soft" />
+          <div
+            className="absolute inset-y-0 left-0 h-px rounded-full bg-gradient-to-r from-steel-600 to-steel-400"
+            style={{ width: `${ACTIVE_PCT}%` }}
+          />
 
           <motion.div
             aria-hidden
             className="absolute -top-[13px] -translate-x-1/2 text-steel-300 drop-shadow-[0_0_8px_rgba(31,200,221,0.6)]"
-            animate={{
-              left: ["0%", "100%"],
-              opacity: [0, 1, 1, 0],
-            }}
-            transition={{
-              duration: 4.5,
-              times: [0, 0.08, 0.92, 1],
-              repeat: Infinity,
-              ease: "linear",
-            }}
+            style={{ left: `${ACTIVE_PCT}%` }}
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           >
             <TruckIcon />
           </motion.div>
@@ -48,7 +47,20 @@ export function TestingTracker() {
               className="absolute top-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
               style={{ left: `${s.pct}%` }}
             >
-              <span className="h-2.5 w-2.5 rounded-full border-2 border-steel-300 bg-black" />
+              {s.status === "active" ? (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-steel-400 opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-steel-300 bg-steel-500" />
+                </span>
+              ) : (
+                <span
+                  className={`h-2.5 w-2.5 rounded-full border-2 ${
+                    s.status === "done"
+                      ? "border-steel-300 bg-steel-400"
+                      : "border-border-soft bg-black"
+                  }`}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -60,7 +72,9 @@ export function TestingTracker() {
             return (
               <span
                 key={s.label}
-                className={`absolute top-0 max-w-[6rem] text-[10px] font-semibold uppercase leading-tight tracking-wide text-fg-muted ${
+                className={`absolute top-0 max-w-[6rem] text-[10px] font-semibold uppercase leading-tight tracking-wide ${
+                  s.status === "pending" ? "text-fg-faint" : "text-fg-muted"
+                } ${s.status === "active" ? "text-steel-300" : ""} ${
                   isFirst
                     ? "left-0 text-left"
                     : isLast
