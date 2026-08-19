@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { AddToCart } from "@/components/product/AddToCart";
 import { BundleContents } from "@/components/product/BundleContents";
+import { FulfillmentTimer } from "@/components/product/FulfillmentTimer";
 import { getAllProducts, getProductBySlug } from "@/lib/woocommerce";
 
 export async function generateStaticParams() {
@@ -84,6 +85,10 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                   ${product.regularPrice.toFixed(2)}
                 </span>
               )}
+            </div>
+
+            <div className="mt-6">
+              <FulfillmentTimer />
             </div>
 
             <div className="mt-8">
