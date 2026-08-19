@@ -12,12 +12,15 @@ export function Hero() {
       <HoloBlob className="-z-10 -top-40 right-[-10%]" size={560} animated={false} />
       <Container className="grid min-h-[640px] grid-cols-1 items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <div>
-          <Badge tone="steel">Third-Party Tested</Badge>
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="steel">Third-Party Tested</Badge>
+            <Badge tone="steel">Research-Grade Purity</Badge>
+          </div>
 
           <h1 className="mt-6 font-display text-5xl font-black uppercase leading-[1.05] tracking-tight text-fg sm:text-6xl">
-            Research peptides,
+            Ruined the standards.
             <br />
-            <span className="text-gradient-holo">verified to the batch.</span>
+            <span className="text-gradient-holo">Elevated your research.</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-fg-muted">
