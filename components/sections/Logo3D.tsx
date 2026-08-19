@@ -20,7 +20,7 @@ export function Logo3D() {
         <Canvas
           dpr={[1, 2]}
           camera={{ position: [0, 0, 4.4], fov: 32 }}
-          gl={{ antialias: true, alpha: true }}
+          gl={{ antialias: true, alpha: true, toneMappingExposure: 1.6 }}
         >
           <SceneEnvironment />
           <ambientLight intensity={1.3} />
@@ -48,20 +48,27 @@ function buildStudioEnvironment(): THREE.Scene {
     position: [number, number, number],
     rotation: [number, number, number],
     size: [number, number],
+    boost = 1,
   ) => {
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(size[0], size[1]),
-      new THREE.MeshBasicMaterial({ color, toneMapped: false }),
+      new THREE.MeshBasicMaterial({
+        color: new THREE.Color(color).multiplyScalar(boost),
+        toneMapped: false,
+      }),
     );
     mesh.position.set(...position);
     mesh.rotation.set(...rotation);
     scene.add(mesh);
   };
 
-  panel("#1fb6d8", [-9, 1.5, 3], [0, Math.PI / 3, 0], [11, 16]);
-  panel("#ff9a3c", [9, -1, 3], [0, -Math.PI / 3, 0], [11, 16]);
-  panel("#e9ecf5", [0, 9, -4], [Math.PI / 2.3, 0, 0], [14, 14]);
+  panel("#2fd6f5", [-9, 1.5, 3], [0, Math.PI / 3, 0], [11, 16], 4);
+  panel("#ffb15c", [9, -1, 3], [0, -Math.PI / 3, 0], [11, 16], 4.5);
+  panel("#ffffff", [0, 9, -4], [Math.PI / 2.3, 0, 0], [14, 14], 3.5);
   panel("#050508", [0, -9, -4], [-Math.PI / 2.3, 0, 0], [18, 18]);
+  // Tight hot-spot strips for razor-sharp specular streaks along the bevels.
+  panel("#ffffff", [-2.5, 2.5, 5], [0.2, 0.5, 0], [2.5, 6], 6);
+  panel("#7fe9ff", [3, -2, 5], [-0.2, -0.6, 0], [2.5, 6], 6);
 
   return scene;
 }
@@ -227,14 +234,14 @@ function LogoMesh() {
         <meshPhysicalMaterial
           color="#2a2e3d"
           metalness={0.35}
-          roughness={0.06}
+          roughness={0.025}
           transparent
           opacity={0.62}
           depthWrite={false}
           clearcoat={1}
-          clearcoatRoughness={0.04}
+          clearcoatRoughness={0.02}
           ior={1.6}
-          envMapIntensity={4.2}
+          envMapIntensity={6.5}
         />
       </mesh>
     </group>
