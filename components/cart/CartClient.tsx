@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useCart } from "@/lib/cart-context";
 import type { Product } from "@/lib/types";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
+import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import { calculateDiscounts } from "@/lib/discounts";
@@ -125,8 +126,9 @@ export function CartClient({ products }: { products: Product[] }) {
           Order Summary
         </h2>
 
-        <div className="mt-5">
+        <div className="mt-5 flex flex-col gap-4">
           <FreeShippingProgress subtotal={subtotal} />
+          <SpendDiscountProgress subtotal={subtotal} />
         </div>
 
         <div className="mt-5">

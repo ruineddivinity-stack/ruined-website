@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import type { Product } from "@/lib/types";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
+import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import { calculateDiscounts } from "@/lib/discounts";
@@ -228,8 +229,9 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           ))}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-col gap-4">
           <FreeShippingProgress subtotal={subtotal} />
+          <SpendDiscountProgress subtotal={subtotal} />
         </div>
 
         <div className="mt-5">
