@@ -5,11 +5,59 @@ import { wrapBroadcastHtml } from "./email-template";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "RUINED <news@ruinedrx.com>";
+const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || "support@ruinedrx.com";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3010";
 const BATCH_SIZE = 100;
 
 export function isResendConfigured(): boolean {
   return Boolean(RESEND_API_KEY);
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendContactEmail({
+  name,
+  email,
+  subject,
+  message,
+}: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<{ id: string | null }> {
+  if (!RESEND_API_KEY) {
+    throw new Error(
+      "Missing RESEND_API_KEY env var — connect a Resend account first.",
+    );
+  }
+
+  const resend = new Resend(RESEND_API_KEY);
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: [CONTACT_TO_EMAIL],
+    replyTo: email,
+    subject: `[Contact] ${subject}`,
+    html: `
+      <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+      <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+      <p><strong>Message:</strong></p>
+      <p>${escapeHtml(message).replace(/\n/g, "<br />")}</p>
+    `,
+  });
+
+  if (error) {
+    throw new Error(`${error.name}: ${error.message}`);
+  }
+
+  return { id: data?.id ?? null };
 }
 
 function chunk<T>(items: T[], size: number): T[][] {
