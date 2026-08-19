@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllProducts, createOrder } from "@/lib/woocommerce";
+import { getAllProducts, createOrder, getCouponByCode } from "@/lib/woocommerce";
 import { calculateDiscounts } from "@/lib/discounts";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
@@ -74,6 +74,17 @@ export async function POST(request: Request) {
     }
   }
 
+  let validCoupon: Awaited<ReturnType<typeof getCouponByCode>> = null;
+  if (body.promoCode) {
+    validCoupon = await getCouponByCode(body.promoCode);
+    if (!validCoupon) {
+      return NextResponse.json(
+        { error: "That affiliate code isn't valid." },
+        { status: 400 },
+      );
+    }
+  }
+
   const subtotal = lines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
   const discounts = calculateDiscounts(
     lines.map((l) => ({
@@ -81,7 +92,7 @@ export async function POST(request: Request) {
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
-    body.promoCode,
+    validCoupon,
   );
   const shippingTotal = discounts.freeShipping ? 0 : 8;
 
@@ -98,12 +109,6 @@ export async function POST(request: Request) {
       amount: -discounts.spendAmount,
     });
   }
-  if (discounts.affiliateApplied && discounts.affiliateAmount > 0) {
-    feeLines.push({
-      name: "Affiliate code (10%)",
-      amount: -discounts.affiliateAmount,
-    });
-  }
 
   const session = await getSession();
 
@@ -115,6 +120,7 @@ export async function POST(request: Request) {
         quantity: l.qty,
       })),
       feeLines,
+      couponCode: validCoupon?.code,
       shippingTotal,
       billing: {
         firstName: body.shipping.firstName,

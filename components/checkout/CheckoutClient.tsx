@@ -11,7 +11,7 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts } from "@/lib/discounts";
+import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
 import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
 
 type ShippingForm = {
@@ -35,7 +35,7 @@ const EMPTY_SHIPPING: ShippingForm = {
 export function CheckoutClient({ products }: { products: Product[] }) {
   const { items, clearCart } = useCart();
   const router = useRouter();
-  const [promoCode, setPromoCode] = useState("");
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
   const [email, setEmail] = useState("");
   const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
-    promoCode,
+    coupon,
   );
   const shippingCost = lines.length > 0 && !discounts.freeShipping ? 8 : 0;
   const total = discounts.total + shippingCost;
@@ -84,7 +84,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items,
-          promoCode,
+          promoCode: coupon?.code ?? "",
           sourceId,
           email,
           shipping,
@@ -241,7 +241,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         <div className="mt-5">
           <PromoCodeInput
             applied={discounts.affiliateApplied}
-            onApply={setPromoCode}
+            onApply={setCoupon}
           />
         </div>
 
@@ -264,7 +264,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           )}
           {discounts.affiliateApplied && (
             <div className="flex justify-between text-steel-300">
-              <span>Affiliate code (10%)</span>
+              <span>Affiliate code &ldquo;{discounts.affiliateCode}&rdquo;</span>
               <span>-${discounts.affiliateAmount.toFixed(2)}</span>
             </div>
           )}

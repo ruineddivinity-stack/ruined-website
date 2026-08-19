@@ -1,28 +1,55 @@
 "use client";
 
 import { useState } from "react";
+import type { AppliedCoupon } from "@/lib/discounts";
 
 export function PromoCodeInput({
   applied,
   onApply,
 }: {
   applied: boolean;
-  onApply: (code: string) => void;
+  onApply: (coupon: AppliedCoupon | null) => void;
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
+  const [checking, setChecking] = useState(false);
 
-  const submit = () => {
-    if (!value.trim()) return;
-    onApply(value);
-    setError(value.trim().toUpperCase() !== "RX");
+  const submit = async () => {
+    if (!value.trim() || checking) return;
+    setChecking(true);
+    setError(false);
+
+    try {
+      const res = await fetch("/api/discounts/validate-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: value.trim() }),
+      });
+      const data = await res.json().catch(() => ({ valid: false }));
+
+      if (data.valid) {
+        onApply({
+          code: data.code,
+          discountType: data.discountType,
+          amount: data.amount,
+        });
+      } else {
+        onApply(null);
+        setError(true);
+      }
+    } catch {
+      onApply(null);
+      setError(true);
+    } finally {
+      setChecking(false);
+    }
   };
 
   if (applied) {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-steel-600/50 bg-steel-700/20 px-4 py-3 text-sm text-steel-300">
         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-steel-400" />
-        Affiliate code applied — extra 10% off
+        Affiliate code applied
       </div>
     );
   }
@@ -44,9 +71,10 @@ export function PromoCodeInput({
         <button
           type="button"
           onClick={submit}
-          className="shrink-0 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-fg transition-colors hover:border-steel-500"
+          disabled={checking}
+          className="shrink-0 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-fg transition-colors hover:border-steel-500 disabled:opacity-60"
         >
-          Apply
+          {checking ? "Checking…" : "Apply"}
         </button>
       </div>
       {error && (

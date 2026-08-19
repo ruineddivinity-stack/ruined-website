@@ -13,6 +13,12 @@ export const SPEND_TIERS = [
 export const AFFILIATE_CODE = "RX";
 export const AFFILIATE_RATE = 0.1;
 
+export type AppliedCoupon = {
+  code: string;
+  discountType: string;
+  amount: number;
+};
+
 /** Advertised combined savings when a bulk tier is stacked with an affiliate code. */
 export const STACKED_SAVINGS_PCT = {
   bulk: 18,
@@ -44,6 +50,7 @@ export type DiscountBreakdown = {
   spendAmount: number;
   affiliateApplied: boolean;
   affiliateAmount: number;
+  affiliateCode: string | null;
   total: number;
   freeShipping: boolean;
   amountToFreeShipping: number;
@@ -51,7 +58,7 @@ export type DiscountBreakdown = {
 
 export function calculateDiscounts(
   lines: DiscountLine[],
-  promoCode?: string,
+  coupon?: AppliedCoupon | null,
 ): DiscountBreakdown {
   const subtotal = lines.reduce((sum, l) => sum + l.subtotal, 0);
 
@@ -65,10 +72,13 @@ export function calculateDiscounts(
   const spendTier = getSpendTier(subtotal);
   const spendAmount = spendTier?.amount ?? 0;
 
-  const affiliateApplied =
-    !!promoCode && promoCode.trim().toUpperCase() === AFFILIATE_CODE;
   const preAffiliate = subtotal - bulkAmount - spendAmount;
-  const affiliateAmount = affiliateApplied ? preAffiliate * AFFILIATE_RATE : 0;
+  const affiliateApplied = !!coupon;
+  const affiliateAmount = coupon
+    ? coupon.discountType === "percent"
+      ? preAffiliate * (coupon.amount / 100)
+      : Math.min(preAffiliate, coupon.amount)
+    : 0;
 
   const total = Math.max(0, preAffiliate - affiliateAmount);
   const freeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
@@ -81,6 +91,7 @@ export function calculateDiscounts(
     spendAmount,
     affiliateApplied,
     affiliateAmount,
+    affiliateCode: coupon?.code ?? null,
     total,
     freeShipping,
     amountToFreeShipping: Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal),

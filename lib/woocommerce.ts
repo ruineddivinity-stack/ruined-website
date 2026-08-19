@@ -191,6 +191,37 @@ export async function getCouponById(
   };
 }
 
+type WcCouponLookup = WcCoupon & {
+  date_expires: string | null;
+  usage_limit: number | null;
+  individual_use: boolean;
+};
+
+export async function getCouponByCode(
+  code: string,
+): Promise<CouponDetails | null> {
+  const trimmed = code.trim();
+  if (!trimmed) return null;
+
+  const results = await wcFetch<WcCouponLookup[]>(
+    `coupons?code=${encodeURIComponent(trimmed)}`,
+    0,
+  );
+  const wc = results[0];
+  if (!wc?.id) return null;
+
+  if (wc.date_expires && new Date(wc.date_expires) < new Date()) return null;
+  if (wc.usage_limit && wc.usage_count >= wc.usage_limit) return null;
+
+  return {
+    id: wc.id,
+    code: wc.code,
+    amount: Number.parseFloat(wc.amount) || 0,
+    discountType: wc.discount_type,
+    usageCount: wc.usage_count,
+  };
+}
+
 export type OrderAddress = {
   firstName: string;
   lastName: string;
@@ -206,6 +237,7 @@ export type OrderAddress = {
 export type CreateOrderInput = {
   lineItems: { productId: number; quantity: number }[];
   feeLines?: { name: string; amount: number }[];
+  couponCode?: string;
   billing: OrderAddress;
   shipping?: OrderAddress;
   shippingTotal?: number;
@@ -259,6 +291,10 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       name: f.name,
       total: f.amount.toFixed(2),
     }));
+  }
+
+  if (input.couponCode) {
+    payload.coupon_lines = [{ code: input.couponCode }];
   }
 
   if (input.shippingTotal && input.shippingTotal > 0) {

@@ -10,11 +10,11 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts } from "@/lib/discounts";
+import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
 
 export function CartClient({ products }: { products: Product[] }) {
   const { items, updateQty, removeItem } = useCart();
-  const [promoCode, setPromoCode] = useState("");
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
 
   const lines = items
     .map((item) => {
@@ -30,7 +30,7 @@ export function CartClient({ products }: { products: Product[] }) {
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
-    promoCode,
+    coupon,
   );
 
   if (lines.length === 0) {
@@ -138,7 +138,7 @@ export function CartClient({ products }: { products: Product[] }) {
         <div className="mt-5">
           <PromoCodeInput
             applied={discounts.affiliateApplied}
-            onApply={setPromoCode}
+            onApply={setCoupon}
           />
         </div>
 
@@ -161,7 +161,7 @@ export function CartClient({ products }: { products: Product[] }) {
           )}
           {discounts.affiliateApplied && (
             <div className="flex justify-between text-steel-300">
-              <span>Affiliate code (10%)</span>
+              <span>Affiliate code &ldquo;{discounts.affiliateCode}&rdquo;</span>
               <span>-${discounts.affiliateAmount.toFixed(2)}</span>
             </div>
           )}
