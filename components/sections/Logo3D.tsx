@@ -23,9 +23,10 @@ export function Logo3D() {
           gl={{ antialias: true, alpha: true }}
         >
           <SceneEnvironment />
-          <ambientLight intensity={0.12} />
-          <hemisphereLight args={["#3a3f52", "#030304", 0.18]} />
-          <directionalLight position={[2, 3, 4]} intensity={0.3} />
+          <ambientLight intensity={0.4} />
+          <hemisphereLight args={["#8890b8", "#0a0a10", 0.55]} />
+          <directionalLight position={[2, 3, 4]} intensity={0.9} />
+          <directionalLight position={[-3, -2, 2]} intensity={0.35} color="#4f7df2" />
           <OrbitingLights />
           <LogoMesh />
         </Canvas>
@@ -111,7 +112,7 @@ function OrbitingLights() {
             refs.current[i] = el;
           }}
           color={color}
-          intensity={2.5}
+          intensity={5}
           distance={9}
           decay={2}
         />
@@ -223,17 +224,16 @@ function LogoMesh() {
     <group ref={groupRef}>
       <mesh geometry={geometry}>
         <meshPhysicalMaterial
-          color="#0c0d12"
-          metalness={0.25}
-          roughness={0.05}
-          transmission={0.8}
-          thickness={0.45}
-          ior={1.6}
+          color="#2a2e3d"
+          metalness={0.35}
+          roughness={0.06}
+          transparent
+          opacity={0.62}
+          depthWrite={false}
           clearcoat={1}
           clearcoatRoughness={0.04}
-          attenuationColor="#1c8fae"
-          attenuationDistance={0.7}
-          envMapIntensity={2.2}
+          ior={1.6}
+          envMapIntensity={2.6}
         />
       </mesh>
     </group>
