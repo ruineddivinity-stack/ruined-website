@@ -213,10 +213,12 @@ function Vial({ vial }: { vial: Vial }) {
 
 export function HeroVialCluster() {
   return (
-    <div className="relative mx-auto h-[440px] w-full max-w-md sm:h-[480px]">
-      {vials.map((vial) => (
-        <Vial key={vial.src} vial={vial} />
-      ))}
+    <div className="relative mx-auto h-[300px] w-full max-w-md sm:h-[480px]">
+      <div className="absolute inset-0 origin-center scale-[0.62] sm:scale-100">
+        {vials.map((vial) => (
+          <Vial key={vial.src} vial={vial} />
+        ))}
+      </div>
     </div>
   );
 }
