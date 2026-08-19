@@ -99,7 +99,7 @@ export default function AffiliatesPage() {
             <HoloBlob className="-z-10 -top-16 left-1/2 -translate-x-1/2" size={560} />
             <Logo3D />
             <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-fg-faint">
-              Move your cursor to explore
+              Ruined the standard, elevated the research
             </p>
           </div>
         </Container>
