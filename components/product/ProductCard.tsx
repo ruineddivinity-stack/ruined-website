@@ -19,7 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
         {(badge || !product.inStock) && (
           <div className="absolute left-4 top-4 z-10 flex gap-2">
             {badge && (
-              <Badge tone={badge === "Bundle" ? "chrome" : "steel"}>{badge}</Badge>
+              <Badge tone={badge === "Bundle" ? "holo" : "steel"}>{badge}</Badge>
             )}
             {!product.inStock && <Badge tone="danger">Out of Stock</Badge>}
           </div>

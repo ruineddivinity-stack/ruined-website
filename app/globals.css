@@ -167,6 +167,26 @@ body {
   }
 }
 
+.badge-holo {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-black), var(--color-black)) padding-box,
+    linear-gradient(
+        110deg,
+        var(--color-holo-violet) 0%,
+        var(--color-holo-blue) 25%,
+        var(--color-holo-pink) 50%,
+        var(--color-holo-gold) 75%,
+        var(--color-holo-violet) 100%
+      )
+      border-box;
+  background-size:
+    100% 100%,
+    260% 100%;
+  animation: gradient-shift 7s ease-in-out infinite;
+  box-shadow: 0 0 16px 1px rgba(138, 92, 242, 0.35);
+}
+
 .chrome-border {
   border-image: linear-gradient(
       180deg,
@@ -239,6 +259,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .btn-shimmer::after,
   .text-gradient-holo,
+  .badge-holo,
   .animate-glow-pulse,
   .animate-twinkle,
   .animate-star-drift {

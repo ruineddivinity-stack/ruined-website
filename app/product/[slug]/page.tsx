@@ -37,7 +37,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             {(badge || !product.inStock) && (
               <div className="absolute left-6 top-6 z-10 flex gap-2">
                 {badge && (
-                  <Badge tone={badge === "Bundle" ? "chrome" : "steel"}>
+                  <Badge tone={badge === "Bundle" ? "holo" : "steel"}>
                     {badge}
                   </Badge>
                 )}

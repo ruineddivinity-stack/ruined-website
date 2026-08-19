@@ -5,7 +5,7 @@ export function Badge({
   tone = "steel",
 }: {
   children: ReactNode;
-  tone?: "steel" | "chrome" | "danger";
+  tone?: "steel" | "chrome" | "holo" | "danger";
 }) {
   const tones = {
     steel: {
@@ -15,6 +15,10 @@ export function Badge({
     chrome: {
       wrap: "border border-chrome-300/30 bg-chrome-700/30 text-chrome-100 shadow-[0_0_14px_1px_rgba(146,150,168,0.35)] backdrop-blur-md",
       dot: "bg-chrome-100",
+    },
+    holo: {
+      wrap: "badge-holo text-chrome-100 backdrop-blur-md",
+      dot: "bg-[#f0eeff] shadow-[0_0_6px_2px_rgba(240,238,255,0.6)]",
     },
     danger: {
       wrap: "border border-danger/50 bg-danger/35 text-white shadow-[0_0_14px_1px_rgba(196,84,74,0.5)] backdrop-blur-md",
