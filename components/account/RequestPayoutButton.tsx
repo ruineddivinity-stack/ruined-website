@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type ModalMode = "payout" | "update" | null;
+
 export function RequestPayoutButton({ couponId }: { couponId: number }) {
   const router = useRouter();
   const [hasBankInfo, setHasBankInfo] = useState<boolean | null>(null);
-  const [showBankForm, setShowBankForm] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updated, setUpdated] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,7 +55,7 @@ export function RequestPayoutButton({ couponId }: { couponId: number }) {
     if (hasBankInfo) {
       submitPayout();
     } else {
-      setShowBankForm(true);
+      setModalMode("payout");
     }
   };
 
@@ -74,15 +77,38 @@ export function RequestPayoutButton({ couponId }: { couponId: number }) {
       >
         {loading ? "Requesting…" : "Request Payout"}
       </button>
+
+      {hasBankInfo && !loading && (
+        <button
+          type="button"
+          onClick={() => {
+            setUpdated(false);
+            setModalMode("update");
+          }}
+          className="text-[10px] font-semibold uppercase tracking-widest text-fg-faint underline underline-offset-2 hover:text-fg-muted"
+        >
+          New bank account? Change banking info
+        </button>
+      )}
+
+      {updated && (
+        <p className="text-[11px] text-steel-300">Bank info updated.</p>
+      )}
       {error && <p className="text-[11px] text-danger">{error}</p>}
 
-      {showBankForm && (
+      {modalMode && (
         <BankInfoModal
-          onClose={() => setShowBankForm(false)}
+          mode={modalMode}
+          onClose={() => setModalMode(null)}
           onSaved={() => {
+            const wasUpdate = modalMode === "update";
             setHasBankInfo(true);
-            setShowBankForm(false);
-            submitPayout();
+            setModalMode(null);
+            if (wasUpdate) {
+              setUpdated(true);
+            } else {
+              submitPayout();
+            }
           }}
         />
       )}
@@ -91,9 +117,11 @@ export function RequestPayoutButton({ couponId }: { couponId: number }) {
 }
 
 function BankInfoModal({
+  mode,
   onClose,
   onSaved,
 }: {
+  mode: "payout" | "update";
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -137,11 +165,14 @@ function BankInfoModal({
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(3,3,4,0.75)] p-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-3xl border border-steel-500/30 bg-surface-2 p-6 sm:p-8">
         <h3 className="font-display text-lg font-black uppercase tracking-wide text-fg">
-          Where should we send your payout?
+          {mode === "update"
+            ? "Update your payout details"
+            : "Where should we send your payout?"}
         </h3>
         <p className="mt-2 text-xs leading-relaxed text-fg-muted">
-          We only need this once — it&rsquo;s saved to your account for
-          future payout requests.
+          {mode === "update"
+            ? "This replaces the bank details currently on file for future payouts."
+            : "We only need this once — it's saved to your account for future payout requests."}
         </p>
 
         <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
@@ -196,7 +227,11 @@ function BankInfoModal({
               disabled={saving}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 px-6 py-3 text-sm font-semibold text-black transition-transform hover:brightness-110 disabled:opacity-50"
             >
-              {saving ? "Saving…" : "Save & Request Payout"}
+              {saving
+                ? "Saving…"
+                : mode === "update"
+                  ? "Save New Bank Info"
+                  : "Save & Request Payout"}
             </button>
             <button
               type="button"
