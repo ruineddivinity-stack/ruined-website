@@ -27,8 +27,7 @@ export default function PrivacyPage() {
           subscribe to email updates, submit the contact form, or apply to
           our affiliate program. Payment card details are entered directly
           into our payment processor&apos;s secure fields and are not
-          stored on our servers (see &quot;Payment Information&quot;
-          below).
+          stored on our servers.
         </p>
         <p>
           <strong className="text-fg">Information collected automatically:</strong>{" "}
@@ -39,16 +38,6 @@ export default function PrivacyPage() {
         <p>
           <strong className="text-fg">Information from cookies:</strong> see
           &quot;Cookies &amp; Similar Technologies&quot; below.
-        </p>
-      </LegalSection>
-
-      <LegalSection heading="Payment Information">
-        <p>
-          Checkout payments are processed by Square, Inc. Card numbers and
-          other sensitive payment details are transmitted directly to
-          Square and are not stored on our servers. Your use of Square to
-          complete a purchase is also subject to Square&apos;s own privacy
-          policy and terms.
         </p>
       </LegalSection>
 
@@ -108,8 +97,8 @@ export default function PrivacyPage() {
           <li>
             <strong className="text-fg">Service providers</strong> who
             perform functions on our behalf, including our payment
-            processor (Square), shipping carriers, e-commerce and hosting
-            platform providers, and email delivery services
+            processor, shipping carriers, e-commerce and hosting platform
+            providers, and email delivery services
           </li>
           <li>
             <strong className="text-fg">Legal &amp; safety</strong> — when

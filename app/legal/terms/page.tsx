@@ -71,9 +71,10 @@ export default function TermsPage() {
           reserve the right to refuse, limit, or cancel any order for any
           reason, including suspected fraud, pricing or listing errors, or
           product availability. Prices, discount codes, and promotions are
-          subject to change without notice. Payments are processed by
-          Square, Inc.; by placing an order you agree to Square&apos;s
-          applicable terms for processing your payment.
+          subject to change without notice. Payments are processed by a
+          secure third-party payment processor; by placing an order you
+          agree to that processor&apos;s applicable terms for handling
+          your payment.
         </p>
       </LegalSection>
 
