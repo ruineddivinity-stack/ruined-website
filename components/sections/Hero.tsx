@@ -13,7 +13,6 @@ export function Hero() {
       <Container className="grid min-h-[640px] grid-cols-1 items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <div>
           <div className="flex flex-wrap gap-2">
-            <Badge tone="steel">Third-Party Tested</Badge>
             <Badge tone="steel">Research-Grade Purity</Badge>
           </div>
 
