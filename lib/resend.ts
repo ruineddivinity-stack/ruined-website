@@ -28,20 +28,21 @@ export async function sendBroadcastEmail({
   subject: string;
   html: string;
   recipients: string[];
-}): Promise<{ sent: number; failed: number }> {
+}): Promise<{ sent: number; failed: number; ids: string[] }> {
   if (!RESEND_API_KEY) {
     throw new Error(
       "Missing RESEND_API_KEY env var — connect a Resend account first.",
     );
   }
   if (recipients.length === 0) {
-    return { sent: 0, failed: 0 };
+    return { sent: 0, failed: 0, ids: [] };
   }
 
   const resend = new Resend(RESEND_API_KEY);
   let sent = 0;
   let failed = 0;
   let lastError: string | null = null;
+  const ids: string[] = [];
 
   for (const batch of chunk(recipients, BATCH_SIZE)) {
     const payload = batch.map((email) => {
@@ -63,11 +64,22 @@ export async function sendBroadcastEmail({
       continue;
     }
     sent += data?.data?.length ?? batch.length;
+    for (const item of data?.data ?? []) {
+      if (item.id) ids.push(item.id);
+    }
   }
 
   if (sent === 0 && failed > 0 && lastError) {
     throw new Error(lastError);
   }
 
-  return { sent, failed };
+  return { sent, failed, ids };
+}
+
+export async function getEmailStatus(id: string) {
+  if (!RESEND_API_KEY) return null;
+  const resend = new Resend(RESEND_API_KEY);
+  const { data, error } = await resend.emails.get(id);
+  if (error) return { error: `${error.name}: ${error.message}` };
+  return data;
 }

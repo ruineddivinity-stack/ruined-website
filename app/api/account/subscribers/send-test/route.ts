@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession, isAdminUser } from "@/lib/session";
-import { sendBroadcastEmail } from "@/lib/resend";
+import { sendBroadcastEmail, getEmailStatus } from "@/lib/resend";
 
 function textToHtml(text: string): string {
   return text
@@ -27,13 +27,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { sent, failed } = await sendBroadcastEmail({
+    const { sent, failed, ids } = await sendBroadcastEmail({
       subject: `[TEST] ${subject.trim()}`,
       html: textToHtml(body.trim()),
       recipients: [session.email],
     });
 
-    return NextResponse.json({ success: true, sent, failed, total: 1 });
+    const statuses = await Promise.all(ids.map((id) => getEmailStatus(id)));
+
+    return NextResponse.json({ success: true, sent, failed, total: 1, statuses });
   } catch (err) {
     console.error("Test send failed:", err);
     return NextResponse.json(
