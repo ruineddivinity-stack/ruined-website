@@ -40,6 +40,7 @@ export async function sendBroadcastEmail({
   const resend = new Resend(RESEND_API_KEY);
   let sent = 0;
   let failed = 0;
+  let lastError: string | null = null;
 
   for (const batch of chunk(recipients, BATCH_SIZE)) {
     const payload = batch.map((email) => {
@@ -56,9 +57,15 @@ export async function sendBroadcastEmail({
     const { data, error } = await resend.batch.send(payload);
     if (error) {
       failed += batch.length;
+      lastError = `${error.name}: ${error.message}`;
+      console.error("Resend batch send error:", error);
       continue;
     }
     sent += data?.data?.length ?? batch.length;
+  }
+
+  if (sent === 0 && failed > 0 && lastError) {
+    throw new Error(lastError);
   }
 
   return { sent, failed };

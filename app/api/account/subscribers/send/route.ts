@@ -43,12 +43,7 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("Broadcast send failed:", err);
     return NextResponse.json(
-      {
-        error:
-          err instanceof Error && err.message.startsWith("Missing RESEND")
-            ? err.message
-            : "Send failed. Please try again.",
-      },
+      { error: err instanceof Error ? err.message : "Send failed. Please try again." },
       { status: 500 },
     );
   }
