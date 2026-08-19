@@ -1,3 +1,11 @@
+export type BundledItem = {
+  productId: number;
+  title: string;
+  quantity: number;
+  slug: string | null;
+  image: string | null;
+};
+
 export type Product = {
   id: number;
   slug: string;
@@ -13,6 +21,7 @@ export type Product = {
   description: string;
   shortDescription: string;
   inStock: boolean;
+  bundledItems: BundledItem[] | null;
 };
 
 export type Review = {

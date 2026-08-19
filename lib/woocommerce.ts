@@ -1,5 +1,5 @@
 import "server-only";
-import type { Order, Product } from "./types";
+import type { BundledItem, Order, Product } from "./types";
 
 const WOOCOMMERCE_URL = process.env.WOOCOMMERCE_URL;
 const CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
@@ -7,6 +7,12 @@ const CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET;
 
 type WcImage = { src: string };
 type WcCategory = { id: number; name: string };
+
+type WcBundledItem = {
+  product_id: number;
+  title: string;
+  quantity_default: number;
+};
 
 type WcProduct = {
   id: number;
@@ -22,6 +28,7 @@ type WcProduct = {
   short_description: string;
   images: WcImage[];
   categories: WcCategory[];
+  bundled_items?: WcBundledItem[];
 };
 
 function authHeader() {
@@ -76,10 +83,26 @@ async function wcMutate<T>(
 
 const SIZE_PATTERN = /\b\d+(?:\.\d+)?\s?(?:MG|ML|IU)\b/i;
 
-function mapWcProduct(wc: WcProduct): Product {
+function mapWcProduct(
+  wc: WcProduct,
+  imageLookup?: Map<number, { slug: string; image: string | null }>,
+): Product {
   const sizeMatch = wc.name.match(SIZE_PATTERN);
   const regularPrice = Number.parseFloat(wc.regular_price || wc.price) || 0;
   const price = Number.parseFloat(wc.price) || regularPrice;
+
+  const bundledItems: BundledItem[] | null = wc.bundled_items?.length
+    ? wc.bundled_items.map((b) => {
+        const match = imageLookup?.get(b.product_id);
+        return {
+          productId: b.product_id,
+          title: b.title,
+          quantity: b.quantity_default || 1,
+          slug: match?.slug ?? null,
+          image: match?.image ?? null,
+        };
+      })
+    : null;
 
   return {
     id: wc.id,
@@ -96,6 +119,7 @@ function mapWcProduct(wc: WcProduct): Product {
     description: wc.description,
     shortDescription: wc.short_description,
     inStock: wc.stock_status === "instock",
+    bundledItems,
   };
 }
 
@@ -103,7 +127,7 @@ export async function getAllProducts(): Promise<Product[]> {
   const wcProducts = await wcFetch<WcProduct[]>(
     "products?per_page=100&status=publish",
   );
-  return wcProducts.map(mapWcProduct);
+  return wcProducts.map((wc) => mapWcProduct(wc));
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -111,7 +135,20 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     `products?slug=${encodeURIComponent(slug)}&status=publish`,
   );
   const wc = wcProducts[0];
-  return wc ? mapWcProduct(wc) : null;
+  if (!wc) return null;
+
+  if (!wc.bundled_items?.length) {
+    return mapWcProduct(wc);
+  }
+
+  const allProducts = await wcFetch<WcProduct[]>(
+    "products?per_page=100&status=publish",
+  );
+  const imageLookup = new Map(
+    allProducts.map((p) => [p.id, { slug: p.slug, image: p.images[0]?.src ?? null }]),
+  );
+
+  return mapWcProduct(wc, imageLookup);
 }
 
 type WcOrder = {

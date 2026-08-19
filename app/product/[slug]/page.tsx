@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { AddToCart } from "@/components/product/AddToCart";
+import { BundleContents } from "@/components/product/BundleContents";
 import { getAllProducts, getProductBySlug } from "@/lib/woocommerce";
 
 export async function generateStaticParams() {
@@ -92,6 +93,12 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
                 showBulkOptions={product.type !== "bundle"}
               />
             </div>
+
+            {product.bundledItems && product.bundledItems.length > 0 && (
+              <div className="mt-8">
+                <BundleContents items={product.bundledItems} />
+              </div>
+            )}
 
             <div className="mt-10 grid grid-cols-1 gap-3 border-t border-border-soft pt-8 sm:grid-cols-2">
               <Fact label="Category" value={product.category} />
