@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col bg-black text-fg">
         <Providers>

@@ -23,7 +23,10 @@ const perks = [
 
 export function Newsletter() {
   return (
-    <section className="bg-[rgba(3,3,4,0.65)] py-24">
+    <section
+      id="vip-notifications"
+      className="scroll-mt-[150px] bg-[rgba(3,3,4,0.65)] py-24"
+    >
       <Container>
         <Reveal>
           <div className="relative overflow-hidden rounded-3xl border border-steel-500/30 bg-gradient-to-br from-steel-700/25 via-surface-2 to-black p-8 sm:p-12">
