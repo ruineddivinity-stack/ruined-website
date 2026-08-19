@@ -14,22 +14,14 @@ export function wrapBroadcastHtml({
 }): string {
   const addressLine = MAILING_ADDRESS ? `<br />${MAILING_ADDRESS}` : "";
   const logoBlack = `${SITE_URL}/logo-email-black.png`;
-  const logoWhite = `${SITE_URL}/logo-email-white.png`;
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="color-scheme" content="light dark" />
-<meta name="supported-color-schemes" content="light dark" />
-<style>
-  .ruined-logo-dark { display: none; }
-  @media (prefers-color-scheme: dark) {
-    .ruined-logo-light { display: none !important; }
-    .ruined-logo-dark { display: inline-block !important; }
-  }
-</style>
+<meta name="color-scheme" content="light" />
+<meta name="supported-color-schemes" content="light" />
 </head>
 <body style="margin:0;padding:0;background:#f2f2f4;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;padding:32px 16px;">
@@ -40,8 +32,7 @@ export function wrapBroadcastHtml({
           <!-- Header -->
           <tr>
             <td align="center" style="padding:32px 24px 20px;">
-              <img src="${logoBlack}" width="140" alt="RUINED" class="ruined-logo-light" style="display:inline-block;height:auto;max-width:140px;border:0;" />
-              <img src="${logoWhite}" width="140" alt="RUINED" class="ruined-logo-dark" style="height:auto;max-width:140px;border:0;" />
+              <img src="${logoBlack}" width="140" alt="RUINED" style="display:block;margin:0 auto;height:auto;max-width:140px;border:0;" />
             </td>
           </tr>
           <tr>
