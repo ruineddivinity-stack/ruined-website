@@ -43,6 +43,13 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          <Link
+            href="/affiliates"
+            className="badge-holo hidden items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-chrome-100 backdrop-blur-md transition-transform duration-300 hover:scale-105 md:inline-flex"
+          >
+            <DollarIcon />
+            Affiliates
+          </Link>
           <Button
             href="/shop"
             variant="secondary"
@@ -56,5 +63,23 @@ export async function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function DollarIcon() {
+  return (
+    <svg
+      width={13}
+      height={13}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 2v20" />
+      <path d="M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 3 5 3 5 1.1 5 3-2.2 3-5 3-5-1.1-5-3" />
+    </svg>
   );
 }

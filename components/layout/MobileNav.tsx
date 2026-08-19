@@ -109,7 +109,21 @@ export function MobileNav({ accountHref }: { accountHref: string }) {
           ))}
         </nav>
 
-        <div className="mx-6 border-t border-border-soft" />
+        <div className="px-3">
+          <Link
+            href="/affiliates"
+            onClick={() => setOpen(false)}
+            className="badge-holo flex items-center gap-3 rounded-xl px-3 py-3.5 text-chrome-100 transition-transform duration-300 hover:scale-[1.015]"
+          >
+            <DollarIcon className="h-5 w-5 shrink-0" />
+            <span className="flex-1 text-sm font-bold uppercase tracking-wide">
+              Become an Affiliate
+            </span>
+            <ChevronIcon className="h-4 w-4 shrink-0" />
+          </Link>
+        </div>
+
+        <div className="mx-6 mt-2 border-t border-border-soft" />
 
         <div className="flex flex-col px-3 py-3">
           <button
@@ -261,6 +275,15 @@ function TagIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
       <path d="M20 12.5 12.5 20a1.5 1.5 0 0 1-2.1 0L4 13.6a1.5 1.5 0 0 1 0-2.1L11.5 4H18a2 2 0 0 1 2 2v6.5Z" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="15.5" cy="8.5" r="1.25" />
+    </svg>
+  );
+}
+
+function DollarIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <path d="M12 2v20" strokeLinecap="round" />
+      <path d="M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 3 5 3 5 1.1 5 3-2.2 3-5 3-5-1.1-5-3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
