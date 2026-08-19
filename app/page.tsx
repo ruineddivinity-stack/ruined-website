@@ -16,8 +16,8 @@ export default function Home() {
       <TrustStrip />
       <Mission />
       <WhyChooseUs />
-      <FAQ />
       <Newsletter />
+      <FAQ />
     </>
   );
 }
