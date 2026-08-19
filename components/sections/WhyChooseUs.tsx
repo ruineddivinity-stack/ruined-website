@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Reveal } from "@/components/ui/Reveal";
 
 const items = [
   {
@@ -28,25 +29,29 @@ export function WhyChooseUs() {
   return (
     <section className="bg-surface/70 py-24">
       <Container>
-        <SectionHeading
-          eyebrow="Why RUINED"
-          title="Built for people who check the data"
-          align="center"
-        />
+        <Reveal>
+          <SectionHeading
+            eyebrow="Why RUINED"
+            title="Built for people who check the data"
+            align="center"
+          />
+        </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((item) => (
-            <div key={item.title} className="group flex flex-col items-start">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-steel-700/40 to-steel-700/10 text-steel-300 transition-all duration-300 group-hover:scale-110">
-                <item.icon />
+          {items.map((item, i) => (
+            <Reveal key={item.title} delay={i * 0.1}>
+              <div className="group flex flex-col items-start">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-steel-700/40 to-steel-700/10 text-steel-300 transition-all duration-300 group-hover:scale-110">
+                  <item.icon />
+                </div>
+                <h3 className="mt-5 text-base font-semibold text-fg">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+                  {item.desc}
+                </p>
               </div>
-              <h3 className="mt-5 text-base font-semibold text-fg">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-                {item.desc}
-              </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Container>

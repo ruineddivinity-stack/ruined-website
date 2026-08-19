@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/Container";
+import { Reveal } from "@/components/ui/Reveal";
 
 const badges = [
   {
@@ -28,21 +29,20 @@ export function TrustBadges() {
     <section className="border-b border-border-soft bg-[rgba(3,3,4,0.65)] py-10">
       <Container>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {badges.map((b) => (
-            <div
-              key={b.title}
-              className="flex items-start gap-4 rounded-2xl border border-border bg-surface/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_24px_2px_rgba(31,200,221,0.25)]"
-            >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-b from-steel-700/50 to-steel-700/10 text-steel-300">
-                <b.icon />
+          {badges.map((b, i) => (
+            <Reveal key={b.title} delay={i * 0.08}>
+              <div className="flex items-start gap-4 rounded-2xl border border-border bg-surface/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_24px_2px_rgba(31,200,221,0.25)]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-b from-steel-700/50 to-steel-700/10 text-steel-300">
+                  <b.icon />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-fg">{b.title}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-fg-muted">
+                    {b.desc}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-fg">{b.title}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-fg-muted">
-                  {b.desc}
-                </p>
-              </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </Container>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/product/ProductCard";
+import { Reveal } from "@/components/ui/Reveal";
 import type { Product } from "@/lib/types";
 
 export function ShopClient({ products }: { products: Product[] }) {
@@ -33,8 +34,10 @@ export function ShopClient({ products }: { products: Product[] }) {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((product) => (
-          <ProductCard key={product.slug} product={product} />
+        {filtered.map((product, i) => (
+          <Reveal key={product.slug} delay={(i % 4) * 0.06} y={16}>
+            <ProductCard product={product} />
+          </Reveal>
         ))}
       </div>
 

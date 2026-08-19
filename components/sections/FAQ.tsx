@@ -1,5 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Reveal } from "@/components/ui/Reveal";
 
 const faqs = [
   {
@@ -32,26 +33,27 @@ export function FAQ() {
   return (
     <section className="bg-[rgba(3,3,4,0.65)] py-24">
       <Container className="max-w-3xl">
-        <SectionHeading
-          eyebrow="FAQ"
-          title="Questions, Answered"
-          align="center"
-        />
+        <Reveal>
+          <SectionHeading
+            eyebrow="FAQ"
+            title="Questions, Answered"
+            align="center"
+          />
+        </Reveal>
 
         <div className="mt-12 flex flex-col gap-3">
-          {faqs.map((item) => (
-            <details
-              key={item.q}
-              className="group rounded-2xl border border-border bg-surface/60 px-6 py-5 open:border-steel-500/40"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-fg [&::-webkit-details-marker]:hidden">
-                {item.q}
-                <ChevronIcon className="shrink-0 text-fg-muted transition-transform duration-200 group-open:rotate-180" />
-              </summary>
-              <p className="mt-3 text-sm leading-relaxed text-fg-muted">
-                {item.a}
-              </p>
-            </details>
+          {faqs.map((item, i) => (
+            <Reveal key={item.q} delay={i * 0.06} y={16}>
+              <details className="group rounded-2xl border border-border bg-surface/60 px-6 py-5 open:border-steel-500/40">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-fg [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <ChevronIcon className="shrink-0 text-fg-muted transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+                  {item.a}
+                </p>
+              </details>
+            </Reveal>
           ))}
         </div>
       </Container>

@@ -24,13 +24,6 @@ export type Product = {
   bundledItems: BundledItem[] | null;
 };
 
-export type Review = {
-  name: string;
-  role: string;
-  rating: number;
-  quote: string;
-};
-
 export type OrderLineItem = {
   name: string;
   quantity: number;
