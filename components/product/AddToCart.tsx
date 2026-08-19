@@ -3,7 +3,7 @@
 import { useState, type ComponentType } from "react";
 import { useCart } from "@/lib/cart-context";
 import { Button } from "@/components/ui/Button";
-import { AFFILIATE_CODE, AFFILIATE_RATE, BULK_TIERS } from "@/lib/discounts";
+import { AFFILIATE_CODE, BULK_TIERS } from "@/lib/discounts";
 
 export function AddToCart({
   slug,
@@ -65,12 +65,14 @@ export function AddToCart({
             icon={LayersIcon}
             label={`${BULK_TIERS.bulk.min} Vials`}
             baseRate={BULK_TIERS.bulk.rate}
+            stackedPct={18}
             onClick={() => addItem(slug, BULK_TIERS.bulk.min)}
           />
           <BulkAddButton
             icon={BoxIcon}
             label={`Kit (${BULK_TIERS.kit.min})`}
             baseRate={BULK_TIERS.kit.rate}
+            stackedPct={30}
             onClick={() => addItem(slug, BULK_TIERS.kit.min)}
           />
         </div>
@@ -83,15 +85,16 @@ function BulkAddButton({
   icon: Icon,
   label,
   baseRate,
+  stackedPct,
   onClick,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   baseRate: number;
+  stackedPct: number;
   onClick: () => void;
 }) {
   const basePct = Math.round(baseRate * 100);
-  const stackedPct = Math.round((1 - (1 - baseRate) * (1 - AFFILIATE_RATE)) * 100);
 
   return (
     <button
