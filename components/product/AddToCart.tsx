@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { useCart } from "@/lib/cart-context";
 import { Button } from "@/components/ui/Button";
-import { BULK_TIERS } from "@/lib/discounts";
+import { AFFILIATE_CODE, AFFILIATE_RATE, BULK_TIERS } from "@/lib/discounts";
 
 export function AddToCart({
   slug,
@@ -60,15 +60,17 @@ export function AddToCart({
       </div>
 
       {showBulkOptions && (
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <BulkAddButton
+            icon={LayersIcon}
             label={`${BULK_TIERS.bulk.min} Vials`}
-            sub={`Save ${BULK_TIERS.bulk.rate * 100}%`}
+            baseRate={BULK_TIERS.bulk.rate}
             onClick={() => addItem(slug, BULK_TIERS.bulk.min)}
           />
           <BulkAddButton
+            icon={BoxIcon}
             label={`Kit (${BULK_TIERS.kit.min})`}
-            sub={`Save ${BULK_TIERS.kit.rate * 100}%`}
+            baseRate={BULK_TIERS.kit.rate}
             onClick={() => addItem(slug, BULK_TIERS.kit.min)}
           />
         </div>
@@ -78,27 +80,82 @@ export function AddToCart({
 }
 
 function BulkAddButton({
+  icon: Icon,
   label,
-  sub,
+  baseRate,
   onClick,
 }: {
+  icon: ComponentType<{ className?: string }>;
   label: string;
-  sub: string;
+  baseRate: number;
   onClick: () => void;
 }) {
+  const basePct = Math.round(baseRate * 100);
+  const stackedPct = Math.round((1 - (1 - baseRate) * (1 - AFFILIATE_RATE)) * 100);
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-2 rounded-xl border border-steel-600/50 bg-steel-700/15 px-4 py-2.5 text-left transition-colors hover:border-steel-500 hover:bg-steel-700/25"
+      className="group flex items-center gap-3 rounded-2xl border border-steel-600/40 bg-gradient-to-b from-steel-700/20 to-steel-700/5 px-4 py-3.5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-steel-500 hover:shadow-[0_0_20px_2px_rgba(31,200,221,0.25)]"
     >
-      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-steel-400" />
-      <span>
-        <span className="block text-xs font-semibold text-fg">
+      <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-steel-600/25 text-steel-300 transition-transform duration-300 group-hover:scale-110">
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-xl bg-steel-500/20 blur-md"
+        />
+        <Icon className="relative" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-xs font-semibold uppercase tracking-wide text-fg">
           + Add {label}
         </span>
-        <span className="block text-[11px] text-steel-300">{sub}</span>
+        <span className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] leading-tight">
+          <span className="font-bold text-steel-300">Save {basePct}%</span>
+          <span className="text-fg-faint">or up to</span>
+          <span className="font-bold text-gradient-holo">{stackedPct}%</span>
+          <span className="text-fg-faint">with code {AFFILIATE_CODE}</span>
+        </span>
       </span>
     </button>
+  );
+}
+
+function LayersIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 16 9 5 9-5" />
+    </svg>
+  );
+}
+
+function BoxIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m21 8-9-5-9 5v8l9 5 9-5V8Z" />
+      <path d="m3 8 9 5 9-5M12 13v8" />
+    </svg>
   );
 }
