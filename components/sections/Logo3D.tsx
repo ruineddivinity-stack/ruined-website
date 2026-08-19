@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { traceAlphaShapes, type Point } from "@/lib/logoContours";
 
 const HOLO_COLORS = ["#8c52c7", "#4f7df2", "#f262b6", "#f2c14e"] as const;
@@ -24,9 +23,9 @@ export function Logo3D() {
           gl={{ antialias: true, alpha: true }}
         >
           <SceneEnvironment />
-          <ambientLight intensity={0.4} />
-          <hemisphereLight args={["#f1f2f7", "#030304", 0.5]} />
-          <directionalLight position={[2, 3, 4]} intensity={0.7} />
+          <ambientLight intensity={0.12} />
+          <hemisphereLight args={["#3a3f52", "#030304", 0.18]} />
+          <directionalLight position={[2, 3, 4]} intensity={0.3} />
           <OrbitingLights />
           <LogoMesh />
         </Canvas>
@@ -35,12 +34,42 @@ export function Logo3D() {
   );
 }
 
+/** A small colored studio "room" — baked into a PMREM env map so the
+ *  glass/chrome material picks up moody cool/warm reflections instead
+ *  of flat gray, echoing the reference chrome-text look. */
+function buildStudioEnvironment(): THREE.Scene {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color("#000000");
+
+  const panel = (
+    color: string,
+    position: [number, number, number],
+    rotation: [number, number, number],
+    size: [number, number],
+  ) => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(size[0], size[1]),
+      new THREE.MeshBasicMaterial({ color, toneMapped: false }),
+    );
+    mesh.position.set(...position);
+    mesh.rotation.set(...rotation);
+    scene.add(mesh);
+  };
+
+  panel("#1fb6d8", [-9, 1.5, 3], [0, Math.PI / 3, 0], [11, 16]);
+  panel("#ff9a3c", [9, -1, 3], [0, -Math.PI / 3, 0], [11, 16]);
+  panel("#e9ecf5", [0, 9, -4], [Math.PI / 2.3, 0, 0], [14, 14]);
+  panel("#050508", [0, -9, -4], [-Math.PI / 2.3, 0, 0], [18, 18]);
+
+  return scene;
+}
+
 function SceneEnvironment() {
   const { gl, scene } = useThree();
 
   const envMap = useMemo(() => {
     const pmrem = new THREE.PMREMGenerator(gl);
-    const rt = pmrem.fromScene(new RoomEnvironment(), 0.04);
+    const rt = pmrem.fromScene(buildStudioEnvironment(), 0.04);
     pmrem.dispose();
     return rt.texture;
   }, [gl]);
@@ -82,7 +111,7 @@ function OrbitingLights() {
             refs.current[i] = el;
           }}
           color={color}
-          intensity={7}
+          intensity={2.5}
           distance={9}
           decay={2}
         />
@@ -133,12 +162,12 @@ function useLogoGeometry(url: string) {
         return shape;
       });
 
-      const depth = targetHeight * 0.24;
+      const depth = targetHeight * 0.09;
       const geo = new THREE.ExtrudeGeometry(threeShapes, {
         depth,
         bevelEnabled: true,
-        bevelThickness: targetHeight * 0.02,
-        bevelSize: targetHeight * 0.018,
+        bevelThickness: targetHeight * 0.012,
+        bevelSize: targetHeight * 0.01,
         bevelSegments: 4,
         curveSegments: 8,
       });
@@ -194,17 +223,17 @@ function LogoMesh() {
     <group ref={groupRef}>
       <mesh geometry={geometry}>
         <meshPhysicalMaterial
-          color="#cfd3e6"
-          metalness={0.45}
-          roughness={0.1}
-          transmission={0.6}
-          thickness={0.6}
-          ior={1.45}
-          clearcoat={0.6}
-          clearcoatRoughness={0.12}
-          attenuationColor="#c9a8e6"
-          attenuationDistance={1.4}
-          envMapIntensity={1.3}
+          color="#0c0d12"
+          metalness={0.25}
+          roughness={0.05}
+          transmission={0.8}
+          thickness={0.45}
+          ior={1.6}
+          clearcoat={1}
+          clearcoatRoughness={0.04}
+          attenuationColor="#1c8fae"
+          attenuationDistance={0.7}
+          envMapIntensity={2.2}
         />
       </mesh>
     </group>
