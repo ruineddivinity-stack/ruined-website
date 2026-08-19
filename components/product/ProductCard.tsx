@@ -21,7 +21,7 @@ export function ProductCard({ product }: { product: Product }) {
             {badge && (
               <Badge tone={badge === "Bundle" ? "holo" : "steel"}>{badge}</Badge>
             )}
-            {!product.inStock && <Badge tone="danger">Out of Stock</Badge>}
+            {!product.inStock && <Badge tone="danger">Sold Out</Badge>}
           </div>
         )}
         {product.image ? (
