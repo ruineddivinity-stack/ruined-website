@@ -16,12 +16,12 @@ export function HoloBlob({
       aria-hidden
       className={`pointer-events-none absolute rounded-full ${className}`}
       style={{
-        width: `clamp(200px, 55vw, ${size}px)`,
-        height: `clamp(200px, 55vw, ${size}px)`,
+        width: size,
+        height: size,
         background:
           "conic-gradient(from 180deg, var(--color-holo-violet), var(--color-holo-blue), var(--color-holo-pink), var(--color-holo-gold), var(--color-holo-violet))",
         filter: "blur(90px) saturate(140%)",
-        opacity: 0.4,
+        opacity: 0.55,
       }}
       animate={
         animated
