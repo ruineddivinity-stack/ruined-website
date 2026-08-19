@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { TestingTracker } from "@/components/coa/TestingTracker";
 
 export const metadata: Metadata = {
   title: "COAs | RUINED",
@@ -23,6 +24,11 @@ export default function LabResultsPage() {
           meantime, every compound in our catalog is screened internally
           for identity and purity before it&apos;s listed.
         </p>
+
+        <div className="mt-10">
+          <TestingTracker />
+        </div>
+
         <div className="mt-8">
           <Button href="/shop">Shop the Catalog</Button>
         </div>
