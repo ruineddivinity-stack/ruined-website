@@ -10,11 +10,18 @@ export default function ShippingPage() {
     <LegalPage title="Shipping Policy" updated="August 19, 2026">
       <LegalSection heading="Processing Time">
         <p>
-          In-stock orders placed before 2:00pm CT on a business day
-          typically ship the same day. Orders placed after that cutoff, or
-          on a weekend or holiday, ship the following business day. During
-          periods of high demand, processing may take slightly longer; we
-          will notify you by email if your order is significantly delayed.
+          In-stock orders placed before 2:00pm CT on a business day ship
+          the same day. Orders are typically fully processed within 24–36
+          hours of being placed. While orders may still be placed and
+          begin moving through our system over the weekend, our primary
+          business and shipping operations run Monday through Friday —
+          orders placed after business hours, on weekends, or on holidays
+          may not begin full processing until the next business day.
+        </p>
+        <p>
+          Processing time and shipping time are separate. Shipping time
+          begins once an order has been fully processed and handed off to
+          the carrier.
         </p>
       </LegalSection>
 
@@ -27,49 +34,55 @@ export default function ShippingPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="Shipping Area">
+      <LegalSection heading="Tracking & Delivery">
         <p>
-          We currently ship within the United States only. We do not offer
-          international shipping at this time. We reserve the right to
-          decline or cancel an order if we&apos;re unable to ship a given
-          product to your state or territory due to applicable law.
+          Every order includes tracking. You&apos;ll receive a tracking
+          number by email once your order has been processed and handed
+          off to the carrier — please allow up to 24 hours for tracking
+          information to update after you receive this email. If your
+          package is confirmed lost in transit, it&apos;s covered under
+          our{" "}
+          <a
+            href="/legal/refunds"
+            className="text-steel-400 underline underline-offset-2 hover:text-steel-300"
+          >
+            Refund Policy
+          </a>
+          .
+        </p>
+        <p>
+          Once an order has been processed and shipped, delivery typically
+          takes 2–7+ business days, depending on the shipping method
+          selected at checkout, your location, and carrier conditions.
         </p>
       </LegalSection>
 
       <LegalSection heading="Carriers">
         <p>
-          We ship via major national carriers (such as USPS, UPS, or
-          FedEx), selected based on delivery speed, cost, and package
-          requirements. The carrier used for your order will be shown on
-          your tracking confirmation.
+          We ship primarily via USPS, and will use other national carriers
+          when necessary to ensure your package is delivered safely and
+          securely. We reserve the right to select the best carrier and
+          shipping method for a given order; the carrier used will be
+          shown on your tracking confirmation.
         </p>
       </LegalSection>
 
       <LegalSection heading="Packaging">
         <p>
           Orders are packed discreetly in plain, unmarked packaging with no
-          indication of contents on the exterior. Temperature-sensitive
-          items are shipped with appropriate insulation and cold packs
-          when needed to help preserve product integrity in transit.
-        </p>
-      </LegalSection>
-
-      <LegalSection heading="Order Tracking">
-        <p>
-          You&apos;ll receive a shipping confirmation email with a tracking
-          number as soon as your order leaves our facility. Please allow
-          up to 24 hours for tracking information to update after you
-          receive this email.
+          indication of contents on the exterior.
         </p>
       </LegalSection>
 
       <LegalSection heading="Delivery Delays">
         <p>
           Delivery estimates provided by carriers are not guaranteed.
-          RUINED is not responsible for delays caused by the carrier,
-          weather, customs, or other events outside our control. If your
-          order is significantly delayed in transit, contact us and
-          we&apos;ll work with the carrier on your behalf.
+          Orders placed after business hours, on weekends, or on holidays
+          may experience slight delays in shipment movement due to our
+          Monday–Friday business operations. RUINED is not responsible for
+          delays caused by the carrier, weather, or other events outside
+          our control. If your order is significantly delayed in transit,
+          contact us and we&apos;ll work with the carrier on your behalf.
         </p>
       </LegalSection>
 
@@ -92,6 +105,10 @@ export default function ShippingPage() {
           incomplete address. If you notice an error, contact us
           immediately — we can only make changes before an order ships.
         </p>
+      </LegalSection>
+
+      <LegalSection heading="International Shipping">
+        <p>We do not ship to researchers internationally.</p>
       </LegalSection>
 
       <LegalSection heading="Contact">
