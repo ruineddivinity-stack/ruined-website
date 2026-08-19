@@ -13,13 +13,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * A report "exists" once a file named after the product slug is dropped into
- * the matching public/lab-reports folder — no code changes needed to publish
- * a real PDF later.
+ * A COA "exists" once a file named after the product slug is dropped into
+ * public/lab-reports/coas — no code changes needed to publish a real PDF
+ * later.
  */
-function getReportHref(folder: "raw-materials" | "coas", slug: string): string | null {
-  const filePath = path.join(process.cwd(), "public", "lab-reports", folder, `${slug}.pdf`);
-  return fs.existsSync(filePath) ? `/lab-reports/${folder}/${slug}.pdf` : null;
+function getReportHref(slug: string): string | null {
+  const filePath = path.join(process.cwd(), "public", "lab-reports", "coas", `${slug}.pdf`);
+  return fs.existsSync(filePath) ? `/lab-reports/coas/${slug}.pdf` : null;
 }
 
 export default async function LabResultsPage() {
@@ -49,24 +49,6 @@ export default async function LabResultsPage() {
 
       <Container className="mt-24">
         <SectionHeading
-          eyebrow="Raw Material Testing"
-          title="Identity & purity checks on incoming materials"
-          description="Reports our manufacturing team runs on raw materials before a batch is approved for production. Added here as each one is completed."
-        />
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p) => (
-            <DocumentCard
-              key={p.slug}
-              name={p.name}
-              category={p.category}
-              href={getReportHref("raw-materials", p.slug)}
-            />
-          ))}
-        </div>
-      </Container>
-
-      <Container className="mt-24">
-        <SectionHeading
           eyebrow="Certificates of Analysis"
           title="Independent third-party COAs"
           description="Published per batch as results come back from the lab."
@@ -77,7 +59,7 @@ export default async function LabResultsPage() {
               key={p.slug}
               name={p.name}
               category={p.category}
-              href={getReportHref("coas", p.slug)}
+              href={getReportHref(p.slug)}
             />
           ))}
         </div>
