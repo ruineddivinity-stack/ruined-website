@@ -5,11 +5,6 @@ import { Reveal } from "@/components/ui/Reveal";
 
 const perks = [
   {
-    title: "10% off, always",
-    desc: "Use code RX at checkout any time you shop with us.",
-    icon: PercentIcon,
-  },
-  {
     title: "Restock alerts, instantly",
     desc: "Be first to know the second a sold-out batch is back.",
     icon: BellIcon,
@@ -106,16 +101,6 @@ function BoltIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
-    </svg>
-  );
-}
-
-function PercentIcon() {
-  return (
-    <svg {...iconProps()}>
-      <path d="M5 19 19 5" />
-      <circle cx="7" cy="7" r="2.2" />
-      <circle cx="17" cy="17" r="2.2" />
     </svg>
   );
 }
