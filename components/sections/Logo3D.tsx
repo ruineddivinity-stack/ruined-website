@@ -99,9 +99,9 @@ function LogoPlate() {
   texture.anisotropy = 8;
 
   const aspect = 2400 / 1027;
-  const width = 3;
+  const width = 3.6;
   const height = width / aspect;
-  const depth = 0.14;
+  const gap = 0.02;
 
   useFrame((state) => {
     const group = groupRef.current;
@@ -116,26 +116,30 @@ function LogoPlate() {
 
   return (
     <group ref={groupRef}>
-      <mesh>
-        <boxGeometry args={[width, height, depth]} />
-        <meshStandardMaterial color="#cbceda" metalness={0.85} roughness={0.18} />
-      </mesh>
-      <mesh position={[0, 0, depth / 2 + 0.004]}>
-        <planeGeometry args={[width * 0.94, height * 0.94]} />
-        <meshBasicMaterial
+      <mesh position={[0, 0, gap]}>
+        <planeGeometry args={[width, height]} />
+        <meshStandardMaterial
           map={texture}
+          emissiveMap={texture}
+          emissive="#f1f2f7"
+          emissiveIntensity={0.2}
           transparent
-          alphaTest={0.1}
-          toneMapped={false}
+          alphaTest={0.15}
+          metalness={0.55}
+          roughness={0.3}
         />
       </mesh>
-      <mesh position={[0, 0, -depth / 2 - 0.004]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[width * 0.94, height * 0.94]} />
-        <meshBasicMaterial
+      <mesh position={[0, 0, -gap]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[width, height]} />
+        <meshStandardMaterial
           map={texture}
+          emissiveMap={texture}
+          emissive="#f1f2f7"
+          emissiveIntensity={0.2}
           transparent
-          alphaTest={0.1}
-          toneMapped={false}
+          alphaTest={0.15}
+          metalness={0.55}
+          roughness={0.3}
         />
       </mesh>
     </group>
