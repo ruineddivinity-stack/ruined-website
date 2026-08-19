@@ -65,15 +65,72 @@ export async function getCouponInfo(couponId: number): Promise<CouponInfo> {
   };
 }
 
+export type BankInfo = {
+  accountHolder: string;
+  bankName: string;
+  accountNumber: string;
+  routingNumber: string;
+  accountType: string;
+};
+
 export async function requestPayout(
   couponId: number,
   userLogin: string,
+): Promise<{ success: boolean; bankInfo: BankInfo | null }> {
+  const result = await dashboardAjax<{
+    success: boolean;
+    bankInfo: {
+      account_holder: string;
+      bank_name: string;
+      account_number: string;
+      routing_number: string;
+      account_type: string;
+    } | null;
+  }>("ruined_affiliate_request_payout", {
+    coupon_id: String(couponId),
+    username: userLogin,
+  });
+
+  return {
+    success: result.success === true,
+    bankInfo: result.bankInfo
+      ? {
+          accountHolder: result.bankInfo.account_holder,
+          bankName: result.bankInfo.bank_name,
+          accountNumber: result.bankInfo.account_number,
+          routingNumber: result.bankInfo.routing_number,
+          accountType: result.bankInfo.account_type,
+        }
+      : null,
+  };
+}
+
+export async function getAffiliateBankStatus(
+  userLogin: string,
 ): Promise<boolean> {
-  const result = await dashboardAjax<{ success: boolean }>(
-    "ruined_affiliate_request_payout",
-    { coupon_id: String(couponId), username: userLogin },
+  const result = await dashboardAjax<{ hasBankInfo: boolean }>(
+    "ruined_affiliate_bank_status",
+    { username: userLogin },
   );
-  return result.success === true;
+  return result.hasBankInfo === true;
+}
+
+export async function saveAffiliateBankInfo(
+  userLogin: string,
+  info: BankInfo,
+): Promise<boolean> {
+  const result = await dashboardAjax<{ saved: boolean }>(
+    "ruined_affiliate_save_bank_info",
+    {
+      username: userLogin,
+      account_holder: info.accountHolder,
+      bank_name: info.bankName,
+      account_number: info.accountNumber,
+      routing_number: info.routingNumber,
+      account_type: info.accountType,
+    },
+  );
+  return result.saved === true;
 }
 
 const AFFILIATE_APPLY_SECRET = process.env.WP_AFFILIATE_APPLY_SECRET;

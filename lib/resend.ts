@@ -6,6 +6,7 @@ import { wrapBroadcastHtml } from "./email-template";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "RUINED <news@ruinedrx.com>";
 const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || "support@ruinedrx.com";
+const PAYOUT_TO_EMAIL = process.env.PAYOUT_TO_EMAIL || CONTACT_TO_EMAIL;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3010";
 const BATCH_SIZE = 100;
 
@@ -58,6 +59,52 @@ export async function sendContactEmail({
   }
 
   return { id: data?.id ?? null };
+}
+
+export async function sendPayoutRequestEmail({
+  username,
+  couponCode,
+  bankInfo,
+}: {
+  username: string;
+  couponCode: string;
+  bankInfo: {
+    accountHolder: string;
+    bankName: string;
+    accountNumber: string;
+    routingNumber: string;
+    accountType: string;
+  };
+}): Promise<void> {
+  if (!RESEND_API_KEY) {
+    throw new Error(
+      "Missing RESEND_API_KEY env var — connect a Resend account first.",
+    );
+  }
+
+  const resend = new Resend(RESEND_API_KEY);
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: [PAYOUT_TO_EMAIL],
+    subject: `[Payout Request] ${couponCode} — ${username}`,
+    html: `
+      <p><strong>Affiliate:</strong> ${escapeHtml(username)}</p>
+      <p><strong>Coupon code:</strong> ${escapeHtml(couponCode)}</p>
+      <p><strong>Bank transfer details:</strong></p>
+      <ul>
+        <li><strong>Account holder:</strong> ${escapeHtml(bankInfo.accountHolder)}</li>
+        <li><strong>Bank name:</strong> ${escapeHtml(bankInfo.bankName)}</li>
+        <li><strong>Account number:</strong> ${escapeHtml(bankInfo.accountNumber)}</li>
+        <li><strong>Routing number:</strong> ${escapeHtml(bankInfo.routingNumber)}</li>
+        <li><strong>Account type:</strong> ${escapeHtml(bankInfo.accountType)}</li>
+      </ul>
+      <p>Check the Coupon Affiliates payout queue in wp-admin for the full unpaid amount before sending the transfer.</p>
+    `,
+  });
+
+  if (error) {
+    console.error("Payout notification email error:", error);
+  }
 }
 
 function chunk<T>(items: T[], size: number): T[][] {
