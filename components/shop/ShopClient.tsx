@@ -72,7 +72,7 @@ export function ShopClient({ products }: { products: Product[] }) {
         </p>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((product, i) => (
           <Reveal key={product.slug} delay={(i % 4) * 0.06} y={16}>
             <ProductCard product={product} />
