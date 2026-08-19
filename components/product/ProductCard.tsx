@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
         aria-label={product.name}
       />
 
-      <div className="relative z-[1] flex aspect-square items-center justify-center bg-gradient-to-b from-surface-2 to-black bg-noise">
+      <div className="pointer-events-none relative z-[1] flex aspect-square items-center justify-center bg-gradient-to-b from-surface-2 to-black bg-noise">
         {(badge || !product.inStock) && (
           <div className="absolute left-4 top-4 z-10 flex gap-2">
             {badge && (
