@@ -62,7 +62,7 @@ export function AddToCart({
       {showBulkOptions && (
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <BulkAddButton
-            icon={LayersIcon}
+            icon={ThreeVialsIcon}
             label={`${BULK_TIERS.bulk.min} Vials`}
             baseRate={BULK_TIERS.bulk.rate}
             stackedPct={18}
@@ -124,7 +124,7 @@ function BulkAddButton({
   );
 }
 
-function LayersIcon({ className }: { className?: string }) {
+function ThreeVialsIcon({ className }: { className?: string }) {
   return (
     <svg
       width={20}
@@ -132,14 +132,17 @@ function LayersIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
+      strokeWidth={1.4}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
     >
-      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
-      <path d="m3 12 9 5 9-5" />
-      <path d="m3 16 9 5 9-5" />
+      <rect x="1.25" y="8" width="4.5" height="3" rx="0.8" />
+      <rect x="0.75" y="10.5" width="5.5" height="11" rx="1.8" />
+      <rect x="9.75" y="4" width="4.5" height="3" rx="0.8" />
+      <rect x="9.25" y="6.5" width="5.5" height="15" rx="1.8" />
+      <rect x="18.25" y="8" width="4.5" height="3" rx="0.8" />
+      <rect x="17.75" y="10.5" width="5.5" height="11" rx="1.8" />
     </svg>
   );
 }
