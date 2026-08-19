@@ -29,7 +29,7 @@ export default function ContactPage() {
           <div className="flex flex-col gap-6">
             <InfoCard
               title="Email"
-              body="support@ruined.example"
+              body="support@ruinedrx.com"
               note="We typically reply within one business day."
             />
             <InfoCard
