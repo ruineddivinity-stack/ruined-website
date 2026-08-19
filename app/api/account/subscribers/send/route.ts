@@ -6,7 +6,10 @@ import { sendBroadcastEmail } from "@/lib/resend";
 function textToHtml(text: string): string {
   return text
     .split(/\n{2,}/)
-    .map((para) => `<p>${para.trim().replace(/\n/g, "<br />")}</p>`)
+    .map(
+      (para) =>
+        `<p style="margin:0 0 16px;">${para.trim().replace(/\n/g, "<br />")}</p>`,
+    )
     .join("");
 }
 
