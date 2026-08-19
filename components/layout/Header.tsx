@@ -17,7 +17,7 @@ export async function Header() {
   const session = await getSession();
 
   return (
-    <header className="sticky top-3 z-40 px-4 sm:top-4">
+    <header className="relative bg-gradient-to-b from-surface/80 via-surface/25 to-transparent px-4 pb-4 pt-3 sm:pt-4">
       <div className="relative mx-auto flex h-16 max-w-5xl items-center justify-between rounded-full border border-steel-500/25 bg-surface/70 px-4 shadow-[0_0_30px_-6px_rgba(140,82,199,0.4)] backdrop-blur-xl sm:px-6">
         <Link href="/" className="flex shrink-0 items-center">
           <Image

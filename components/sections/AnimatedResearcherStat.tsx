@@ -30,10 +30,10 @@ export function AnimatedResearcherStat() {
           <StarIcon key={i} className="animate-glow-pulse" style={{ animationDelay: `${i * 0.15}s` }} />
         ))}
       </div>
-      <p className="mt-1.5 font-display text-2xl font-semibold text-fg">
+      <p className="mt-1.5 font-display text-lg font-semibold text-fg">
         {count.toLocaleString()}+
       </p>
-      <p className="text-xs uppercase tracking-widest text-fg-faint">
+      <p className="text-[11px] uppercase tracking-widest text-fg-faint">
         Joined the community
       </p>
     </div>
@@ -49,8 +49,8 @@ function StarIcon({
 }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="12"
+      height="12"
       viewBox="0 0 24 24"
       fill="currentColor"
       className={className}

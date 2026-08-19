@@ -7,8 +7,8 @@ import { HoloBlob } from "@/components/layout/HoloBlob";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-black/65 bg-noise">
-      <HoloBlob className="-top-40 right-[-10%]" size={560} animated={false} />
+    <section className="relative -mt-[125px] overflow-hidden bg-black/65 bg-glass pt-[125px] sm:-mt-[130px] sm:pt-[130px]">
+      <HoloBlob className="-z-10 -top-40 right-[-10%]" size={560} animated={false} />
       <Container className="grid min-h-[640px] grid-cols-1 items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <div>
           <Badge tone="steel">Third-Party Tested</Badge>
@@ -32,7 +32,7 @@ export function Hero() {
             </Button>
           </div>
 
-          <div className="mt-10 flex items-center gap-8 border-t border-border-soft pt-6">
+          <div className="mt-10 flex items-center gap-6 border-t border-border-soft pt-5">
             <Stat value="99%+" label="Avg. purity" />
             <AnimatedResearcherStat />
             <Stat value="24hr" label="Dispatch time" />
@@ -72,8 +72,8 @@ export function Hero() {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div>
-      <p className="font-display text-2xl font-semibold text-fg">{value}</p>
-      <p className="text-xs uppercase tracking-widest text-fg-faint">{label}</p>
+      <p className="font-display text-lg font-semibold text-fg">{value}</p>
+      <p className="text-[11px] uppercase tracking-widest text-fg-faint">{label}</p>
     </div>
   );
 }

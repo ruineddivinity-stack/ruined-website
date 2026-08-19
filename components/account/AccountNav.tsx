@@ -9,12 +9,15 @@ const links = [
   { href: "/account/affiliate", label: "Affiliate" },
 ];
 
-export function AccountNav() {
+export function AccountNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const allLinks = isAdmin
+    ? [...links, { href: "/account/subscribers", label: "Subscribers" }]
+    : links;
 
   return (
     <nav className="flex flex-wrap gap-2">
-      {links.map((link) => {
+      {allLinks.map((link) => {
         const active = pathname === link.href;
         return (
           <Link

@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
 import { HoloBlob } from "@/components/layout/HoloBlob";
+import { NewsletterForm } from "@/components/sections/NewsletterForm";
 
 export function Newsletter() {
   return (
@@ -34,53 +34,7 @@ export function Newsletter() {
               </div>
             </div>
 
-            <form className="flex flex-col gap-3">
-              <input
-                type="email"
-                required
-                placeholder="Email address"
-                className="w-full rounded-2xl border border-border bg-surface px-5 py-3.5 text-sm text-fg placeholder:text-fg-faint focus:border-steel-500 focus:outline-none"
-              />
-
-              <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-5 py-3.5 focus-within:border-steel-500">
-                <span className="text-xs font-semibold tracking-wide text-fg-muted">
-                  US
-                </span>
-                <ChevronIcon className="h-3.5 w-3.5 text-fg-faint" />
-                <span className="h-4 w-px bg-border" aria-hidden />
-                <input
-                  type="tel"
-                  placeholder="Phone Number"
-                  className="w-full bg-transparent text-sm text-fg placeholder:text-fg-faint focus:outline-none"
-                />
-              </div>
-
-              <p className="mt-1 text-xs leading-relaxed text-fg-faint">
-                By submitting this form, you consent to receive
-                informational (e.g., order updates) and/or marketing texts
-                (e.g., restock alerts) from RUINED. Consent is not a
-                condition of purchase. Msg &amp; data rates may apply. Msg
-                frequency varies. Unsubscribe at any time by replying STOP.{" "}
-                <a
-                  href="/legal/privacy"
-                  className="text-steel-400 underline underline-offset-2 hover:text-steel-300"
-                >
-                  Privacy Policy
-                </a>{" "}
-                &amp;{" "}
-                <a
-                  href="/legal/terms"
-                  className="text-steel-400 underline underline-offset-2 hover:text-steel-300"
-                >
-                  Terms
-                </a>
-                .
-              </p>
-
-              <Button type="submit" className="mt-2 w-full justify-center">
-                Join Notifications
-              </Button>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
       </Container>
@@ -97,23 +51,6 @@ function BoltIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="m6 9 6 6 6-6" />
     </svg>
   );
 }

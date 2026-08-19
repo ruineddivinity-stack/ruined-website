@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { AccountNav } from "@/components/account/AccountNav";
 import { LogoutButton } from "@/components/account/LogoutButton";
-import { getSession } from "@/lib/session";
+import { getSession, isAdminUser } from "@/lib/session";
 
 export default async function AccountLayout({
   children,
@@ -29,7 +29,7 @@ export default async function AccountLayout({
         </div>
 
         <div className="mt-8">
-          <AccountNav />
+          <AccountNav isAdmin={isAdminUser(session)} />
         </div>
 
         <div className="mt-10">{children}</div>

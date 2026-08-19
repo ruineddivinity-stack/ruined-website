@@ -11,3 +11,9 @@ export const getSession = cache(async (): Promise<WpUser | null> => {
   if (!jwt) return null;
   return validateJwt(jwt);
 });
+
+export function isAdminUser(user: WpUser | null): boolean {
+  const adminEmail = process.env.WP_ADMIN_EMAIL;
+  if (!user || !adminEmail) return false;
+  return user.email.toLowerCase() === adminEmail.toLowerCase();
+}

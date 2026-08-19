@@ -31,8 +31,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           <StarField />
           <LightRefraction />
-          <AnnouncementBar />
-          <Header />
+          <div className="sticky top-0 z-40">
+            <AnnouncementBar />
+            <Header />
+          </div>
           <main className="flex-1">
             <PageTransition>{children}</PageTransition>
           </main>
