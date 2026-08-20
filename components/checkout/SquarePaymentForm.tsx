@@ -62,6 +62,7 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   const [applePayReady, setApplePayReady] = useState(false);
   const [googlePayReady, setGooglePayReady] = useState(false);
   const [processing, setProcessing] = useState<Kind | null>(null);
+  const [applePayDebug, setApplePayDebug] = useState<string | null>(null);
 
   useEffect(() => {
     if (window.Square) {
@@ -167,9 +168,13 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
           });
           applePayMethodRef.current = applePay;
           setApplePayReady(true);
+        } else {
+          setApplePayDebug("no container ref at attach time");
         }
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
         console.warn("Apple Pay unavailable:", err);
+        setApplePayDebug(message);
         setApplePayReady(false);
       }
 
@@ -284,6 +289,10 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
         <Badge tone="chrome">Apple Pay</Badge>
         <Badge tone="chrome">Google Pay</Badge>
       </div>
+
+      {!applePayReady && applePayDebug && (
+        <p className="text-[11px] text-fg-faint">Apple Pay debug: {applePayDebug}</p>
+      )}
 
       <div>
         <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
