@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { HoloBlob } from "@/components/layout/HoloBlob";
-import { Logo3D } from "@/components/sections/Logo3D";
+import { Logo3D } from "@/components/sections/Logo3DLazy";
 import { ScrollLink } from "@/components/ui/ScrollLink";
 
 export const metadata: Metadata = {

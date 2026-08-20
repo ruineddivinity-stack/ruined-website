@@ -14,13 +14,12 @@ export function HoloBlob({
   return (
     <motion.div
       aria-hidden
-      className={`pointer-events-none absolute rounded-full ${className}`}
+      className={`holo-blob pointer-events-none absolute rounded-full ${className}`}
       style={{
         width: size,
         height: size,
         background:
           "conic-gradient(from 180deg, var(--color-holo-violet), var(--color-holo-blue), var(--color-holo-pink), var(--color-holo-gold), var(--color-holo-violet))",
-        filter: "blur(90px) saturate(140%)",
         opacity: 0.55,
       }}
       animate={

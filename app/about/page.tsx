@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { HoloBlob } from "@/components/layout/HoloBlob";
-import { Logo3D } from "@/components/sections/Logo3D";
+import { Logo3D } from "@/components/sections/Logo3DLazy";
 
 export const metadata: Metadata = {
   title: "About | RUINED",

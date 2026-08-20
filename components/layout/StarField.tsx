@@ -49,7 +49,7 @@ export function StarField() {
           stars.map((s, i) => (
             <span
               key={`${offset}-${i}`}
-              className={`absolute rounded-full animate-twinkle ${
+              className={`star-dot absolute rounded-full animate-twinkle ${
                 s.bright ? "bg-white" : "bg-chrome-100"
               }`}
               style={{
@@ -59,9 +59,12 @@ export function StarField() {
                 height: s.size,
                 animationDuration: `${s.duration}s`,
                 animationDelay: `${s.delay}s`,
+                // Box-shadow glow is real GPU compositing cost multiplied
+                // across ~320 simultaneously-animating elements — only the
+                // minority "bright" stars (~18%) get one.
                 boxShadow: s.bright
                   ? "0 0 8px 2px rgba(163, 238, 244, 0.9)"
-                  : "0 0 4px 1px rgba(241, 242, 247, 0.7)",
+                  : undefined,
               }}
             />
           )),

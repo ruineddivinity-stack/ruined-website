@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/ui/Reveal";
-import { Logo3D } from "@/components/sections/Logo3D";
+import { Logo3D } from "@/components/sections/Logo3DLazy";
 
 export function Mission() {
   return (

@@ -280,3 +280,23 @@ body {
   height: 48px;
   cursor: pointer;
 }
+
+/* A 90px blur animated every frame is a heavy GPU cost on phones — shrink
+   it well below desktop's radius on narrow viewports. Still soft/glowy,
+   just far cheaper to rasterize each frame. */
+.holo-blob {
+  filter: blur(90px) saturate(140%);
+}
+
+@media (max-width: 640px) {
+  .holo-blob {
+    filter: blur(36px) saturate(140%);
+  }
+
+  /* ~320 simultaneously-animating star elements is a lot for a phone to
+     keep compositing every frame — drop roughly a third of them on small
+     viewports. Still reads as a dense starfield, just cheaper to render. */
+  .star-dot:nth-child(3n) {
+    display: none;
+  }
+}
