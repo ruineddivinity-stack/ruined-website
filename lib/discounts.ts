@@ -1,5 +1,16 @@
 export const FREE_SHIPPING_THRESHOLD = 150;
 
+export const SHIPPING_METHODS = {
+  standard: { label: "Standard Shipping", price: 13.99 },
+  express: { label: "Express Shipping", price: 34.99 },
+} as const;
+
+export type ShippingMethod = keyof typeof SHIPPING_METHODS;
+
+export function isShippingMethod(value: unknown): value is ShippingMethod {
+  return typeof value === "string" && value in SHIPPING_METHODS;
+}
+
 export const BULK_TIERS = {
   bulk: { min: 3, max: 9, rate: 0.08, label: "3-9 Vials" },
   kit: { min: 10, rate: 0.2, label: "Kit (10+ Vials)" },

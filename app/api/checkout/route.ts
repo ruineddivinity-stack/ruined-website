@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAllProducts, createOrder, getCouponByCode } from "@/lib/woocommerce";
-import { calculateDiscounts } from "@/lib/discounts";
+import { calculateDiscounts, SHIPPING_METHODS, isShippingMethod } from "@/lib/discounts";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
 
@@ -17,6 +17,7 @@ type CheckoutRequestBody = {
     state: string;
     postcode: string;
   };
+  shippingMethod?: string;
 };
 
 export async function POST(request: Request) {
@@ -94,7 +95,12 @@ export async function POST(request: Request) {
     })),
     validCoupon,
   );
-  const shippingTotal = discounts.freeShipping ? 0 : 8;
+  const shippingMethod = isShippingMethod(body.shippingMethod)
+    ? body.shippingMethod
+    : "standard";
+  const shippingTotal = discounts.freeShipping
+    ? 0
+    : SHIPPING_METHODS[shippingMethod].price;
 
   const feeLines: { name: string; amount: number }[] = [];
   if (discounts.bulkTier && discounts.bulkAmount > 0) {
@@ -122,6 +128,9 @@ export async function POST(request: Request) {
       feeLines,
       couponCode: validCoupon?.code,
       shippingTotal,
+      shippingMethodTitle: discounts.freeShipping
+        ? "Free Shipping"
+        : SHIPPING_METHODS[shippingMethod].label,
       billing: {
         firstName: body.shipping.firstName,
         lastName: body.shipping.lastName,

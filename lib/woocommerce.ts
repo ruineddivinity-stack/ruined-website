@@ -239,6 +239,7 @@ export type CreateOrderInput = {
   billing: OrderAddress;
   shipping?: OrderAddress;
   shippingTotal?: number;
+  shippingMethodTitle?: string;
   customerId?: number;
   customerNote?: string;
 };
@@ -299,7 +300,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
     payload.shipping_lines = [
       {
         method_id: "flat_rate",
-        method_title: "Standard Shipping",
+        method_title: input.shippingMethodTitle ?? "Standard Shipping",
         total: input.shippingTotal.toFixed(2),
       },
     ];

@@ -11,7 +11,12 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
+import {
+  calculateDiscounts,
+  SHIPPING_METHODS,
+  type AppliedCoupon,
+  type ShippingMethod,
+} from "@/lib/discounts";
 import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
 
 const US_STATES = [
@@ -49,6 +54,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("standard");
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,7 +79,10 @@ export function CheckoutClient({ products }: { products: Product[] }) {
     })),
     coupon,
   );
-  const shippingCost = lines.length > 0 && !discounts.freeShipping ? 8 : 0;
+  const shippingCost =
+    lines.length > 0 && !discounts.freeShipping
+      ? SHIPPING_METHODS[shippingMethod].price
+      : 0;
   const total = discounts.total + shippingCost;
 
   const formValid =
@@ -104,6 +113,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           sourceId,
           email,
           shipping,
+          shippingMethod,
         }),
       });
 
@@ -305,12 +315,43 @@ export function CheckoutClient({ products }: { products: Product[] }) {
               <span>-${discounts.affiliateAmount.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between text-fg-muted">
-            <span>Shipping</span>
-            <span className="text-fg">
-              {shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}
-            </span>
-          </div>
+          {discounts.freeShipping ? (
+            <div className="flex justify-between text-fg-muted">
+              <span>Shipping</span>
+              <span className="text-fg">Free</span>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <span className="text-fg-muted">Shipping</span>
+              {(Object.keys(SHIPPING_METHODS) as ShippingMethod[]).map((key) => {
+                const method = SHIPPING_METHODS[key];
+                return (
+                  <label
+                    key={key}
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2 text-xs transition-colors ${
+                      shippingMethod === key
+                        ? "border-steel-500 bg-steel-700/15"
+                        : "border-border hover:border-steel-500/50"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="shippingMethod"
+                        checked={shippingMethod === key}
+                        onChange={() => setShippingMethod(key)}
+                        className="accent-steel-500"
+                      />
+                      <span className="text-fg">{method.label}</span>
+                    </span>
+                    <span className="font-semibold text-fg">
+                      ${method.price.toFixed(2)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="mt-5 flex justify-between border-t border-border-soft pt-5 text-base font-semibold text-fg">
