@@ -11,6 +11,7 @@ import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
+import { resolveCartLines } from "@/lib/cart-lines";
 
 const overlayVariants = { closed: { opacity: 0 }, open: { opacity: 1 } };
 const panelVariants = { closed: { x: "100%" }, open: { x: "0%" } };
@@ -19,17 +20,12 @@ export function CartDrawer({ products }: { products: Product[] }) {
   const { items, isOpen, closeCart, updateQty, removeItem } = useCart();
   const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
 
-  const lines = items
-    .map((item) => {
-      const product = products.find((p) => p.slug === item.slug);
-      return product ? { product, qty: item.qty } : null;
-    })
-    .filter((line): line is { product: Product; qty: number } => line !== null);
+  const lines = resolveCartLines(items, products);
 
-  const subtotal = lines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
+  const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const discounts = calculateDiscounts(
     lines.map((l) => ({
-      subtotal: l.product.price * l.qty,
+      subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
@@ -94,67 +90,75 @@ export function CartDrawer({ products }: { products: Product[] }) {
             <p className="text-sm text-fg-muted">Your cart is empty.</p>
           ) : (
             <div className="flex flex-col gap-5">
-              {lines.map(({ product, qty }) => (
-                <div key={product.slug} className="flex items-start gap-4">
-                  {product.image ? (
-                    <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-[#eef1f3]">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-1"
-                        sizes="48px"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                      <span className="font-display text-[7px] font-semibold tracking-widest text-gradient-holo">
-                        RUINED
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-fg">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-fg-faint">
-                      ${product.price.toFixed(2)}
-                      {product.size ? ` · ${product.size}` : ""}
-                    </p>
-                    <div className="mt-2 flex w-fit items-center rounded-full border border-border">
-                      <button
-                        type="button"
-                        onClick={() => updateQty(product.slug, qty - 1)}
-                        className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg"
-                        aria-label="Decrease quantity"
-                      >
-                        &minus;
-                      </button>
-                      <span className="w-6 text-center text-xs font-semibold text-fg">
-                        {qty}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateQty(product.slug, qty + 1)}
-                        className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg"
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => removeItem(product.slug)}
-                    aria-label="Remove item"
-                    className="text-fg-faint hover:text-danger"
+              {lines.map(({ product, qty, variation, variationId, unitPrice }) => {
+                const image = variation?.image ?? product.image;
+                return (
+                  <div
+                    key={`${product.slug}:${variationId ?? "base"}`}
+                    className="flex items-start gap-4"
                   >
-                    <CloseIcon small />
-                  </button>
-                </div>
-              ))}
+                    {image ? (
+                      <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-[#eef1f3]">
+                        <Image
+                          src={image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-1"
+                          sizes="48px"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
+                        <span className="font-display text-[7px] font-semibold tracking-widest text-gradient-holo">
+                          RUINED
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-fg">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-fg-faint">
+                        ${unitPrice.toFixed(2)}
+                        {(variation?.label ?? product.size)
+                          ? ` · ${variation?.label ?? product.size}`
+                          : ""}
+                      </p>
+                      <div className="mt-2 flex w-fit items-center rounded-full border border-border">
+                        <button
+                          type="button"
+                          onClick={() => updateQty(product.slug, qty - 1, variationId)}
+                          className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg"
+                          aria-label="Decrease quantity"
+                        >
+                          &minus;
+                        </button>
+                        <span className="w-6 text-center text-xs font-semibold text-fg">
+                          {qty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateQty(product.slug, qty + 1, variationId)}
+                          className="flex h-7 w-7 items-center justify-center text-fg-muted hover:text-fg"
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeItem(product.slug, variationId)}
+                      aria-label="Remove item"
+                      className="text-fg-faint hover:text-danger"
+                    >
+                      <CloseIcon small />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

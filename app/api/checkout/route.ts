@@ -8,9 +8,10 @@ import {
 } from "@/lib/discounts";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
+import { resolveCartLines } from "@/lib/cart-lines";
 
 type CheckoutRequestBody = {
-  items: { slug: string; qty: number }[];
+  items: { slug: string; qty: number; variationId?: number }[];
   promoCode?: string;
   sourceId: string;
   email: string;
@@ -60,14 +61,7 @@ export async function POST(request: Request) {
   }
 
   const products = await getAllProducts();
-  const lines = body.items
-    .map((item) => {
-      const product = products.find((p) => p.slug === item.slug);
-      return product ? { product, qty: item.qty } : null;
-    })
-    .filter((line): line is { product: (typeof products)[number]; qty: number } =>
-      line !== null && line.qty > 0,
-    );
+  const lines = resolveCartLines(body.items, products).filter((l) => l.qty > 0);
 
   if (lines.length === 0) {
     return NextResponse.json(
@@ -77,9 +71,10 @@ export async function POST(request: Request) {
   }
 
   for (const line of lines) {
-    if (!line.product.inStock) {
+    if (!line.inStock) {
+      const label = line.variation ? ` (${line.variation.label})` : "";
       return NextResponse.json(
-        { error: `${line.product.name} is out of stock.` },
+        { error: `${line.product.name}${label} is out of stock.` },
         { status: 400 },
       );
     }
@@ -96,10 +91,9 @@ export async function POST(request: Request) {
     }
   }
 
-  const subtotal = lines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
   const discounts = calculateDiscounts(
     lines.map((l) => ({
-      subtotal: l.product.price * l.qty,
+      subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
@@ -134,6 +128,7 @@ export async function POST(request: Request) {
       lineItems: lines.map((l) => ({
         productId: l.product.id,
         quantity: l.qty,
+        variationId: l.variationId,
       })),
       feeLines,
       couponCode: validCoupon?.code,

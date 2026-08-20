@@ -1,5 +1,5 @@
 import "server-only";
-import type { BundledItem, Order, Product } from "./types";
+import type { BundledItem, Order, Product, ProductVariation } from "./types";
 import { wpFetch } from "./wp-origin-fetch";
 import { PICKUP_METHOD_ID } from "./discounts";
 
@@ -25,6 +25,7 @@ type WcProduct = {
   price: string;
   regular_price: string;
   on_sale: boolean;
+  featured: boolean;
   stock_status: "instock" | "outofstock" | "onbackorder";
   description: string;
   short_description: string;
@@ -32,6 +33,38 @@ type WcProduct = {
   categories: WcCategory[];
   bundled_items?: WcBundledItem[];
 };
+
+type WcVariation = {
+  id: number;
+  price: string;
+  regular_price: string;
+  sale_price: string;
+  on_sale: boolean;
+  stock_status: "instock" | "outofstock" | "onbackorder";
+  attributes: { option: string }[];
+  // WooCommerce's REST API returns `[]` (not null) for a variation with no
+  // image explicitly set, alongside the usual single-object shape.
+  image: WcImage | WcImage[] | null;
+};
+
+async function fetchVariations(productId: number): Promise<ProductVariation[]> {
+  const wcVariations = await wcFetch<WcVariation[]>(
+    `products/${productId}/variations?per_page=100`,
+  );
+  return wcVariations.map((v) => {
+    const regularPrice = Number.parseFloat(v.regular_price || v.price) || 0;
+    const price = Number.parseFloat(v.price) || regularPrice;
+    return {
+      id: v.id,
+      label: v.attributes[0]?.option ?? "",
+      price,
+      regularPrice,
+      onSale: v.on_sale && price < regularPrice,
+      inStock: v.stock_status === "instock",
+      image: (Array.isArray(v.image) ? v.image[0] : v.image)?.src ?? null,
+    };
+  });
+}
 
 function authHeader() {
   if (!CONSUMER_KEY || !CONSUMER_SECRET) {
@@ -86,10 +119,22 @@ const SIZE_PATTERN = /\b\d+(?:\.\d+)?\s?(?:MG|ML|IU)\b/i;
 function mapWcProduct(
   wc: WcProduct,
   imageLookup?: Map<number, { slug: string; image: string | null }>,
+  variations: ProductVariation[] | null = null,
 ): Product {
   const sizeMatch = wc.name.match(SIZE_PATTERN);
-  const regularPrice = Number.parseFloat(wc.regular_price || wc.price) || 0;
-  const price = Number.parseFloat(wc.price) || regularPrice;
+  let regularPrice = Number.parseFloat(wc.regular_price || wc.price) || 0;
+  let price = Number.parseFloat(wc.price) || regularPrice;
+  let onSale = wc.on_sale && price < regularPrice;
+  let inStock = wc.stock_status === "instock";
+
+  if (variations && variations.length > 0) {
+    const defaultVariation =
+      variations.find((v) => v.inStock) ?? variations[0];
+    price = defaultVariation.price;
+    regularPrice = defaultVariation.regularPrice;
+    onSale = defaultVariation.onSale;
+    inStock = variations.some((v) => v.inStock);
+  }
 
   const bundledItems: BundledItem[] | null = wc.bundled_items?.length
     ? wc.bundled_items.map((b) => {
@@ -113,21 +158,29 @@ function mapWcProduct(
     type: wc.type,
     price,
     regularPrice,
-    onSale: wc.on_sale && price < regularPrice,
+    onSale,
     size: sizeMatch ? sizeMatch[0].toUpperCase() : null,
+    featured: wc.featured,
+    variations,
     image: wc.images[0]?.src ?? null,
     description: wc.description,
     shortDescription: wc.short_description,
-    inStock: wc.stock_status === "instock",
+    inStock,
     bundledItems,
   };
 }
 
 export async function getAllProducts(): Promise<Product[]> {
   const wcProducts = await wcFetch<WcProduct[]>(
-    "products?per_page=100&status=publish",
+    "products?per_page=100&status=publish&orderby=menu_order&order=asc",
   );
-  return wcProducts.map((wc) => mapWcProduct(wc));
+  return Promise.all(
+    wcProducts.map(async (wc) => {
+      const variations =
+        wc.type === "variable" ? await fetchVariations(wc.id) : null;
+      return mapWcProduct(wc, undefined, variations);
+    }),
+  );
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -137,18 +190,21 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   const wc = wcProducts[0];
   if (!wc) return null;
 
+  const variations =
+    wc.type === "variable" ? await fetchVariations(wc.id) : null;
+
   if (!wc.bundled_items?.length) {
-    return mapWcProduct(wc);
+    return mapWcProduct(wc, undefined, variations);
   }
 
   const allProducts = await wcFetch<WcProduct[]>(
-    "products?per_page=100&status=publish",
+    "products?per_page=100&status=publish&orderby=menu_order&order=asc",
   );
   const imageLookup = new Map(
     allProducts.map((p) => [p.id, { slug: p.slug, image: p.images[0]?.src ?? null }]),
   );
 
-  return mapWcProduct(wc, imageLookup);
+  return mapWcProduct(wc, imageLookup, variations);
 }
 
 type WcOrder = {
@@ -235,7 +291,7 @@ export type OrderAddress = {
 };
 
 export type CreateOrderInput = {
-  lineItems: { productId: number; quantity: number }[];
+  lineItems: { productId: number; quantity: number; variationId?: number }[];
   feeLines?: { name: string; amount: number }[];
   couponCode?: string;
   billing: OrderAddress;
@@ -285,6 +341,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
     line_items: input.lineItems.map((li) => ({
       product_id: li.productId,
       quantity: li.quantity,
+      ...(li.variationId ? { variation_id: li.variationId } : {}),
     })),
   };
 

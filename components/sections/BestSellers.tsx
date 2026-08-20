@@ -8,7 +8,8 @@ import { getAllProducts } from "@/lib/woocommerce";
 
 export async function BestSellers() {
   const products = await getAllProducts();
-  const featured = [...products]
+  const featuredProducts = products.filter((p) => p.featured);
+  const featured = [...(featuredProducts.length > 0 ? featuredProducts : products)]
     .sort((a, b) => Number(b.inStock) - Number(a.inStock))
     .slice(0, 4);
 

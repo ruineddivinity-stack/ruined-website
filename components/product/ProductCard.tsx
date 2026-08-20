@@ -75,7 +75,11 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div className="pointer-events-auto mt-4">
-          <QuickAddButton slug={product.slug} disabled={!product.inStock} />
+          <QuickAddButton
+            slug={product.slug}
+            disabled={!product.inStock}
+            hasVariations={!!product.variations && product.variations.length > 0}
+          />
         </div>
       </div>
     </div>

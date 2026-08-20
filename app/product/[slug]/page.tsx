@@ -3,9 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
-import { AddToCart } from "@/components/product/AddToCart";
+import { ProductPurchase } from "@/components/product/ProductPurchase";
 import { BundleContents } from "@/components/product/BundleContents";
-import { FulfillmentTimer } from "@/components/product/FulfillmentTimer";
 import { getAllProducts, getProductBySlug } from "@/lib/woocommerce";
 
 export async function generateStaticParams() {
@@ -76,25 +75,14 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               />
             )}
 
-            <div className="mt-6 flex items-baseline gap-3">
-              <span className="font-display text-3xl font-black text-fg">
-                ${product.price.toFixed(2)}
-              </span>
-              {product.onSale && (
-                <span className="text-lg text-fg-faint line-through">
-                  ${product.regularPrice.toFixed(2)}
-                </span>
-              )}
-            </div>
-
             <div className="mt-6">
-              <FulfillmentTimer />
-            </div>
-
-            <div className="mt-8">
-              <AddToCart
+              <ProductPurchase
                 slug={product.slug}
-                disabled={!product.inStock}
+                price={product.price}
+                regularPrice={product.regularPrice}
+                onSale={product.onSale}
+                inStock={product.inStock}
+                variations={product.variations}
                 showBulkOptions={product.type !== "bundle"}
               />
             </div>

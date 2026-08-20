@@ -6,6 +6,16 @@ export type BundledItem = {
   image: string | null;
 };
 
+export type ProductVariation = {
+  id: number;
+  label: string;
+  price: number;
+  regularPrice: number;
+  onSale: boolean;
+  inStock: boolean;
+  image: string | null;
+};
+
 export type Product = {
   id: number;
   slug: string;
@@ -17,6 +27,8 @@ export type Product = {
   regularPrice: number;
   onSale: boolean;
   size: string | null;
+  featured: boolean;
+  variations: ProductVariation[] | null;
   image: string | null;
   description: string;
   shortDescription: string;

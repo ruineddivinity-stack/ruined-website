@@ -9,7 +9,12 @@ import {
   type ReactNode,
 } from "react";
 
-type CartItem = { slug: string; qty: number };
+export type CartItem = {
+  slug: string;
+  qty: number;
+  variationId?: number;
+  variationLabel?: string;
+};
 
 type CartContextValue = {
   items: CartItem[];
@@ -17,9 +22,13 @@ type CartContextValue = {
   count: number;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (slug: string, qty?: number) => void;
-  removeItem: (slug: string) => void;
-  updateQty: (slug: string, qty: number) => void;
+  addItem: (
+    slug: string,
+    qty?: number,
+    variation?: { id: number; label: string },
+  ) => void;
+  removeItem: (slug: string, variationId?: number) => void;
+  updateQty: (slug: string, qty: number, variationId?: number) => void;
   clearCart: () => void;
 };
 
@@ -50,29 +59,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
 
-  const addItem = (slug: string, qty = 1) => {
+  const addItem = (
+    slug: string,
+    qty = 1,
+    variation?: { id: number; label: string },
+  ) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.slug === slug);
+      const existing = prev.find(
+        (i) => i.slug === slug && i.variationId === variation?.id,
+      );
       if (existing) {
         return prev.map((i) =>
-          i.slug === slug ? { ...i, qty: i.qty + qty } : i,
+          i === existing ? { ...i, qty: i.qty + qty } : i,
         );
       }
-      return [...prev, { slug, qty }];
+      return [
+        ...prev,
+        {
+          slug,
+          qty,
+          variationId: variation?.id,
+          variationLabel: variation?.label,
+        },
+      ];
     });
     setIsOpen(true);
   };
 
-  const removeItem = (slug: string) => {
-    setItems((prev) => prev.filter((i) => i.slug !== slug));
+  const removeItem = (slug: string, variationId?: number) => {
+    setItems((prev) =>
+      prev.filter((i) => !(i.slug === slug && i.variationId === variationId)),
+    );
   };
 
-  const updateQty = (slug: string, qty: number) => {
+  const updateQty = (slug: string, qty: number, variationId?: number) => {
     if (qty <= 0) {
-      removeItem(slug);
+      removeItem(slug, variationId);
       return;
     }
-    setItems((prev) => prev.map((i) => (i.slug === slug ? { ...i, qty } : i)));
+    setItems((prev) =>
+      prev.map((i) =>
+        i.slug === slug && i.variationId === variationId ? { ...i, qty } : i,
+      ),
+    );
   };
 
   const clearCart = () => {

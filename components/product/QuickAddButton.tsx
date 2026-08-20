@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCart } from "@/lib/cart-context";
 
 export function QuickAddButton({
   slug,
   disabled,
+  hasVariations = false,
 }: {
   slug: string;
   disabled?: boolean;
+  hasVariations?: boolean;
 }) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
@@ -23,6 +26,17 @@ export function QuickAddButton({
         </svg>
         Sold Out
       </div>
+    );
+  }
+
+  if (hasVariations) {
+    return (
+      <Link
+        href={`/product/${slug}`}
+        className="relative z-10 flex w-full items-center justify-center gap-2 rounded-full border border-border bg-surface-2 py-3 text-sm font-semibold tracking-wide text-fg transition-all duration-300 hover:-translate-y-0.5 hover:border-steel-500 hover:bg-surface-3 hover:shadow-[0_0_20px_2px_rgba(31,200,221,0.35)]"
+      >
+        Choose Dose
+      </Link>
     );
   }
 

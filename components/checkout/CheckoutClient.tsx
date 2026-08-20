@@ -18,6 +18,7 @@ import {
   type AppliedCoupon,
   type ShippingMethod,
 } from "@/lib/discounts";
+import { resolveCartLines } from "@/lib/cart-lines";
 
 type FulfillmentMethod = "ship" | "pickup";
 import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
@@ -68,17 +69,12 @@ export function CheckoutClient({ products }: { products: Product[] }) {
     }
   }, [error]);
 
-  const lines = items
-    .map((item) => {
-      const product = products.find((p) => p.slug === item.slug);
-      return product ? { product, qty: item.qty } : null;
-    })
-    .filter((line): line is { product: Product; qty: number } => line !== null);
+  const lines = resolveCartLines(items, products);
 
-  const subtotal = lines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
+  const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const discounts = calculateDiscounts(
     lines.map((l) => ({
-      subtotal: l.product.price * l.qty,
+      subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
@@ -296,36 +292,43 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </h2>
 
         <div className="mt-5 flex flex-col gap-4">
-          {lines.map(({ product, qty }) => (
-            <div key={product.slug} className="flex items-center gap-4">
-              {product.image ? (
-                <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-[#eef1f3]">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-1"
-                    sizes="44px"
-                  />
+          {lines.map(({ product, qty, variation, variationId, unitPrice }) => {
+            const image = variation?.image ?? product.image;
+            return (
+              <div
+                key={`${product.slug}:${variationId ?? "base"}`}
+                className="flex items-center gap-4"
+              >
+                {image ? (
+                  <div className="relative h-14 w-11 shrink-0 overflow-hidden rounded-lg bg-[#eef1f3]">
+                    <Image
+                      src={image}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-1"
+                      sizes="44px"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-14 w-11 shrink-0 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
+                    <span className="font-display text-[6px] font-semibold tracking-widest text-gradient-holo">
+                      RUINED
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-fg">
+                    {product.name}
+                    {variation?.label ? ` — ${variation.label}` : ""}
+                  </p>
+                  <p className="text-xs text-fg-faint">Qty {qty}</p>
                 </div>
-              ) : (
-                <div className="flex h-14 w-11 shrink-0 items-center justify-center rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                  <span className="font-display text-[6px] font-semibold tracking-widest text-gradient-holo">
-                    RUINED
-                  </span>
-                </div>
-              )}
-              <div className="flex-1">
                 <p className="text-sm font-semibold text-fg">
-                  {product.name}
+                  ${(unitPrice * qty).toFixed(2)}
                 </p>
-                <p className="text-xs text-fg-faint">Qty {qty}</p>
               </div>
-              <p className="text-sm font-semibold text-fg">
-                ${(product.price * qty).toFixed(2)}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-6 flex flex-col gap-4">

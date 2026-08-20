@@ -9,13 +9,21 @@ export function AddToCart({
   slug,
   disabled = false,
   showBulkOptions = false,
+  variationId,
+  variationLabel,
 }: {
   slug: string;
   disabled?: boolean;
   showBulkOptions?: boolean;
+  variationId?: number;
+  variationLabel?: string;
 }) {
   const [qty, setQty] = useState(1);
   const { addItem } = useCart();
+  const variation =
+    variationId !== undefined && variationLabel !== undefined
+      ? { id: variationId, label: variationLabel }
+      : undefined;
 
   if (disabled) {
     return (
@@ -53,7 +61,7 @@ export function AddToCart({
         <Button
           type="button"
           className="flex-1 sm:flex-none"
-          onClick={() => addItem(slug, qty)}
+          onClick={() => addItem(slug, qty, variation)}
         >
           Add to Cart
         </Button>
@@ -66,14 +74,14 @@ export function AddToCart({
             label={`${BULK_TIERS.bulk.min} Vials`}
             baseRate={BULK_TIERS.bulk.rate}
             stackedPct={STACKED_SAVINGS_PCT.bulk}
-            onClick={() => addItem(slug, BULK_TIERS.bulk.min)}
+            onClick={() => addItem(slug, BULK_TIERS.bulk.min, variation)}
           />
           <BulkAddButton
             icon={BoxIcon}
             label={`Kit (${BULK_TIERS.kit.min})`}
             baseRate={BULK_TIERS.kit.rate}
             stackedPct={STACKED_SAVINGS_PCT.kit}
-            onClick={() => addItem(slug, BULK_TIERS.kit.min)}
+            onClick={() => addItem(slug, BULK_TIERS.kit.min, variation)}
           />
         </div>
       )}
