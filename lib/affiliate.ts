@@ -1,4 +1,5 @@
 import "server-only";
+import { wpFetch } from "./wp-origin-fetch";
 
 const WORDPRESS_URL = process.env.WOOCOMMERCE_URL;
 const AFFILIATE_DASHBOARD_SECRET = process.env.WP_AFFILIATE_DASHBOARD_SECRET;
@@ -24,14 +25,16 @@ async function dashboardAjax<T>(
     ...params,
   });
 
-  const res = await fetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
+  const res = await wpFetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
-    cache: "no-store",
   });
 
-  const json = await res.json().catch(() => null);
+  const json = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: { message?: string };
+  } | null;
   if (!json?.success) {
     throw new Error(
       `Coupon Affiliates bridge error (${action}): ${json?.data?.message ?? res.status}`,
@@ -159,14 +162,16 @@ export async function submitAffiliateApplication(data: {
     coupon_code: data.couponCode,
   });
 
-  const res = await fetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
+  const res = await wpFetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
-    cache: "no-store",
   });
 
-  const json = await res.json().catch(() => null);
+  const json = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: { message?: string; autoAccepted?: boolean };
+  } | null;
   if (!json?.success) {
     return {
       error: json?.data?.message ?? "Unable to submit your application.",

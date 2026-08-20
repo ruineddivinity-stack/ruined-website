@@ -1,5 +1,6 @@
 import "server-only";
 import type { BundledItem, Order, Product } from "./types";
+import { wpFetch } from "./wp-origin-fetch";
 
 const WOOCOMMERCE_URL = process.env.WOOCOMMERCE_URL;
 const CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
@@ -43,13 +44,12 @@ function authHeader() {
   return `Basic ${token}`;
 }
 
-async function wcFetch<T>(path: string, revalidate = 300): Promise<T> {
+async function wcFetch<T>(path: string): Promise<T> {
   if (!WOOCOMMERCE_URL) {
     throw new Error("Missing WOOCOMMERCE_URL env var");
   }
-  const res = await fetch(`${WOOCOMMERCE_URL}/wp-json/wc/v3/${path}`, {
+  const res = await wpFetch(`${WOOCOMMERCE_URL}/wp-json/wc/v3/${path}`, {
     headers: { Authorization: authHeader() },
-    next: { revalidate },
   });
   if (!res.ok) {
     throw new Error(`WooCommerce API error ${res.status}: ${path}`);
@@ -65,14 +65,13 @@ async function wcMutate<T>(
   if (!WOOCOMMERCE_URL) {
     throw new Error("Missing WOOCOMMERCE_URL env var");
   }
-  const res = await fetch(`${WOOCOMMERCE_URL}/wp-json/wc/v3/${path}`, {
+  const res = await wpFetch(`${WOOCOMMERCE_URL}/wp-json/wc/v3/${path}`, {
     method,
     headers: {
       Authorization: authHeader(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
-    cache: "no-store",
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -179,7 +178,7 @@ export type CouponDetails = {
 export async function getCouponById(
   couponId: number,
 ): Promise<CouponDetails | null> {
-  const wc = await wcFetch<WcCoupon>(`coupons/${couponId}`, 0);
+  const wc = await wcFetch<WcCoupon>(`coupons/${couponId}`);
   if (!wc?.id) return null;
 
   return {
@@ -205,7 +204,6 @@ export async function getCouponByCode(
 
   const results = await wcFetch<WcCouponLookup[]>(
     `coupons?code=${encodeURIComponent(trimmed)}`,
-    0,
   );
   const wc = results[0];
   if (!wc?.id) return null;
@@ -325,7 +323,7 @@ export async function getOrder(
   try {
     const wc = await wcFetch<
       WcOrder & { order_key: string; currency: string }
-    >(`orders/${id}`, 0);
+    >(`orders/${id}`);
     if (!wc?.id) return null;
     return {
       id: wc.id,
@@ -349,7 +347,6 @@ export async function getOrder(
 export async function getCustomerOrders(customerId: number): Promise<Order[]> {
   const wcOrders = await wcFetch<WcOrder[]>(
     `orders?customer=${customerId}&per_page=50&orderby=date&order=desc`,
-    0,
   );
 
   return wcOrders.map((o) => ({

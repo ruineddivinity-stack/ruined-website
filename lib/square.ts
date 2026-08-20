@@ -1,4 +1,5 @@
 import "server-only";
+import { wpFetch } from "./wp-origin-fetch";
 
 const WORDPRESS_URL = process.env.WOOCOMMERCE_URL;
 const CHARGE_SECRET = process.env.WP_SQUARE_CHARGE_SECRET;
@@ -18,14 +19,16 @@ export async function chargeOrderWithSquare(
     environment: process.env.NEXT_PUBLIC_SQUARE_ENV === "production" ? "production" : "sandbox",
   });
 
-  const res = await fetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
+  const res = await wpFetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
-    cache: "no-store",
   });
 
-  const json = await res.json().catch(() => null);
+  const json = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: { message?: string };
+  } | null;
   if (!json?.success) {
     return {
       error: json?.data?.message ?? "Payment failed. Please try again.",

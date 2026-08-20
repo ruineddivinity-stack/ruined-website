@@ -1,5 +1,6 @@
 import "server-only";
 import crypto from "crypto";
+import { wpFetch } from "./wp-origin-fetch";
 
 const WORDPRESS_URL = process.env.WOOCOMMERCE_URL;
 const SUBSCRIBERS_SECRET = process.env.WP_SUBSCRIBERS_SECRET;
@@ -39,14 +40,16 @@ async function subscribersAjax<T>(
     ...params,
   });
 
-  const res = await fetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
+  const res = await wpFetch(`${WORDPRESS_URL}/wp-admin/admin-ajax.php`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
-    cache: "no-store",
   });
 
-  const json = await res.json().catch(() => null);
+  const json = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: T & { message?: string };
+  } | null;
   if (!json?.success) {
     const userMessage: string | undefined = json?.data?.message;
     if (userMessage) {

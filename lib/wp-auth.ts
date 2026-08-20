@@ -1,4 +1,5 @@
 import "server-only";
+import { wpFetch } from "./wp-origin-fetch";
 
 const WORDPRESS_URL = process.env.WOOCOMMERCE_URL;
 
@@ -24,7 +25,7 @@ export async function loginWithPassword(
 ): Promise<{ jwt: string } | { error: string }> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
 
-  const res = await fetch(
+  const res = await wpFetch(
     `${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/auth`,
     {
       method: "POST",
@@ -57,7 +58,7 @@ type ValidateResponse = {
 export async function validateJwt(jwt: string): Promise<WpUser | null> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
 
-  const res = await fetch(
+  const res = await wpFetch(
     `${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/auth/validate`,
     {
       method: "POST",
@@ -98,7 +99,7 @@ export async function registerUser(
 ): Promise<{ jwt: string | null } | { error: string }> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
 
-  const res = await fetch(`${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/users`, {
+  const res = await wpFetch(`${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -133,7 +134,7 @@ export async function requestPasswordReset(
 ): Promise<{ ok: true } | { error: string }> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
 
-  const res = await fetch(
+  const res = await wpFetch(
     `${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/user/reset_password`,
     {
       method: "POST",
@@ -160,7 +161,7 @@ export async function confirmPasswordReset(
 ): Promise<{ ok: true } | { error: string }> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
 
-  const res = await fetch(
+  const res = await wpFetch(
     `${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/user/reset_password`,
     {
       method: "PUT",
