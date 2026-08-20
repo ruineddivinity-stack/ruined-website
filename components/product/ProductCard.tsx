@@ -2,11 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
 import { QuickAddButton } from "@/components/product/QuickAddButton";
+import { isBackInStock } from "@/lib/back-in-stock";
 import type { Product } from "@/lib/types";
 
 export function ProductCard({ product }: { product: Product }) {
   const badge = product.type === "bundle" ? "Bundle" : product.onSale ? "Sale" : null;
   const hasVariations = !!product.variations && product.variations.length > 0;
+  const backInStock = isBackInStock(product.slug);
 
   return (
     <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_28px_2px_rgba(31,200,221,0.28)]">
@@ -17,12 +19,15 @@ export function ProductCard({ product }: { product: Product }) {
       />
 
       <div className="pointer-events-none relative z-[1] flex aspect-square items-center justify-center bg-gradient-to-b from-surface-2 to-black bg-noise">
-        {(badge || !product.inStock) && (
-          <div className="absolute left-4 top-4 z-10 flex gap-2">
+        {(badge || !product.inStock || backInStock) && (
+          <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
             {badge && (
               <Badge tone={badge === "Bundle" ? "holo" : "steel"}>{badge}</Badge>
             )}
             {!product.inStock && <Badge tone="danger">Sold Out</Badge>}
+            {backInStock && product.inStock && (
+              <Badge tone="success">Back in Stock</Badge>
+            )}
           </div>
         )}
         {product.image ? (

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
 import { useProductVariant } from "@/lib/product-variant-context";
+import { isBackInStock } from "@/lib/back-in-stock";
 import type { Product } from "@/lib/types";
 
 export function ProductImage({
@@ -15,17 +16,21 @@ export function ProductImage({
   const { selected } = useProductVariant();
   const image = selected?.image ?? product.image;
   const inStock = selected ? selected.inStock : product.inStock;
+  const backInStock = isBackInStock(product.slug);
 
   return (
     <div className="relative flex aspect-square items-center justify-center rounded-[2rem] border border-border bg-gradient-to-b from-surface-2 to-black bg-noise">
-      {(badge || !inStock) && (
-        <div className="absolute left-6 top-6 z-10 flex gap-2">
+      {(badge || !inStock || backInStock) && (
+        <div className="absolute left-6 top-6 z-10 flex flex-wrap gap-2">
           {badge && (
             <Badge tone={badge === "Bundle" ? "holo" : "steel"}>
               {badge}
             </Badge>
           )}
           {!inStock && <Badge tone="danger">Sold Out</Badge>}
+          {backInStock && inStock && (
+            <Badge tone="success">Back in Stock</Badge>
+          )}
         </div>
       )}
       {image ? (

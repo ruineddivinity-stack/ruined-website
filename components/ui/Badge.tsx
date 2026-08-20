@@ -5,7 +5,7 @@ export function Badge({
   tone = "steel",
 }: {
   children: ReactNode;
-  tone?: "steel" | "chrome" | "holo" | "danger";
+  tone?: "steel" | "chrome" | "holo" | "danger" | "success";
 }) {
   const tones = {
     steel: {
@@ -24,6 +24,10 @@ export function Badge({
       wrap: "border border-danger/50 bg-danger/35 text-white shadow-[0_0_14px_1px_rgba(196,84,74,0.5)] backdrop-blur-md",
       dot: "bg-white",
     },
+    success: {
+      wrap: "border border-emerald-400/60 bg-emerald-500/25 text-emerald-200 shadow-[0_0_16px_2px_rgba(52,211,153,0.55)] backdrop-blur-md",
+      dot: "bg-emerald-300",
+    },
   } as const;
 
   const t = tones[tone];
@@ -34,7 +38,7 @@ export function Badge({
     >
       <span
         className={`h-1.5 w-1.5 shrink-0 rounded-full ${t.dot} ${
-          tone === "danger" ? "animate-pulse" : ""
+          tone === "danger" || tone === "success" ? "animate-pulse" : ""
         }`}
       />
       {children}
