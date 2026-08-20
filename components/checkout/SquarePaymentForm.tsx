@@ -62,7 +62,6 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   const [applePayReady, setApplePayReady] = useState(false);
   const [googlePayReady, setGooglePayReady] = useState(false);
   const [processing, setProcessing] = useState<Kind | null>(null);
-  const [applePayDebug, setApplePayDebug] = useState<string | null>(null);
 
   useEffect(() => {
     if (window.Square) {
@@ -168,13 +167,9 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
           });
           applePayMethodRef.current = applePay;
           setApplePayReady(true);
-        } else {
-          setApplePayDebug("attach: no container ref");
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
         console.warn("Apple Pay unavailable:", err);
-        setApplePayDebug(message);
         setApplePayReady(false);
       }
 
@@ -246,31 +241,39 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
 
   return (
     <div className="flex flex-col gap-4">
-      {(applePayReady || googlePayReady) && (
-        <div className="flex flex-col gap-3">
-          {applePayReady && (
-            <div
-              ref={applePayContainerRef}
-              role="button"
-              className="h-12 w-full cursor-pointer"
-              onClick={() => tokenize(applePayMethodRef.current, "applePay")}
-            />
-          )}
-          {googlePayReady && (
-            <div
-              ref={googlePayContainerRef}
-              role="button"
-              className="h-12 w-full cursor-pointer"
-              onClick={() => tokenize(googlePayMethodRef.current, "googlePay")}
-            />
-          )}
+      <div className="flex flex-col gap-3">
+        {/* Always mounted (never conditional on *Ready) so the ref exists
+            before Square tries to attach to it — these flags only flip true
+            *after* a successful attach, so gating the div on them made the
+            attach permanently unable to find its container. */}
+        <div
+          ref={applePayContainerRef}
+          role="button"
+          className={
+            applePayReady
+              ? "h-12 w-full cursor-pointer"
+              : "h-0 w-full overflow-hidden"
+          }
+          onClick={() => tokenize(applePayMethodRef.current, "applePay")}
+        />
+        <div
+          ref={googlePayContainerRef}
+          role="button"
+          className={
+            googlePayReady
+              ? "h-12 w-full cursor-pointer"
+              : "h-0 w-full overflow-hidden"
+          }
+          onClick={() => tokenize(googlePayMethodRef.current, "googlePay")}
+        />
+        {(applePayReady || googlePayReady) && (
           <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest text-fg-faint">
             <span className="h-px flex-1 bg-border" />
             <span>Or pay with card</span>
             <span className="h-px flex-1 bg-border" />
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         {["Visa", "Mastercard", "Amex", "Discover"].map((brand) => (
@@ -281,12 +284,6 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
         <Badge tone="chrome">Apple Pay</Badge>
         <Badge tone="chrome">Google Pay</Badge>
       </div>
-
-      {!applePayReady && (
-        <p className="text-[11px] text-fg-faint">
-          Apple Pay debug: {sdkReady ? (applePayDebug ?? "no error captured, button not showing") : "SDK still loading…"}
-        </p>
-      )}
 
       <div>
         <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
