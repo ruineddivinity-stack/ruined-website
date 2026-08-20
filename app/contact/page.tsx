@@ -42,6 +42,11 @@ export default function ContactPage() {
               note="We typically reply within one business day."
             />
             <InfoCard
+              title="Phone"
+              body="(210) 802-1229"
+              note="For local pickup arrangements and general support."
+            />
+            <InfoCard
               title="Hours"
               body="Mon – Fri, 9am – 5pm CT"
               note="Orders placed before 2pm ship same-day."

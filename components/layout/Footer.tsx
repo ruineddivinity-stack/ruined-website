@@ -52,6 +52,12 @@ export function Footer() {
           >
             support@ruinedrx.com
           </a>
+          <a
+            href="tel:+12108021229"
+            className="mt-2 block text-sm text-fg-muted transition-colors hover:text-fg"
+          >
+            (210) 802-1229
+          </a>
         </div>
 
         {columns.map((col) => (
