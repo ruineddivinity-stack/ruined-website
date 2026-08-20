@@ -18,6 +18,7 @@ import { AGE_GATE_COOKIE } from "@/lib/age-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ruinedrx.com"),
   title: "RUINED | Research Peptides",
   description:
     "RUINED — third-party tested research peptides for laboratory use. Not for human consumption.",
