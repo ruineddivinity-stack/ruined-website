@@ -158,7 +158,8 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
           applePayMethodRef.current = applePay;
           setApplePayReady(true);
         }
-      } catch {
+      } catch (err) {
+        console.warn("Apple Pay unavailable:", err);
         setApplePayReady(false);
       }
 
@@ -172,7 +173,8 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
           googlePayMethodRef.current = googlePay;
           setGooglePayReady(true);
         }
-      } catch {
+      } catch (err) {
+        console.warn("Google Pay unavailable:", err);
         setGooglePayReady(false);
       }
     })();
