@@ -42,7 +42,7 @@ const EMPTY_SHIPPING: ShippingForm = {
 };
 
 export function CheckoutClient({ products }: { products: Product[] }) {
-  const { items, clearCart } = useCart();
+  const { items } = useCart();
   const router = useRouter();
   const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
   const [email, setEmail] = useState("");
@@ -115,7 +115,6 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         return;
       }
 
-      clearCart();
       router.push(`/order-confirmation/${body.orderId}?key=${body.orderKey}`);
     } catch {
       setError("Something went wrong. Please try again.");

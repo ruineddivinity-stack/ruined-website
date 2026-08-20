@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { getOrder } from "@/lib/woocommerce";
+import { ClearCartOnMount } from "@/components/checkout/ClearCartOnMount";
 
 export const metadata: Metadata = {
   title: "Order Confirmed | RUINED",
@@ -29,6 +30,7 @@ export default async function OrderConfirmationPage(
 
   return (
     <div className="py-20">
+      <ClearCartOnMount />
       <Container>
         <div className="mx-auto max-w-xl rounded-3xl border border-border bg-surface/60 p-8 text-center">
           <span
