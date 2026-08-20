@@ -78,6 +78,23 @@ export function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
+        {hasVariations && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {product.variations?.map((v) => (
+              <span
+                key={v.id}
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                  v.inStock
+                    ? "border-steel-500/50 bg-steel-700/25 text-steel-300"
+                    : "border-border text-fg-faint opacity-50"
+                }`}
+              >
+                {v.label}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="pointer-events-auto mt-4">
           <QuickAddButton
             slug={product.slug}
