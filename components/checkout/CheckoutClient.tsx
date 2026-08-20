@@ -229,7 +229,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </FormSection>
       </div>
 
-      <div className="h-fit rounded-2xl border border-border bg-surface/60 p-6">
+      <div className="order-first h-fit rounded-2xl border border-border bg-surface/60 p-6 lg:order-none">
         <h2 className="font-display text-lg font-black uppercase tracking-wide text-fg">
           Order Summary
         </h2>
