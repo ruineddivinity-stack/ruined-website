@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { inter } from "./fonts";
 import { StarField } from "@/components/layout/StarField";
 import { LightRefraction } from "@/components/layout/LightRefraction";
@@ -14,7 +14,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Providers } from "./providers";
 import { getAllProducts } from "@/lib/woocommerce";
 import { getSession } from "@/lib/session";
-import { AGE_GATE_COOKIE } from "@/lib/age-gate";
+import { AGE_GATE_COOKIE, isCrawlerUserAgent } from "@/lib/age-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,12 +25,15 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [products, session, cookieStore] = await Promise.all([
+  const [products, session, cookieStore, headerStore] = await Promise.all([
     getAllProducts(),
     getSession(),
     cookies(),
+    headers(),
   ]);
-  const ageGateOpen = !session && !cookieStore.get(AGE_GATE_COOKIE)?.value;
+  const isCrawler = isCrawlerUserAgent(headerStore.get("user-agent"));
+  const ageGateOpen =
+    !isCrawler && !session && !cookieStore.get(AGE_GATE_COOKIE)?.value;
 
   return (
     <html
