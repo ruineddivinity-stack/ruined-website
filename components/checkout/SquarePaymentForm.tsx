@@ -67,6 +67,7 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   const [applePayReady, setApplePayReady] = useState(false);
   const [googlePayReady, setGooglePayReady] = useState(false);
   const [processing, setProcessing] = useState<Kind | null>(null);
+  const [pressedKind, setPressedKind] = useState<Kind | null>(null);
 
   useEffect(() => {
     if (window.Square) {
@@ -220,7 +221,12 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   }, [amount]);
 
   const tokenize = async (method: SquareTokenizable | null, kind: Kind) => {
-    if (!method || disabled || processing) return;
+    if (processing) return;
+    if (disabled) {
+      onError("Please fill in your contact and shipping details first.");
+      return;
+    }
+    if (!method) return;
     setProcessing(kind);
     try {
       const result = await method.tokenize();
@@ -246,29 +252,52 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
             element instead of a Square-rendered container, so this is a
             plain button using the -apple-pay-button system appearance
             (Safari-only; see .apple-pay-button in globals.css), tokenizing
-            directly on click as Apple's integration requires. */}
+            directly on click as Apple's integration requires. The border +
+            press scale live on this wrapper, not the button itself — the
+            native system appearance ignores border/transform applied
+            directly to it. */}
         {applePayReady && (
-          <button
-            type="button"
-            aria-label="Apple Pay"
-            className="apple-pay-button"
-            onClick={() => tokenize(applePayMethodRef.current, "applePay")}
-          />
+          <div
+            className={`overflow-hidden rounded-xl border border-chrome-500 transition-transform duration-100 ${
+              pressedKind === "applePay" ? "scale-[0.97]" : "scale-100"
+            }`}
+            onPointerDown={() => setPressedKind("applePay")}
+            onPointerUp={() => setPressedKind(null)}
+            onPointerLeave={() => setPressedKind(null)}
+            onPointerCancel={() => setPressedKind(null)}
+          >
+            <button
+              type="button"
+              aria-label="Apple Pay"
+              className="apple-pay-button"
+              onClick={() => tokenize(applePayMethodRef.current, "applePay")}
+            />
+          </div>
         )}
         {/* Always mounted (never conditional on *Ready) so the ref exists
             before Square tries to attach to it — googlePayReady only flips
             true *after* a successful attach, so gating the div on it made
             the attach permanently unable to find its container. */}
         <div
-          ref={googlePayContainerRef}
-          role="button"
           className={
             googlePayReady
-              ? "h-12 w-full cursor-pointer"
-              : "h-0 w-full overflow-hidden"
+              ? `overflow-hidden rounded-xl border border-chrome-500 transition-transform duration-100 ${
+                  pressedKind === "googlePay" ? "scale-[0.97]" : "scale-100"
+                }`
+              : "h-0 overflow-hidden"
           }
-          onClick={() => tokenize(googlePayMethodRef.current, "googlePay")}
-        />
+          onPointerDown={() => googlePayReady && setPressedKind("googlePay")}
+          onPointerUp={() => setPressedKind(null)}
+          onPointerLeave={() => setPressedKind(null)}
+          onPointerCancel={() => setPressedKind(null)}
+        >
+          <div
+            ref={googlePayContainerRef}
+            role="button"
+            className={googlePayReady ? "h-12 w-full cursor-pointer" : "h-0 w-full overflow-hidden"}
+            onClick={() => tokenize(googlePayMethodRef.current, "googlePay")}
+          />
+        </div>
         {(applePayReady || googlePayReady) && (
           <div className="flex items-center gap-3 text-[11px] uppercase tracking-widest text-fg-faint">
             <span className="h-px flex-1 bg-border" />

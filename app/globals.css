@@ -269,14 +269,14 @@ body {
 }
 
 /* Native Apple Pay button (Safari/WebKit only) — Apple requires this exact
-   system appearance rather than a custom-styled button. */
+   system appearance rather than a custom-styled button. Safari ignores
+   border/border-radius applied directly to it, so those live on the
+   wrapper element in SquarePaymentForm instead. */
 .apple-pay-button {
   -webkit-appearance: -apple-pay-button;
   -apple-pay-button-type: plain;
   -apple-pay-button-style: black;
   width: 100%;
   height: 48px;
-  border-radius: 12px;
-  border: 1px solid var(--color-chrome-500, #9296a8);
   cursor: pointer;
 }

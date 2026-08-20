@@ -14,6 +14,15 @@ import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
 import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
 
+const US_STATES = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL",
+  "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME",
+  "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH",
+  "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+  "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI",
+  "WY",
+];
+
 type ShippingForm = {
   firstName: string;
   lastName: string;
@@ -158,9 +167,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             value={shipping.city}
             onChange={(v) => setShipping((s) => ({ ...s, city: v }))}
           />
-          <Field
-            label="State"
-            placeholder="TX"
+          <StateSelect
             value={shipping.state}
             onChange={(v) => setShipping((s) => ({ ...s, state: v }))}
           />
@@ -342,6 +349,36 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-fg placeholder:text-fg-faint focus:border-steel-500 focus:outline-none"
       />
+    </label>
+  );
+}
+
+function StateSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-2">
+      <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
+        State
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-fg focus:border-steel-500 focus:outline-none"
+      >
+        <option value="" disabled>
+          Select state
+        </option>
+        {US_STATES.map((code) => (
+          <option key={code} value={code}>
+            {code}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
