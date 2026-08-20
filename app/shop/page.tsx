@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { ShopClient } from "@/components/shop/ShopClient";
 import { Badge } from "@/components/ui/Badge";
+import { BundleTeaser } from "@/components/shop/BundleTeaser";
 import { getAllProducts } from "@/lib/woocommerce";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default async function ShopPage() {
               Build a Bundle for 25% Off — Coming Soon
             </span>
           </Badge>
+          <BundleTeaser />
         </div>
 
         <div className="mt-12">
