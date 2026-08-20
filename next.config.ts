@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "ruinedrx.com",
       },
+      {
+        protocol: "https",
+        hostname: "wp.ruinedrx.com",
+      },
     ],
   },
 };
