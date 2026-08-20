@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { AddToCart } from "@/components/product/AddToCart";
 import { FulfillmentTimer } from "@/components/product/FulfillmentTimer";
+import { useProductVariant } from "@/lib/product-variant-context";
 import type { ProductVariation } from "@/lib/types";
 
 export function ProductPurchase({
@@ -23,18 +22,7 @@ export function ProductPurchase({
   variations: ProductVariation[] | null;
   showBulkOptions: boolean;
 }) {
-  const searchParams = useSearchParams();
-  const requestedMg = searchParams.get("mg");
-
-  const [selected, setSelected] = useState<ProductVariation | null>(() => {
-    if (!variations) return null;
-    const requested = requestedMg
-      ? variations.find(
-          (v) => v.label.toLowerCase() === requestedMg.toLowerCase(),
-        )
-      : null;
-    return requested ?? variations.find((v) => v.inStock) ?? variations[0] ?? null;
-  });
+  const { selected, setSelected } = useProductVariant();
 
   const activePrice = selected ? selected.price : price;
   const activeRegularPrice = selected ? selected.regularPrice : regularPrice;

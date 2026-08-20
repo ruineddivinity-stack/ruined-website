@@ -51,19 +51,29 @@ async function fetchVariations(productId: number): Promise<ProductVariation[]> {
   const wcVariations = await wcFetch<WcVariation[]>(
     `products/${productId}/variations?per_page=100`,
   );
-  return wcVariations.map((v) => {
-    const regularPrice = Number.parseFloat(v.regular_price || v.price) || 0;
-    const price = Number.parseFloat(v.price) || regularPrice;
-    return {
-      id: v.id,
-      label: v.attributes[0]?.option ?? "",
-      price,
-      regularPrice,
-      onSale: v.on_sale && price < regularPrice,
-      inStock: v.stock_status === "instock",
-      image: (Array.isArray(v.image) ? v.image[0] : v.image)?.src ?? null,
-    };
-  });
+  return wcVariations
+    .map((v) => {
+      const regularPrice = Number.parseFloat(v.regular_price || v.price) || 0;
+      const price = Number.parseFloat(v.price) || regularPrice;
+      return {
+        id: v.id,
+        label: v.attributes[0]?.option ?? "",
+        price,
+        regularPrice,
+        onSale: v.on_sale && price < regularPrice,
+        inStock: v.stock_status === "instock",
+        image: (Array.isArray(v.image) ? v.image[0] : v.image)?.src ?? null,
+      };
+    })
+    .sort((a, b) => {
+      // WooCommerce returns variations in creation order, not dose order —
+      // sort ascending by the numeric MG value in the label (e.g. "10MG" ->
+      // 10) so the cheapest/lowest dose is always first and default.
+      const na = Number.parseFloat(a.label);
+      const nb = Number.parseFloat(b.label);
+      if (Number.isNaN(na) || Number.isNaN(nb)) return a.price - b.price;
+      return na - nb;
+    });
 }
 
 function authHeader() {

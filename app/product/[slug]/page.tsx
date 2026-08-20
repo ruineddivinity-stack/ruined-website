@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { Badge } from "@/components/ui/Badge";
 import { ProductPurchase } from "@/components/product/ProductPurchase";
+import { ProductImage } from "@/components/product/ProductImage";
 import { BundleContents } from "@/components/product/BundleContents";
 import { getAllProducts, getProductBySlug } from "@/lib/woocommerce";
+import { ProductVariantProvider } from "@/lib/product-variant-context";
 
 export async function generateStaticParams() {
   const products = await getAllProducts();
@@ -33,89 +33,65 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           &larr; Back to Shop
         </Link>
 
-        <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-2">
-          <div className="relative flex aspect-square items-center justify-center rounded-[2rem] border border-border bg-gradient-to-b from-surface-2 to-black bg-noise">
-            {(badge || !product.inStock) && (
-              <div className="absolute left-6 top-6 z-10 flex gap-2">
-                {badge && (
-                  <Badge tone={badge === "Bundle" ? "holo" : "steel"}>
-                    {badge}
-                  </Badge>
+        <Suspense fallback={null}>
+          <ProductVariantProvider variations={product.variations}>
+            <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-2">
+              <ProductImage product={product} badge={badge} />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-steel-400">
+                  {product.category}
+                </p>
+                <h1 className="mt-3 font-display text-4xl font-black uppercase tracking-tight text-fg">
+                  {product.name}
+                </h1>
+                {product.shortDescription && (
+                  <p
+                    className="mt-4 text-sm leading-relaxed text-fg-muted [&_p]:mb-2"
+                    dangerouslySetInnerHTML={{ __html: product.shortDescription }}
+                  />
                 )}
-                {!product.inStock && <Badge tone="danger">Sold Out</Badge>}
-              </div>
-            )}
-            {product.image ? (
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className="rounded-[2rem] object-cover"
-                sizes="(min-width: 1024px) 40vw, 90vw"
-              />
-            ) : (
-              <div className="flex h-56 w-36 items-center justify-center rounded-xl border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface">
-                <span className="font-display text-sm font-semibold tracking-widest text-gradient-holo">
-                  RUINED
-                </span>
-              </div>
-            )}
-          </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-steel-400">
-              {product.category}
-            </p>
-            <h1 className="mt-3 font-display text-4xl font-black uppercase tracking-tight text-fg">
-              {product.name}
-            </h1>
-            {product.shortDescription && (
-              <p
-                className="mt-4 text-sm leading-relaxed text-fg-muted [&_p]:mb-2"
-                dangerouslySetInnerHTML={{ __html: product.shortDescription }}
-              />
-            )}
+                <div className="mt-6">
+                  <ProductPurchase
+                    slug={product.slug}
+                    price={product.price}
+                    regularPrice={product.regularPrice}
+                    onSale={product.onSale}
+                    inStock={product.inStock}
+                    variations={product.variations}
+                    showBulkOptions={product.type !== "bundle"}
+                  />
+                </div>
 
-            <div className="mt-6">
-              <Suspense fallback={null}>
-                <ProductPurchase
-                  slug={product.slug}
-                  price={product.price}
-                  regularPrice={product.regularPrice}
-                  onSale={product.onSale}
-                  inStock={product.inStock}
-                  variations={product.variations}
-                  showBulkOptions={product.type !== "bundle"}
-                />
-              </Suspense>
+                {product.bundledItems && product.bundledItems.length > 0 && (
+                  <div className="mt-8">
+                    <BundleContents items={product.bundledItems} />
+                  </div>
+                )}
+
+                <div className="mt-10 grid grid-cols-1 gap-3 border-t border-border-soft pt-8 sm:grid-cols-2">
+                  <Fact label="Category" value={product.category} />
+                  {product.size && <Fact label="Size" value={product.size} />}
+                  <Fact label="Availability" value={product.inStock ? "In stock" : "Out of stock"} />
+                  <Fact label="Use" value="Research only" />
+                </div>
+
+                {product.description && (
+                  <div
+                    className="prose-invert mt-8 text-xs leading-relaxed text-fg-faint [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:text-fg-muted [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                )}
+
+                <p className="mt-8 text-xs leading-relaxed text-fg-faint">
+                  For laboratory research and in-vitro use only. Not for human
+                  or animal consumption. Not evaluated by the FDA.
+                </p>
+              </div>
             </div>
-
-            {product.bundledItems && product.bundledItems.length > 0 && (
-              <div className="mt-8">
-                <BundleContents items={product.bundledItems} />
-              </div>
-            )}
-
-            <div className="mt-10 grid grid-cols-1 gap-3 border-t border-border-soft pt-8 sm:grid-cols-2">
-              <Fact label="Category" value={product.category} />
-              {product.size && <Fact label="Size" value={product.size} />}
-              <Fact label="Availability" value={product.inStock ? "In stock" : "Out of stock"} />
-              <Fact label="Use" value="Research only" />
-            </div>
-
-            {product.description && (
-              <div
-                className="prose-invert mt-8 text-xs leading-relaxed text-fg-faint [&_h2]:mt-4 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:uppercase [&_h2]:tracking-wide [&_h2]:text-fg-muted [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
-                dangerouslySetInnerHTML={{ __html: product.description }}
-              />
-            )}
-
-            <p className="mt-8 text-xs leading-relaxed text-fg-faint">
-              For laboratory research and in-vitro use only. Not for human
-              or animal consumption. Not evaluated by the FDA.
-            </p>
-          </div>
-        </div>
+          </ProductVariantProvider>
+        </Suspense>
       </Container>
     </div>
   );
