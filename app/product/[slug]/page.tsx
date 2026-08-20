@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
@@ -76,15 +77,17 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             )}
 
             <div className="mt-6">
-              <ProductPurchase
-                slug={product.slug}
-                price={product.price}
-                regularPrice={product.regularPrice}
-                onSale={product.onSale}
-                inStock={product.inStock}
-                variations={product.variations}
-                showBulkOptions={product.type !== "bundle"}
-              />
+              <Suspense fallback={null}>
+                <ProductPurchase
+                  slug={product.slug}
+                  price={product.price}
+                  regularPrice={product.regularPrice}
+                  onSale={product.onSale}
+                  inStock={product.inStock}
+                  variations={product.variations}
+                  showBulkOptions={product.type !== "bundle"}
+                />
+              </Suspense>
             </div>
 
             {product.bundledItems && product.bundledItems.length > 0 && (

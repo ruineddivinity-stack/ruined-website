@@ -15,7 +15,6 @@ import {
   calculateDiscounts,
   SHIPPING_METHODS,
   PICKUP_LABEL,
-  type AppliedCoupon,
   type ShippingMethod,
 } from "@/lib/discounts";
 import { resolveCartLines } from "@/lib/cart-lines";
@@ -51,9 +50,8 @@ const EMPTY_SHIPPING: ShippingForm = {
 };
 
 export function CheckoutClient({ products }: { products: Product[] }) {
-  const { items } = useCart();
+  const { items, coupon, setCoupon } = useCart();
   const router = useRouter();
-  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
   const [email, setEmail] = useState("");
   const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
   const [error, setError] = useState<string | null>(null);
@@ -317,10 +315,16 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                   </div>
                 )}
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-fg">
-                    {product.name}
-                    {variation?.label ? ` — ${variation.label}` : ""}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-sm font-semibold text-fg">
+                      {product.name}
+                    </p>
+                    {variation?.label && (
+                      <span className="inline-flex items-center rounded-full border border-steel-500/50 bg-steel-700/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-steel-300">
+                        {variation.label}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-fg-faint">Qty {qty}</p>
                 </div>
                 <p className="text-sm font-semibold text-fg">

@@ -116,6 +116,53 @@ async function wcMutate<T>(
 
 const SIZE_PATTERN = /\b\d+(?:\.\d+)?\s?(?:MG|ML|IU)\b/i;
 
+// Per-dose products that have since been merged into a single variable
+// product (see the GLP-3 (RT) / TESA merge). Existing Bundle products'
+// bundled_items still reference the old (now-private) product IDs, so
+// "What's Included" would otherwise link nowhere and show no image. This
+// maps those legacy IDs to where the dose now lives — add an entry here
+// each time another product gets folded into a variable product.
+const LEGACY_VARIATION_PRODUCTS: Record<
+  number,
+  { slug: string; label: string; image: string }
+> = {
+  1212: {
+    slug: "glp-3-rt",
+    label: "10MG",
+    image: "https://wp.ruinedrx.com/wp-content/uploads/2026/06/glp3-10mg.png",
+  },
+  19: {
+    slug: "glp-3-rt",
+    label: "20MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/retatrutide-20mg.png",
+  },
+  143: {
+    slug: "glp-3-rt",
+    label: "30MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/retatrutide-30mg.png",
+  },
+  3172: {
+    slug: "glp-3-rt",
+    label: "50MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/retatrutide-50mg.png",
+  },
+  22: {
+    slug: "tesa",
+    label: "10MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/tesamorelin-10mg.png",
+  },
+  2927: {
+    slug: "tesa",
+    label: "20MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/tesamorelin-20mg.png",
+  },
+};
+
 function mapWcProduct(
   wc: WcProduct,
   imageLookup?: Map<number, { slug: string; image: string | null }>,
@@ -139,12 +186,14 @@ function mapWcProduct(
   const bundledItems: BundledItem[] | null = wc.bundled_items?.length
     ? wc.bundled_items.map((b) => {
         const match = imageLookup?.get(b.product_id);
+        const legacy = LEGACY_VARIATION_PRODUCTS[b.product_id];
         return {
           productId: b.product_id,
           title: b.title,
           quantity: b.quantity_default || 1,
-          slug: match?.slug ?? null,
-          image: match?.image ?? null,
+          slug: match?.slug ?? legacy?.slug ?? null,
+          image: match?.image ?? legacy?.image ?? null,
+          variationLabel: legacy?.label ?? null,
         };
       })
     : null;

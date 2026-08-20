@@ -35,7 +35,7 @@ export function QuickAddButton({
         href={`/product/${slug}`}
         className="relative z-10 flex w-full items-center justify-center gap-2 rounded-full border border-border bg-surface-2 py-3 text-sm font-semibold tracking-wide text-fg transition-all duration-300 hover:-translate-y-0.5 hover:border-steel-500 hover:bg-surface-3 hover:shadow-[0_0_20px_2px_rgba(31,200,221,0.35)]"
       >
-        Choose Dose
+        Choose MG
       </Link>
     );
   }

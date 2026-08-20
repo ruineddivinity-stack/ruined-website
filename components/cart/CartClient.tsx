@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
@@ -10,12 +9,11 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
+import { calculateDiscounts } from "@/lib/discounts";
 import { resolveCartLines } from "@/lib/cart-lines";
 
 export function CartClient({ products }: { products: Product[] }) {
-  const { items, updateQty, removeItem } = useCart();
-  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+  const { items, updateQty, removeItem, coupon, setCoupon } = useCart();
 
   const lines = resolveCartLines(items, products);
 
@@ -77,9 +75,9 @@ export function CartClient({ products }: { products: Product[] }) {
                   {product.name}
                 </Link>
                 {(variation?.label ?? product.size) && (
-                  <p className="mt-1 text-xs text-fg-faint">
+                  <span className="mt-1.5 flex w-fit items-center rounded-full border border-steel-500/50 bg-steel-700/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-steel-300">
                     {variation?.label ?? product.size}
-                  </p>
+                  </span>
                 )}
               </div>
 

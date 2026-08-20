@@ -4,6 +4,7 @@ export type BundledItem = {
   quantity: number;
   slug: string | null;
   image: string | null;
+  variationLabel: string | null;
 };
 
 export type ProductVariation = {

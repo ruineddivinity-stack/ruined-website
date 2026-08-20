@@ -6,6 +6,7 @@ import type { Product } from "@/lib/types";
 
 export function ProductCard({ product }: { product: Product }) {
   const badge = product.type === "bundle" ? "Bundle" : product.onSale ? "Sale" : null;
+  const hasVariations = !!product.variations && product.variations.length > 0;
 
   return (
     <div className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-steel-500 hover:shadow-[0_0_28px_2px_rgba(31,200,221,0.28)]">
@@ -58,6 +59,9 @@ export function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
+            {hasVariations && (
+              <span className="text-xs font-semibold text-fg-faint">From</span>
+            )}
             <span className="font-display text-lg font-semibold text-fg">
               ${product.price.toFixed(2)}
             </span>

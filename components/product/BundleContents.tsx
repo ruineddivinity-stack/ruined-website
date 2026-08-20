@@ -30,6 +30,11 @@ export function BundleContents({ items }: { items: BundledItem[] }) {
               <span className="flex-1 text-sm font-medium text-fg">
                 {item.title}
               </span>
+              {item.variationLabel && (
+                <span className="rounded-full border border-steel-500/50 bg-steel-700/25 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-steel-300">
+                  {item.variationLabel}
+                </span>
+              )}
               {item.quantity > 1 && (
                 <span className="text-xs font-semibold text-fg-faint">
                   &times;{item.quantity}
@@ -38,11 +43,17 @@ export function BundleContents({ items }: { items: BundledItem[] }) {
             </>
           );
 
+          const href = item.slug
+            ? item.variationLabel
+              ? `/product/${item.slug}?mg=${encodeURIComponent(item.variationLabel)}`
+              : `/product/${item.slug}`
+            : null;
+
           return (
             <li key={item.productId}>
-              {item.slug ? (
+              {href ? (
                 <Link
-                  href={`/product/${item.slug}`}
+                  href={href}
                   className="flex items-center gap-3 rounded-xl p-1 transition-colors hover:bg-surface-2"
                 >
                   {content}

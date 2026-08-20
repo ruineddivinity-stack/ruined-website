@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -10,15 +9,15 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
+import { calculateDiscounts } from "@/lib/discounts";
 import { resolveCartLines } from "@/lib/cart-lines";
 
 const overlayVariants = { closed: { opacity: 0 }, open: { opacity: 1 } };
 const panelVariants = { closed: { x: "100%" }, open: { x: "0%" } };
 
 export function CartDrawer({ products }: { products: Product[] }) {
-  const { items, isOpen, closeCart, updateQty, removeItem } = useCart();
-  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+  const { items, isOpen, closeCart, updateQty, removeItem, coupon, setCoupon } =
+    useCart();
 
   const lines = resolveCartLines(items, products);
 
@@ -119,12 +118,16 @@ export function CartDrawer({ products }: { products: Product[] }) {
                       <p className="text-sm font-semibold text-fg">
                         {product.name}
                       </p>
-                      <p className="text-xs text-fg-faint">
-                        ${unitPrice.toFixed(2)}
-                        {(variation?.label ?? product.size)
-                          ? ` · ${variation?.label ?? product.size}`
-                          : ""}
-                      </p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="text-xs text-fg-faint">
+                          ${unitPrice.toFixed(2)}
+                        </p>
+                        {(variation?.label ?? product.size) && (
+                          <span className="inline-flex items-center rounded-full border border-steel-500/50 bg-steel-700/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-steel-300">
+                            {variation?.label ?? product.size}
+                          </span>
+                        )}
+                      </div>
                       <div className="mt-2 flex w-fit items-center rounded-full border border-border">
                         <button
                           type="button"
