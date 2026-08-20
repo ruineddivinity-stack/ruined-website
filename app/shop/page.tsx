@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { ShopClient } from "@/components/shop/ShopClient";
+import { Badge } from "@/components/ui/Badge";
 import { getAllProducts } from "@/lib/woocommerce";
 
 export const metadata: Metadata = {
@@ -24,6 +25,10 @@ export default async function ShopPage() {
           Research-grade peptides and compounds, held to a strict internal
           purity standard. For laboratory and in-vitro research use only.
         </p>
+
+        <div className="mt-6">
+          <Badge tone="holo">Build a Bundle for 25% Off — Coming Soon</Badge>
+        </div>
 
         <div className="mt-12">
           <ShopClient products={products} />
