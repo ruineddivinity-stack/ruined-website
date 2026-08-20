@@ -267,3 +267,15 @@ body {
     transition: none;
   }
 }
+
+/* Native Apple Pay button (Safari/WebKit only) — Apple requires this exact
+   system appearance rather than a custom-styled button. */
+.apple-pay-button {
+  -webkit-appearance: -apple-pay-button;
+  -apple-pay-button-type: plain;
+  -apple-pay-button-style: black;
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  cursor: pointer;
+}

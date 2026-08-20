@@ -12,8 +12,7 @@ declare global {
   }
 }
 
-type SquarePaymentMethod = {
-  attach: (element: HTMLElement, options?: Record<string, unknown>) => Promise<void>;
+type SquareTokenizable = {
   tokenize: () => Promise<{
     status: string;
     token?: string;
@@ -22,13 +21,20 @@ type SquarePaymentMethod = {
   destroy: () => Promise<void>;
 };
 
+// Card and Google Pay render into a container Square manages for you.
+// Apple Pay does not — Apple requires its own native button element, and
+// you call tokenize() directly from that button's click handler instead.
+type SquarePaymentMethod = SquareTokenizable & {
+  attach: (element: HTMLElement, options?: Record<string, unknown>) => Promise<void>;
+};
+
 type SquarePaymentRequest = {
   update: (options: Record<string, unknown>) => void;
 };
 
 type SquarePayments = {
   card: (options?: Record<string, unknown>) => Promise<SquarePaymentMethod>;
-  applePay: (paymentRequest: SquarePaymentRequest) => Promise<SquarePaymentMethod>;
+  applePay: (paymentRequest: SquarePaymentRequest) => Promise<SquareTokenizable>;
   googlePay: (paymentRequest: SquarePaymentRequest) => Promise<SquarePaymentMethod>;
   paymentRequest: (options: Record<string, unknown>) => SquarePaymentRequest;
 };
@@ -49,12 +55,11 @@ type Props = {
 
 export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props) {
   const cardContainerRef = useRef<HTMLDivElement>(null);
-  const applePayContainerRef = useRef<HTMLDivElement>(null);
   const googlePayContainerRef = useRef<HTMLDivElement>(null);
 
   const paymentRequestRef = useRef<SquarePaymentRequest | null>(null);
   const cardMethodRef = useRef<SquarePaymentMethod | null>(null);
-  const applePayMethodRef = useRef<SquarePaymentMethod | null>(null);
+  const applePayMethodRef = useRef<SquareTokenizable | null>(null);
   const googlePayMethodRef = useRef<SquarePaymentMethod | null>(null);
 
   const [sdkReady, setSdkReady] = useState(false);
@@ -62,7 +67,6 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   const [applePayReady, setApplePayReady] = useState(false);
   const [googlePayReady, setGooglePayReady] = useState(false);
   const [processing, setProcessing] = useState<Kind | null>(null);
-  const [applePayDebug, setApplePayDebug] = useState<string | null>(null);
 
   useEffect(() => {
     if (window.Square) {
@@ -162,19 +166,10 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
       try {
         const applePay = await payments.applePay(paymentRequest);
         if (cancelled) return;
-        if (applePayContainerRef.current) {
-          await applePay.attach(applePayContainerRef.current, {
-            buttonColor: "black",
-          });
-          applePayMethodRef.current = applePay;
-          setApplePayReady(true);
-        } else {
-          setApplePayDebug("no container ref at attach time");
-        }
+        applePayMethodRef.current = applePay;
+        setApplePayReady(true);
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
         console.warn("Apple Pay unavailable:", err);
-        setApplePayDebug(message);
         setApplePayReady(false);
       }
 
@@ -224,7 +219,7 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
     });
   }, [amount]);
 
-  const tokenize = async (method: SquarePaymentMethod | null, kind: Kind) => {
+  const tokenize = async (method: SquareTokenizable | null, kind: Kind) => {
     if (!method || disabled || processing) return;
     setProcessing(kind);
     try {
@@ -247,20 +242,23 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
+        {/* Apple Pay has no attach() — Apple requires its own native button
+            element instead of a Square-rendered container, so this is a
+            plain button using the -apple-pay-button system appearance
+            (Safari-only; see .apple-pay-button in globals.css), tokenizing
+            directly on click as Apple's integration requires. */}
+        {applePayReady && (
+          <button
+            type="button"
+            aria-label="Apple Pay"
+            className="apple-pay-button"
+            onClick={() => tokenize(applePayMethodRef.current, "applePay")}
+          />
+        )}
         {/* Always mounted (never conditional on *Ready) so the ref exists
-            before Square tries to attach to it — these flags only flip true
-            *after* a successful attach, so gating the div on them made the
-            attach permanently unable to find its container. */}
-        <div
-          ref={applePayContainerRef}
-          role="button"
-          className={
-            applePayReady
-              ? "h-12 w-full cursor-pointer"
-              : "h-0 w-full overflow-hidden"
-          }
-          onClick={() => tokenize(applePayMethodRef.current, "applePay")}
-        />
+            before Square tries to attach to it — googlePayReady only flips
+            true *after* a successful attach, so gating the div on it made
+            the attach permanently unable to find its container. */}
         <div
           ref={googlePayContainerRef}
           role="button"
@@ -289,10 +287,6 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
         <Badge tone="chrome">Apple Pay</Badge>
         <Badge tone="chrome">Google Pay</Badge>
       </div>
-
-      {!applePayReady && applePayDebug && (
-        <p className="text-[11px] text-fg-faint">Apple Pay debug: {applePayDebug}</p>
-      )}
 
       <div>
         <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
