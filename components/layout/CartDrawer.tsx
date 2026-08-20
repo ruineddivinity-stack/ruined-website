@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -8,13 +9,15 @@ import type { Product } from "@/lib/types";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
-import { calculateDiscounts } from "@/lib/discounts";
+import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
+import { calculateDiscounts, type AppliedCoupon } from "@/lib/discounts";
 
 const overlayVariants = { closed: { opacity: 0 }, open: { opacity: 1 } };
 const panelVariants = { closed: { x: "100%" }, open: { x: "0%" } };
 
 export function CartDrawer({ products }: { products: Product[] }) {
   const { items, isOpen, closeCart, updateQty, removeItem } = useCart();
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
 
   const lines = items
     .map((item) => {
@@ -30,6 +33,7 @@ export function CartDrawer({ products }: { products: Product[] }) {
       qty: l.qty,
       isBundle: l.product.type === "bundle",
     })),
+    coupon,
   );
 
   return (
@@ -159,6 +163,13 @@ export function CartDrawer({ products }: { products: Product[] }) {
           <div className="border-t border-border-soft px-6 py-5">
             <SavingsBadgeRow />
 
+            <div className="mt-4">
+              <PromoCodeInput
+                applied={discounts.affiliateApplied}
+                onApply={setCoupon}
+              />
+            </div>
+
             <div className="mt-4 flex flex-col gap-1.5 text-sm">
               <div className="flex justify-between text-fg-muted">
                 <span>Subtotal</span>
@@ -174,6 +185,12 @@ export function CartDrawer({ products }: { products: Product[] }) {
                 <div className="flex justify-between text-steel-300">
                   <span>Spend ${discounts.spendTier.min}+ reward</span>
                   <span>-${discounts.spendAmount.toFixed(2)}</span>
+                </div>
+              )}
+              {discounts.affiliateApplied && (
+                <div className="flex justify-between text-steel-300">
+                  <span>Affiliate code &ldquo;{discounts.affiliateCode}&rdquo;</span>
+                  <span>-${discounts.affiliateAmount.toFixed(2)}</span>
                 </div>
               )}
             </div>
