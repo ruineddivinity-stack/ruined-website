@@ -1,20 +1,13 @@
-"use client";
-
-import { motion } from "framer-motion";
-
 export function LightRefraction() {
   return (
     <div
       aria-hidden
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
-      <motion.svg
+      <svg
         viewBox="0 0 1440 900"
         preserveAspectRatio="xMidYMid slice"
-        className="absolute inset-0 h-full w-full"
-        initial={{ opacity: 0.4 }}
-        animate={{ opacity: [0.3, 0.55, 0.3] }}
-        transition={{ duration: 11, ease: "easeInOut", repeat: Infinity }}
+        className="light-refraction-svg absolute inset-0 h-full w-full"
       >
         <defs>
           <linearGradient id="refraction-a" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -65,7 +58,7 @@ export function LightRefraction() {
             opacity={0.7}
           />
         </g>
-      </motion.svg>
+      </svg>
     </div>
   );
 }

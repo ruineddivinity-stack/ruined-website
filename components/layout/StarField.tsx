@@ -1,4 +1,4 @@
-const STAR_COUNT = 160;
+const STAR_COUNT = 100;
 
 function seededRandom(seed: number) {
   const x = Math.sin(seed * 999.7) * 43758.5453;

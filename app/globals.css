@@ -121,6 +121,43 @@
   animation: glow-pulse 2.4s ease-in-out infinite;
 }
 
+/* Background loop animations moved off framer-motion (JS/rAF-driven) onto
+   plain CSS keyframes — the browser can run these on the compositor thread
+   without a per-frame JS callback, which matters here since several of
+   these run continuously, forever, on every page. */
+@keyframes holo-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(24px, -20px) rotate(20deg);
+  }
+  66% {
+    transform: translate(-16px, 14px) rotate(-10deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.holo-blob-drift {
+  animation: holo-drift 22s ease-in-out infinite;
+}
+
+@keyframes refraction-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.light-refraction-svg {
+  animation: refraction-pulse 11s ease-in-out infinite;
+}
+
 html {
   color-scheme: dark;
 }
@@ -262,7 +299,9 @@ body {
   .badge-holo,
   .animate-glow-pulse,
   .animate-twinkle,
-  .animate-star-drift {
+  .animate-star-drift,
+  .holo-blob-drift,
+  .light-refraction-svg {
     animation: none;
     transition: none;
   }
