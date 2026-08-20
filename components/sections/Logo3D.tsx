@@ -28,6 +28,9 @@ export function Logo3D() {
           <directionalLight position={[2, 3, 4]} intensity={2.8} />
           <directionalLight position={[-3, -2, 2]} intensity={1.3} color="#4f7df2" />
           <directionalLight position={[0, -3, 3]} intensity={1} color="#ffffff" />
+          <directionalLight position={[0, 0.5, -6]} intensity={16} color="#eaf6ff" />
+          <directionalLight position={[-4, 1.2, -3]} intensity={9} color="#7fe9ff" />
+          <directionalLight position={[4, -1, -3]} intensity={9} color="#c9a8e6" />
           <OrbitingLights />
           <LogoMesh />
         </Canvas>
@@ -208,16 +211,76 @@ function useLogoGeometry(url: string) {
 function LogoMesh() {
   const groupRef = useRef<THREE.Group>(null!);
   const geometry = useLogoGeometry("/logo.png");
+  const { gl } = useThree();
+
+  const dragging = useRef(false);
+  const lastPointer = useRef({ x: 0, y: 0 });
+  const velocity = useRef({ x: 0, y: 0 });
+  const manualOffset = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    canvas.style.cursor = "grab";
+
+    function onPointerMove(e: PointerEvent) {
+      if (!dragging.current) return;
+      const dx = e.clientX - lastPointer.current.x;
+      const dy = e.clientY - lastPointer.current.y;
+      lastPointer.current = { x: e.clientX, y: e.clientY };
+      manualOffset.current.y += dx * 0.012;
+      manualOffset.current.x = THREE.MathUtils.clamp(
+        manualOffset.current.x + dy * 0.012,
+        -1.1,
+        1.1,
+      );
+      velocity.current = { x: dx * 0.012, y: dy * 0.012 };
+    }
+
+    function onPointerUp() {
+      if (!dragging.current) return;
+      dragging.current = false;
+      canvas.style.cursor = "grab";
+    }
+
+    function onPointerDown(e: PointerEvent) {
+      dragging.current = true;
+      lastPointer.current = { x: e.clientX, y: e.clientY };
+      velocity.current = { x: 0, y: 0 };
+      canvas.style.cursor = "grabbing";
+    }
+
+    canvas.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    return () => {
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+  }, [gl]);
 
   useFrame((state) => {
     const group = groupRef.current;
     if (!group) return;
 
+    if (!dragging.current) {
+      // Momentum: keep spinning after release, decaying to a stop.
+      manualOffset.current.y += velocity.current.y;
+      manualOffset.current.x = THREE.MathUtils.clamp(
+        manualOffset.current.x + velocity.current.x,
+        -1.1,
+        1.1,
+      );
+      velocity.current.x *= 0.92;
+      velocity.current.y *= 0.92;
+    }
+
     const idle = state.clock.elapsedTime * 0.12;
-    const targetY = idle + state.pointer.x * 0.5;
-    const targetX = -state.pointer.y * 0.3;
-    group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetY, 0.06);
-    group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, targetX, 0.06);
+    const targetY = idle + state.pointer.x * 0.5 + manualOffset.current.y;
+    const targetX = -state.pointer.y * 0.3 + manualOffset.current.x;
+    const rotLerp = dragging.current ? 0.35 : 0.06;
+    group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, targetY, rotLerp);
+    group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, targetX, rotLerp);
     group.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.06;
 
     const fit = Math.min(state.viewport.width, state.viewport.height) * 0.85;
