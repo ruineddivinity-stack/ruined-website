@@ -33,6 +33,41 @@ const nextConfig: NextConfig = {
         destination: "/product/tesa",
         permanent: true,
       },
+      {
+        source: "/product/ghk-cu-50mg",
+        destination: "/product/ghk-cu",
+        permanent: true,
+      },
+      {
+        source: "/product/ghk-cu-100mg",
+        destination: "/product/ghk-cu",
+        permanent: true,
+      },
+      {
+        source: "/product/mots-c-10mg",
+        destination: "/product/mots-c",
+        permanent: true,
+      },
+      {
+        source: "/product/mots-c-20mg",
+        destination: "/product/mots-c",
+        permanent: true,
+      },
+      {
+        source: "/product/mots-c-40mg",
+        destination: "/product/mots-c",
+        permanent: true,
+      },
+      {
+        source: "/product/nad-500mg",
+        destination: "/product/nad",
+        permanent: true,
+      },
+      {
+        source: "/product/nad-1000mg",
+        destination: "/product/nad",
+        permanent: true,
+      },
     ];
   },
   images: {

@@ -171,6 +171,46 @@ const LEGACY_VARIATION_PRODUCTS: Record<
     image:
       "https://wp.ruinedrx.com/wp-content/uploads/2026/08/tesamorelin-20mg.png",
   },
+  165: {
+    slug: "ghk-cu",
+    label: "50MG",
+    image: "https://wp.ruinedrx.com/wp-content/uploads/2026/05/ghk-cu-50mg.png",
+  },
+  2922: {
+    slug: "ghk-cu",
+    label: "100MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/ghk-cu-100mg.png",
+  },
+  169: {
+    slug: "mots-c",
+    label: "10MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/mots-c-10mg.png",
+  },
+  2918: {
+    slug: "mots-c",
+    label: "20MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/mots-c-20mg.png",
+  },
+  2920: {
+    slug: "mots-c",
+    label: "40MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/mots-c-40mg.png",
+  },
+  171: {
+    slug: "nad",
+    label: "500MG",
+    image: "https://wp.ruinedrx.com/wp-content/uploads/2026/08/nad-500mg.png",
+  },
+  2913: {
+    slug: "nad",
+    label: "1000MG",
+    image:
+      "https://wp.ruinedrx.com/wp-content/uploads/2026/08/nad-1000mg.png",
+  },
 };
 
 function mapWcProduct(
