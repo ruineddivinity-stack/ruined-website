@@ -10,7 +10,7 @@ type Result =
 export function BroadcastForm({ subscriberCount }: { subscriberCount: number }) {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [imageDataUri, setImageDataUri] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState<"test" | "send" | null>(null);
@@ -35,7 +35,7 @@ export function BroadcastForm({ subscriberCount }: { subscriberCount: number }) 
         setImageError(json.error ?? "Upload failed.");
         return;
       }
-      setImageDataUri(json.dataUri);
+      setImageUrl(json.url);
     } catch {
       setImageError("Upload failed. Please try again.");
     } finally {
@@ -44,7 +44,7 @@ export function BroadcastForm({ subscriberCount }: { subscriberCount: number }) 
   };
 
   const removeImage = () => {
-    setImageDataUri(null);
+    setImageUrl(null);
     setImageError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -57,7 +57,7 @@ export function BroadcastForm({ subscriberCount }: { subscriberCount: number }) 
     const res = await fetch("/api/account/subscribers/send-test", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, body, imageDataUri }),
+      body: JSON.stringify({ subject, body, imageUrl }),
     });
 
     const json = await res.json().catch(() => ({}));
@@ -83,7 +83,7 @@ export function BroadcastForm({ subscriberCount }: { subscriberCount: number }) 
     const res = await fetch("/api/account/subscribers/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, body, imageDataUri }),
+      body: JSON.stringify({ subject, body, imageUrl }),
     });
 
     const json = await res.json().catch(() => ({}));
@@ -126,11 +126,11 @@ export function BroadcastForm({ subscriberCount }: { subscriberCount: number }) 
         <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
           Flyer image (optional)
         </span>
-        {imageDataUri ? (
+        {imageUrl ? (
           <div className="flex items-center gap-4 rounded-xl border border-border bg-surface p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={imageDataUri}
+              src={imageUrl}
               alt=""
               className="h-16 w-16 rounded-lg object-cover"
             />

@@ -7,13 +7,13 @@ const DOMAIN_URL = "https://ruinedrx.com";
 
 export function broadcastBodyToHtml({
   text,
-  imageDataUri,
+  imageUrl,
 }: {
   text: string;
-  imageDataUri?: string | null;
+  imageUrl?: string | null;
 }): string {
-  const imageHtml = imageDataUri
-    ? `<img src="${imageDataUri}" alt="" width="504" style="display:block;width:100%;max-width:504px;height:auto;border-radius:12px;margin:0 0 20px;border:0;" />`
+  const imageHtml = imageUrl
+    ? `<img src="${imageUrl}" alt="" width="504" style="display:block;width:100%;max-width:504px;height:auto;border-radius:12px;margin:0 0 20px;border:0;" />`
     : "";
 
   const paragraphs = text

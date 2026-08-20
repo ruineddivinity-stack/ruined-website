@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
   }
 
-  const { subject, body, imageDataUri } = await request.json().catch(() => ({}));
+  const { subject, body, imageUrl } = await request.json().catch(() => ({}));
   if (!subject?.trim() || !body?.trim()) {
     return NextResponse.json(
       { error: "Subject and message are required." },
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
     const { sent, failed } = await sendBroadcastEmail({
       subject: subject.trim(),
-      html: broadcastBodyToHtml({ text: body.trim(), imageDataUri }),
+      html: broadcastBodyToHtml({ text: body.trim(), imageUrl }),
       recipients,
     });
 

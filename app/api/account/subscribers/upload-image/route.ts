@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
+import { put } from "@vercel/blob";
 import { getSession, isAdminUser } from "@/lib/session";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -9,6 +10,16 @@ export async function POST(request: Request) {
   const session = await getSession();
   if (!isAdminUser(session)) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+  }
+
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      {
+        error:
+          "Image hosting isn't set up yet — connect Vercel Blob storage to this project (Vercel dashboard → Storage → Create Database → Blob), then try again.",
+      },
+      { status: 500 },
+    );
   }
 
   const form = await request.formData().catch(() => null);
@@ -35,8 +46,12 @@ export async function POST(request: Request) {
       .jpeg({ quality: 80 })
       .toBuffer();
 
-    const dataUri = `data:image/jpeg;base64,${resized.toString("base64")}`;
-    return NextResponse.json({ dataUri, sizeKb: Math.round(resized.length / 1024) });
+    const blob = await put(`broadcast-flyers/${crypto.randomUUID()}.jpg`, resized, {
+      access: "public",
+      contentType: "image/jpeg",
+    });
+
+    return NextResponse.json({ url: blob.url, sizeKb: Math.round(resized.length / 1024) });
   } catch (err) {
     console.error("Flyer image processing failed:", err);
     return NextResponse.json(
