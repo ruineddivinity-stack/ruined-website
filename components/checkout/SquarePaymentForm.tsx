@@ -22,11 +22,15 @@ type SquarePaymentMethod = {
   destroy: () => Promise<void>;
 };
 
+type SquarePaymentRequest = {
+  update: (options: Record<string, unknown>) => void;
+};
+
 type SquarePayments = {
   card: (options?: Record<string, unknown>) => Promise<SquarePaymentMethod>;
-  applePay: (paymentRequest: unknown) => Promise<SquarePaymentMethod>;
-  googlePay: (paymentRequest: unknown) => Promise<SquarePaymentMethod>;
-  paymentRequest: (options: Record<string, unknown>) => unknown;
+  applePay: (paymentRequest: SquarePaymentRequest) => Promise<SquarePaymentMethod>;
+  googlePay: (paymentRequest: SquarePaymentRequest) => Promise<SquarePaymentMethod>;
+  paymentRequest: (options: Record<string, unknown>) => SquarePaymentRequest;
 };
 
 const SDK_SRC =
@@ -48,6 +52,7 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
   const applePayContainerRef = useRef<HTMLDivElement>(null);
   const googlePayContainerRef = useRef<HTMLDivElement>(null);
 
+  const paymentRequestRef = useRef<SquarePaymentRequest | null>(null);
   const cardMethodRef = useRef<SquarePaymentMethod | null>(null);
   const applePayMethodRef = useRef<SquarePaymentMethod | null>(null);
   const googlePayMethodRef = useRef<SquarePaymentMethod | null>(null);
@@ -73,6 +78,10 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Initializes the card field and wallet buttons exactly once when the SDK
+  // is ready. `amount` is intentionally not a dependency here — see the
+  // separate effect below for why re-running this on every price change
+  // was breaking the card field.
   useEffect(() => {
     if (!sdkReady || !window.Square || amount <= 0) return;
 
@@ -147,6 +156,7 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
         currencyCode: "USD",
         total: { amount: amount.toFixed(2), label: "Total" },
       });
+      paymentRequestRef.current = paymentRequest;
 
       try {
         const applePay = await payments.applePay(paymentRequest);
@@ -187,12 +197,27 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
       cardMethodRef.current = null;
       applePayMethodRef.current = null;
       googlePayMethodRef.current = null;
+      paymentRequestRef.current = null;
       setCardReady(false);
       setApplePayReady(false);
       setGooglePayReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sdkReady, amount]);
+  }, [sdkReady]);
+
+  // Keeps the Apple Pay / Google Pay sheets' displayed total in sync with
+  // the cart (e.g. after applying an affiliate code) without tearing down
+  // and recreating the whole payment form. The previous version re-ran the
+  // full init effect on every amount change, which destroys and reattaches
+  // the card field's iframe — but Square's destroy() isn't awaited by
+  // React's cleanup, so the rebuild could race the still-in-flight
+  // destroy() on the same DOM node and silently fail to reattach, making
+  // the card field disappear.
+  useEffect(() => {
+    paymentRequestRef.current?.update({
+      total: { amount: amount.toFixed(2), label: "Total" },
+    });
+  }, [amount]);
 
   const tokenize = async (method: SquarePaymentMethod | null, kind: Kind) => {
     if (!method || disabled || processing) return;
