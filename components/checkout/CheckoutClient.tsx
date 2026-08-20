@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -49,6 +49,13 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [error]);
 
   const lines = items
     .map((item) => {
@@ -130,6 +137,31 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   return (
     <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
       <div className="flex flex-col gap-10 lg:col-span-2">
+        {error && (
+          <div
+            ref={errorRef}
+            role="alert"
+            className="flex items-start gap-3 rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 shadow-[0_0_24px_2px_rgba(196,84,74,0.25)]"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mt-0.5 shrink-0 text-danger"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="13" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p className="text-sm font-semibold text-fg">{error}</p>
+          </div>
+        )}
+
         <FormSection title="Contact">
           <Field
             label="Email"
@@ -193,7 +225,6 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                 payment.
               </p>
             )}
-            {error && <p className="mt-3 text-sm text-danger">{error}</p>}
           </div>
         </FormSection>
       </div>

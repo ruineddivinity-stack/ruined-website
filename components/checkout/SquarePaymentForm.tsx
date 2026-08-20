@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 
 declare global {
   interface Window {
@@ -180,6 +179,9 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
         if (googlePayContainerRef.current) {
           await googlePay.attach(googlePayContainerRef.current, {
             buttonColor: "black",
+            buttonType: "long",
+            buttonSizeMode: "fill",
+            buttonRadius: 12,
           });
           googlePayMethodRef.current = googlePay;
           setGooglePayReady(true);
@@ -274,18 +276,20 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
             />
           </div>
         )}
-        {/* Always mounted (never conditional on *Ready) so the ref exists
-            before Square tries to attach to it — googlePayReady only flips
-            true *after* a successful attach, so gating the div on it made
-            the attach permanently unable to find its container. */}
+        {/* Always mounted at full size (never conditional on googlePayReady)
+            so the ref exists *and already has real h-12/w-full dimensions*
+            before Square tries to attach to it — Square sizes the button it
+            renders against whatever the container measures at attach time,
+            so a container collapsed to zero height produced a button that
+            never actually filled the space, even after the class changed
+            later. The outer wrapper handles show/hide via opacity instead
+            of height, so the box dimensions stay constant throughout. */}
         <div
-          className={
+          className={`overflow-hidden rounded-xl border border-chrome-500 transition-all duration-100 ${
             googlePayReady
-              ? `overflow-hidden rounded-xl border border-chrome-500 transition-transform duration-100 ${
-                  pressedKind === "googlePay" ? "scale-[0.97]" : "scale-100"
-                }`
-              : "h-0 overflow-hidden"
-          }
+              ? `opacity-100 ${pressedKind === "googlePay" ? "scale-[0.97]" : "scale-100"}`
+              : "pointer-events-none h-0 opacity-0"
+          }`}
           onPointerDown={() => googlePayReady && setPressedKind("googlePay")}
           onPointerUp={() => setPressedKind(null)}
           onPointerLeave={() => setPressedKind(null)}
@@ -294,7 +298,7 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
           <div
             ref={googlePayContainerRef}
             role="button"
-            className={googlePayReady ? "h-12 w-full cursor-pointer" : "h-0 w-full overflow-hidden"}
+            className="h-12 w-full cursor-pointer"
             onClick={() => tokenize(googlePayMethodRef.current, "googlePay")}
           />
         </div>
@@ -308,13 +312,10 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {["Visa", "Mastercard", "Amex", "Discover"].map((brand) => (
-          <Badge key={brand} tone="steel">
-            {brand}
-          </Badge>
-        ))}
-        <Badge tone="chrome">Apple Pay</Badge>
-        <Badge tone="chrome">Google Pay</Badge>
+        <VisaIcon />
+        <MastercardIcon />
+        <AmexIcon />
+        <DiscoverIcon />
       </div>
 
       <div>
@@ -335,5 +336,74 @@ export function SquarePaymentForm({ amount, disabled, onToken, onError }: Props)
         {processing === "card" ? "Processing…" : `Pay $${amount.toFixed(2)}`}
       </Button>
     </div>
+  );
+}
+
+function VisaIcon() {
+  return (
+    <svg width="34" height="22" viewBox="0 0 34 22" aria-label="Visa" role="img">
+      <rect width="34" height="22" rx="4" fill="#1434CB" />
+      <text
+        x="17"
+        y="15.5"
+        textAnchor="middle"
+        fontFamily="Arial, sans-serif"
+        fontStyle="italic"
+        fontWeight="700"
+        fontSize="10"
+        fill="#ffffff"
+      >
+        VISA
+      </text>
+    </svg>
+  );
+}
+
+function MastercardIcon() {
+  return (
+    <svg width="34" height="22" viewBox="0 0 34 22" aria-label="Mastercard" role="img">
+      <rect width="34" height="22" rx="4" fill="#16191c" />
+      <circle cx="14" cy="11" r="6.5" fill="#EB001B" />
+      <circle cx="20" cy="11" r="6.5" fill="#F79E1B" fillOpacity="0.85" />
+    </svg>
+  );
+}
+
+function AmexIcon() {
+  return (
+    <svg width="34" height="22" viewBox="0 0 34 22" aria-label="American Express" role="img">
+      <rect width="34" height="22" rx="4" fill="#2E77BC" />
+      <text
+        x="17"
+        y="14.5"
+        textAnchor="middle"
+        fontFamily="Arial, sans-serif"
+        fontWeight="700"
+        fontSize="7.5"
+        fill="#ffffff"
+      >
+        AMEX
+      </text>
+    </svg>
+  );
+}
+
+function DiscoverIcon() {
+  return (
+    <svg width="34" height="22" viewBox="0 0 34 22" aria-label="Discover" role="img">
+      <rect width="34" height="22" rx="4" fill="#1b1e22" />
+      <circle cx="25" cy="11" r="7" fill="#FF6000" />
+      <text
+        x="13"
+        y="14"
+        textAnchor="middle"
+        fontFamily="Arial, sans-serif"
+        fontWeight="700"
+        fontSize="6"
+        fill="#ffffff"
+      >
+        DISC
+      </text>
+    </svg>
   );
 }
