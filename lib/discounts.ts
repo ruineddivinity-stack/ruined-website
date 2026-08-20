@@ -11,6 +11,9 @@ export function isShippingMethod(value: unknown): value is ShippingMethod {
   return typeof value === "string" && value in SHIPPING_METHODS;
 }
 
+export const PICKUP_METHOD_ID = "local_pickup";
+export const PICKUP_LABEL = "Pickup — Local Customers Only";
+
 export const BULK_TIERS = {
   bulk: { min: 3, max: 9, rate: 0.08, label: "3-9 Vials" },
   kit: { min: 10, rate: 0.2, label: "Kit (10+ Vials)" },

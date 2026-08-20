@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAllProducts, createOrder, getCouponByCode } from "@/lib/woocommerce";
-import { calculateDiscounts, SHIPPING_METHODS, isShippingMethod } from "@/lib/discounts";
+import {
+  calculateDiscounts,
+  SHIPPING_METHODS,
+  isShippingMethod,
+  PICKUP_LABEL,
+} from "@/lib/discounts";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
 
@@ -18,6 +23,7 @@ type CheckoutRequestBody = {
     postcode: string;
   };
   shippingMethod?: string;
+  fulfillmentMethod?: string;
 };
 
 export async function POST(request: Request) {
@@ -33,15 +39,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const required = [
-    body.email,
-    body.shipping?.firstName,
-    body.shipping?.lastName,
-    body.shipping?.address1,
-    body.shipping?.city,
-    body.shipping?.state,
-    body.shipping?.postcode,
-  ];
+  const isPickup = body.fulfillmentMethod === "pickup";
+
+  const required = isPickup
+    ? [body.email, body.shipping?.firstName, body.shipping?.lastName]
+    : [
+        body.email,
+        body.shipping?.firstName,
+        body.shipping?.lastName,
+        body.shipping?.address1,
+        body.shipping?.city,
+        body.shipping?.state,
+        body.shipping?.postcode,
+      ];
   if (required.some((v) => !v || !v.trim())) {
     return NextResponse.json(
       { error: "Please fill in all required fields." },
@@ -98,7 +108,7 @@ export async function POST(request: Request) {
   const shippingMethod = isShippingMethod(body.shippingMethod)
     ? body.shippingMethod
     : "standard";
-  const shippingTotal = discounts.freeShipping
+  const shippingTotal = isPickup || discounts.freeShipping
     ? 0
     : SHIPPING_METHODS[shippingMethod].price;
 
@@ -128,16 +138,19 @@ export async function POST(request: Request) {
       feeLines,
       couponCode: validCoupon?.code,
       shippingTotal,
-      shippingMethodTitle: discounts.freeShipping
-        ? "Free Shipping"
-        : SHIPPING_METHODS[shippingMethod].label,
+      isPickup,
+      shippingMethodTitle: isPickup
+        ? PICKUP_LABEL
+        : discounts.freeShipping
+          ? "Free Shipping"
+          : SHIPPING_METHODS[shippingMethod].label,
       billing: {
         firstName: body.shipping.firstName,
         lastName: body.shipping.lastName,
-        address1: body.shipping.address1,
-        city: body.shipping.city,
-        state: body.shipping.state,
-        postcode: body.shipping.postcode,
+        address1: body.shipping.address1 ?? "",
+        city: body.shipping.city ?? "",
+        state: body.shipping.state ?? "",
+        postcode: body.shipping.postcode ?? "",
         country: "US",
         email: body.email,
       },

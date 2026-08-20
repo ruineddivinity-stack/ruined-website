@@ -1,6 +1,7 @@
 import "server-only";
 import type { BundledItem, Order, Product } from "./types";
 import { wpFetch } from "./wp-origin-fetch";
+import { PICKUP_METHOD_ID } from "./discounts";
 
 const WOOCOMMERCE_URL = process.env.WOOCOMMERCE_URL;
 const CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
@@ -157,6 +158,7 @@ type WcOrder = {
   status: string;
   total: string;
   line_items: { name: string; quantity: number; total: string }[];
+  shipping_lines?: { method_id: string }[];
 };
 
 type WcCoupon = {
@@ -240,6 +242,7 @@ export type CreateOrderInput = {
   shipping?: OrderAddress;
   shippingTotal?: number;
   shippingMethodTitle?: string;
+  isPickup?: boolean;
   customerId?: number;
   customerNote?: string;
 };
@@ -296,7 +299,15 @@ export async function createOrder(input: CreateOrderInput): Promise<{
     payload.coupon_lines = [{ code: input.couponCode }];
   }
 
-  if (input.shippingTotal && input.shippingTotal > 0) {
+  if (input.isPickup) {
+    payload.shipping_lines = [
+      {
+        method_id: PICKUP_METHOD_ID,
+        method_title: input.shippingMethodTitle ?? "Local Pickup",
+        total: "0.00",
+      },
+    ];
+  } else if (input.shippingTotal && input.shippingTotal > 0) {
     payload.shipping_lines = [
       {
         method_id: "flat_rate",
@@ -337,6 +348,7 @@ export async function getOrder(
         quantity: li.quantity,
         total: Number.parseFloat(li.total) || 0,
       })),
+      isPickup: wc.shipping_lines?.some((l) => l.method_id === PICKUP_METHOD_ID) ?? false,
       orderKey: wc.order_key,
       currency: wc.currency,
     };
@@ -361,5 +373,6 @@ export async function getCustomerOrders(customerId: number): Promise<Order[]> {
       quantity: li.quantity,
       total: Number.parseFloat(li.total) || 0,
     })),
+    isPickup: o.shipping_lines?.some((l) => l.method_id === PICKUP_METHOD_ID) ?? false,
   }));
 }

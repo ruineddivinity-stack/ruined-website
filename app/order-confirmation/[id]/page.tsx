@@ -71,6 +71,34 @@ export default async function OrderConfirmationPage(
             <span>${order.total.toFixed(2)}</span>
           </div>
 
+          {order.isPickup && (
+            <div className="mt-6 rounded-2xl border border-border-soft bg-surface px-5 py-4 text-left">
+              <p className="text-sm font-semibold text-fg">
+                Have questions about your pickup?
+              </p>
+              <div className="mt-3 flex flex-col gap-1.5 text-xs text-fg-muted">
+                <div className="flex justify-between">
+                  <span>Email</span>
+                  <a
+                    href="mailto:support@ruinedrx.com"
+                    className="text-steel-300 hover:text-steel-200"
+                  >
+                    support@ruinedrx.com
+                  </a>
+                </div>
+                <div className="flex justify-between">
+                  <span>Phone</span>
+                  <a
+                    href="tel:+12108021229"
+                    className="text-steel-300 hover:text-steel-200"
+                  >
+                    (210) 802-1229
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button href="/shop">Continue Shopping</Button>
             <Link

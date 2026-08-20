@@ -37,4 +37,5 @@ export type Order = {
   status: string;
   total: number;
   lineItems: OrderLineItem[];
+  isPickup: boolean;
 };

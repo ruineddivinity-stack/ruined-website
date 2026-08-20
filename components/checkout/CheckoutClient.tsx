@@ -14,9 +14,12 @@ import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import {
   calculateDiscounts,
   SHIPPING_METHODS,
+  PICKUP_LABEL,
   type AppliedCoupon,
   type ShippingMethod,
 } from "@/lib/discounts";
+
+type FulfillmentMethod = "ship" | "pickup";
 import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
 
 const US_STATES = [
@@ -55,6 +58,8 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("standard");
+  const [fulfillment, setFulfillment] = useState<FulfillmentMethod>("ship");
+  const isPickup = fulfillment === "pickup";
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,19 +85,20 @@ export function CheckoutClient({ products }: { products: Product[] }) {
     coupon,
   );
   const shippingCost =
-    lines.length > 0 && !discounts.freeShipping
-      ? SHIPPING_METHODS[shippingMethod].price
-      : 0;
+    isPickup || lines.length === 0 || discounts.freeShipping
+      ? 0
+      : SHIPPING_METHODS[shippingMethod].price;
   const total = discounts.total + shippingCost;
 
   const formValid =
     email.trim() !== "" &&
     shipping.firstName.trim() !== "" &&
     shipping.lastName.trim() !== "" &&
-    shipping.address1.trim() !== "" &&
-    shipping.city.trim() !== "" &&
-    shipping.state.trim() !== "" &&
-    shipping.postcode.trim() !== "";
+    (isPickup ||
+      (shipping.address1.trim() !== "" &&
+        shipping.city.trim() !== "" &&
+        shipping.state.trim() !== "" &&
+        shipping.postcode.trim() !== ""));
 
   const handleToken = async (sourceId: string) => {
     setError(null);
@@ -114,6 +120,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           email,
           shipping,
           shippingMethod,
+          fulfillmentMethod: fulfillment,
         }),
       });
 
@@ -171,7 +178,48 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           </div>
         )}
 
-        <FormSection title="Contact">
+        <FormSection step={1} title="Fulfillment Method">
+          <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setFulfillment("ship")}
+              className={`flex-1 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                fulfillment === "ship"
+                  ? "border-steel-500 bg-steel-700/15 text-fg"
+                  : "border-border text-fg-muted hover:border-steel-500/50"
+              }`}
+            >
+              Shipping
+            </button>
+            <button
+              type="button"
+              onClick={() => setFulfillment("pickup")}
+              className={`flex-1 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                fulfillment === "pickup"
+                  ? "border-steel-500 bg-steel-700/15 text-fg"
+                  : "border-border text-fg-muted hover:border-steel-500/50"
+              }`}
+            >
+              {PICKUP_LABEL}
+            </button>
+          </div>
+          {isPickup && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-xs leading-relaxed text-amber-200 sm:col-span-2">
+              Pickup is by prior arrangement only. If you already have an
+              established contact on our team, you&rsquo;ll know exactly how
+              this works &mdash; if you don&rsquo;t, this probably isn&rsquo;t
+              the option for you. We&rsquo;re not responsible if you select
+              pickup and can&rsquo;t complete it; all sales are final.
+              Questions about eligibility? Email{" "}
+              <a href="mailto:support@ruinedrx.com" className="underline">
+                support@ruinedrx.com
+              </a>{" "}
+              before ordering.
+            </div>
+          )}
+        </FormSection>
+
+        <FormSection step={2} title="Contact">
           <Field
             label="Email"
             type="email"
@@ -182,7 +230,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           />
         </FormSection>
 
-        <FormSection title="Shipping Address">
+        <FormSection step={3} title={isPickup ? "Your Name" : "Shipping Address"}>
           <Field
             label="First Name"
             placeholder="Jane"
@@ -195,32 +243,36 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             value={shipping.lastName}
             onChange={(v) => setShipping((s) => ({ ...s, lastName: v }))}
           />
-          <Field
-            label="Address"
-            placeholder="123 Lab St"
-            value={shipping.address1}
-            onChange={(v) => setShipping((s) => ({ ...s, address1: v }))}
-            full
-          />
-          <Field
-            label="City"
-            placeholder="Austin"
-            value={shipping.city}
-            onChange={(v) => setShipping((s) => ({ ...s, city: v }))}
-          />
-          <StateSelect
-            value={shipping.state}
-            onChange={(v) => setShipping((s) => ({ ...s, state: v }))}
-          />
-          <Field
-            label="ZIP Code"
-            placeholder="78701"
-            value={shipping.postcode}
-            onChange={(v) => setShipping((s) => ({ ...s, postcode: v }))}
-          />
+          {!isPickup && (
+            <>
+              <Field
+                label="Address"
+                placeholder="123 Lab St"
+                value={shipping.address1}
+                onChange={(v) => setShipping((s) => ({ ...s, address1: v }))}
+                full
+              />
+              <Field
+                label="City"
+                placeholder="Austin"
+                value={shipping.city}
+                onChange={(v) => setShipping((s) => ({ ...s, city: v }))}
+              />
+              <StateSelect
+                value={shipping.state}
+                onChange={(v) => setShipping((s) => ({ ...s, state: v }))}
+              />
+              <Field
+                label="ZIP Code"
+                placeholder="78701"
+                value={shipping.postcode}
+                onChange={(v) => setShipping((s) => ({ ...s, postcode: v }))}
+              />
+            </>
+          )}
         </FormSection>
 
-        <FormSection title="Payment">
+        <FormSection step={4} title="Payment" last>
           <div className="sm:col-span-2">
             <SquarePaymentForm
               amount={total}
@@ -315,7 +367,12 @@ export function CheckoutClient({ products }: { products: Product[] }) {
               <span>-${discounts.affiliateAmount.toFixed(2)}</span>
             </div>
           )}
-          {discounts.freeShipping ? (
+          {isPickup ? (
+            <div className="flex justify-between text-fg-muted">
+              <span>Shipping</span>
+              <span className="text-fg">{PICKUP_LABEL} — $0.00</span>
+            </div>
+          ) : discounts.freeShipping ? (
             <div className="flex justify-between text-fg-muted">
               <span>Shipping</span>
               <span className="text-fg">Free</span>
@@ -375,19 +432,31 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 }
 
 function FormSection({
+  step,
   title,
+  last = false,
   children,
 }: {
+  step: number;
   title: string;
+  last?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <h2 className="font-display text-sm font-black uppercase tracking-widest text-fg">
-        {title}
-      </h2>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {children}
+    <div className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-steel-500 text-xs font-bold text-black shadow-[0_0_12px_1px_rgba(31,200,221,0.45)]">
+          {step}
+        </span>
+        {!last && <span className="mt-2 w-px flex-1 bg-steel-500/25" />}
+      </div>
+      <div className="flex-1 pb-2">
+        <h2 className="font-display text-sm font-black uppercase tracking-widest text-fg">
+          {title}
+        </h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {children}
+        </div>
       </div>
     </div>
   );
