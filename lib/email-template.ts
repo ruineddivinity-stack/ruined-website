@@ -5,6 +5,28 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3010";
 const DOMAIN_DISPLAY = "www.ruinedrx.com";
 const DOMAIN_URL = "https://ruinedrx.com";
 
+export function broadcastBodyToHtml({
+  text,
+  imageDataUri,
+}: {
+  text: string;
+  imageDataUri?: string | null;
+}): string {
+  const imageHtml = imageDataUri
+    ? `<img src="${imageDataUri}" alt="" width="504" style="display:block;width:100%;max-width:504px;height:auto;border-radius:12px;margin:0 0 20px;border:0;" />`
+    : "";
+
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map(
+      (para) =>
+        `<p style="margin:0 0 16px;">${para.trim().replace(/\n/g, "<br />")}</p>`,
+    )
+    .join("");
+
+  return imageHtml + paragraphs;
+}
+
 export function wrapBroadcastHtml({
   bodyHtml,
   unsubscribeUrl,

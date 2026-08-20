@@ -1,16 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, isAdminUser } from "@/lib/session";
 import { sendBroadcastEmail, getEmailStatus } from "@/lib/resend";
-
-function textToHtml(text: string): string {
-  return text
-    .split(/\n{2,}/)
-    .map(
-      (para) =>
-        `<p style="margin:0 0 16px;">${para.trim().replace(/\n/g, "<br />")}</p>`,
-    )
-    .join("");
-}
+import { broadcastBodyToHtml } from "@/lib/email-template";
 
 export async function POST(request: Request) {
   const session = await getSession();
@@ -18,7 +9,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
   }
 
-  const { subject, body } = await request.json().catch(() => ({}));
+  const { subject, body, imageDataUri } = await request.json().catch(() => ({}));
   if (!subject?.trim() || !body?.trim()) {
     return NextResponse.json(
       { error: "Subject and message are required." },
@@ -29,7 +20,7 @@ export async function POST(request: Request) {
   try {
     const { sent, failed, ids } = await sendBroadcastEmail({
       subject: `[TEST] ${subject.trim()}`,
-      html: textToHtml(body.trim()),
+      html: broadcastBodyToHtml({ text: body.trim(), imageDataUri }),
       recipients: [session.email],
     });
 
