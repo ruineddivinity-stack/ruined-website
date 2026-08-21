@@ -12,16 +12,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return NextResponse.json(
-      {
-        error:
-          "Image hosting isn't set up yet — connect Vercel Blob storage to this project (Vercel dashboard → Storage → Create Database → Blob), then try again.",
-      },
-      { status: 500 },
-    );
-  }
-
   const form = await request.formData().catch(() => null);
   const file = form?.get("image");
   if (!file || !(file instanceof File)) {
@@ -54,8 +44,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: blob.url, sizeKb: Math.round(resized.length / 1024) });
   } catch (err) {
     console.error("Flyer image processing failed:", err);
+    const message = err instanceof Error ? err.message : "";
+    const isAuthIssue =
+      /token|credential|not authorized|no store/i.test(message);
     return NextResponse.json(
-      { error: "Couldn't process that image. Try a different file." },
+      {
+        error: isAuthIssue
+          ? "The Blob store isn't connected to this project yet — open the store in the Vercel dashboard, go to its Projects tab, and connect it to this project (then redeploy)."
+          : "Couldn't process that image. Try a different file.",
+      },
       { status: 500 },
     );
   }
