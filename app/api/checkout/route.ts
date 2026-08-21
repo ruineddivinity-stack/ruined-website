@@ -5,6 +5,7 @@ import {
   SHIPPING_METHODS,
   isShippingMethod,
   PICKUP_LABEL,
+  BULK_TIERS,
 } from "@/lib/discounts";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
@@ -107,10 +108,16 @@ export async function POST(request: Request) {
     : SHIPPING_METHODS[shippingMethod].price;
 
   const feeLines: { name: string; amount: number }[] = [];
-  if (discounts.bulkTier && discounts.bulkAmount > 0) {
+  if (discounts.bulkQualifies) {
     feeLines.push({
-      name: `${discounts.bulkTier.label} discount`,
+      name: `${BULK_TIERS.bulk.label} discount`,
       amount: -discounts.bulkAmount,
+    });
+  }
+  if (discounts.kitQualifies) {
+    feeLines.push({
+      name: `${BULK_TIERS.kit.label} discount`,
+      amount: -discounts.kitAmount,
     });
   }
   if (discounts.spendTier && discounts.spendAmount > 0) {

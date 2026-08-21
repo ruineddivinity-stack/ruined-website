@@ -9,7 +9,7 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts } from "@/lib/discounts";
+import { calculateDiscounts, BULK_TIERS } from "@/lib/discounts";
 import { resolveCartLines } from "@/lib/cart-lines";
 
 export function CartClient({ products }: { products: Product[] }) {
@@ -146,10 +146,16 @@ export function CartClient({ products }: { products: Product[] }) {
             <span>Subtotal</span>
             <span className="text-fg">${subtotal.toFixed(2)}</span>
           </div>
-          {discounts.bulkTier && (
+          {discounts.bulkQualifies && (
             <div className="flex justify-between text-steel-300">
-              <span>{discounts.bulkTier.label} discount</span>
+              <span>{BULK_TIERS.bulk.label} discount</span>
               <span>-${discounts.bulkAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {discounts.kitQualifies && (
+            <div className="flex justify-between text-steel-300">
+              <span>{BULK_TIERS.kit.label} discount</span>
+              <span>-${discounts.kitAmount.toFixed(2)}</span>
             </div>
           )}
           {discounts.spendTier && (

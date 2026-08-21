@@ -58,8 +58,12 @@ export type DiscountLine = {
 
 export type DiscountBreakdown = {
   subtotal: number;
-  bulkTier: ReturnType<typeof getBulkTier>;
+  /** Sum of 3-9 tier discounts — only lines that individually hit 3-9 qty. */
   bulkAmount: number;
+  bulkQualifies: boolean;
+  /** Sum of 10+ tier discounts — only lines that individually hit 10+ qty. */
+  kitAmount: number;
+  kitQualifies: boolean;
   spendTier: ReturnType<typeof getSpendTier>;
   spendAmount: number;
   affiliateApplied: boolean;
@@ -76,17 +80,24 @@ export function calculateDiscounts(
 ): DiscountBreakdown {
   const subtotal = lines.reduce((sum, l) => sum + l.subtotal, 0);
 
+  // Bulk/kit pricing requires 3-9 (or 10+) of the SAME line — buying 2 of one
+  // vial and 2 of another doesn't combine to hit the threshold. Each line is
+  // judged on its own quantity, not the cart's combined eligible quantity.
   const eligibleLines = lines.filter((l) => !l.isBundle);
-  const eligibleSubtotal = eligibleLines.reduce((sum, l) => sum + l.subtotal, 0);
-  const eligibleQty = eligibleLines.reduce((sum, l) => sum + l.qty, 0);
-
-  const bulkTier = getBulkTier(eligibleQty);
-  const bulkAmount = bulkTier ? eligibleSubtotal * bulkTier.rate : 0;
+  let bulkAmount = 0;
+  let kitAmount = 0;
+  for (const line of eligibleLines) {
+    if (line.qty >= BULK_TIERS.kit.min) {
+      kitAmount += line.subtotal * BULK_TIERS.kit.rate;
+    } else if (line.qty >= BULK_TIERS.bulk.min) {
+      bulkAmount += line.subtotal * BULK_TIERS.bulk.rate;
+    }
+  }
 
   const spendTier = getSpendTier(subtotal);
   const spendAmount = spendTier?.amount ?? 0;
 
-  const preAffiliate = subtotal - bulkAmount - spendAmount;
+  const preAffiliate = subtotal - bulkAmount - kitAmount - spendAmount;
   const affiliateApplied = !!coupon;
   const affiliateAmount = coupon
     ? coupon.discountType === "percent"
@@ -99,8 +110,10 @@ export function calculateDiscounts(
 
   return {
     subtotal,
-    bulkTier,
     bulkAmount,
+    bulkQualifies: bulkAmount > 0,
+    kitAmount,
+    kitQualifies: kitAmount > 0,
     spendTier,
     spendAmount,
     affiliateApplied,

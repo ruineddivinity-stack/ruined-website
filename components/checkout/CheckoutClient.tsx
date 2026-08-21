@@ -15,6 +15,7 @@ import {
   calculateDiscounts,
   SHIPPING_METHODS,
   PICKUP_LABEL,
+  BULK_TIERS,
   type ShippingMethod,
 } from "@/lib/discounts";
 import { resolveCartLines } from "@/lib/cart-lines";
@@ -356,10 +357,16 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             <span>Subtotal</span>
             <span className="text-fg">${subtotal.toFixed(2)}</span>
           </div>
-          {discounts.bulkTier && (
+          {discounts.bulkQualifies && (
             <div className="flex justify-between text-steel-300">
-              <span>{discounts.bulkTier.label} discount</span>
+              <span>{BULK_TIERS.bulk.label} discount</span>
               <span>-${discounts.bulkAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {discounts.kitQualifies && (
+            <div className="flex justify-between text-steel-300">
+              <span>{BULK_TIERS.kit.label} discount</span>
+              <span>-${discounts.kitAmount.toFixed(2)}</span>
             </div>
           )}
           {discounts.spendTier && (
