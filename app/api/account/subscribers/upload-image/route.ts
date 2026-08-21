@@ -45,12 +45,16 @@ export async function POST(request: Request) {
     );
   }
 
+  const pathname = `broadcast-flyers/${crypto.randomUUID()}.jpg`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3010";
+
   try {
-    const blob = await put(`broadcast-flyers/${crypto.randomUUID()}.jpg`, resized, {
-      access: "public",
+    await put(pathname, resized, {
+      access: "private",
       contentType: "image/jpeg",
     });
-    return NextResponse.json({ url: blob.url, sizeKb: Math.round(resized.length / 1024) });
+    const url = `${siteUrl}/api/flyer?pathname=${encodeURIComponent(pathname)}`;
+    return NextResponse.json({ url, sizeKb: Math.round(resized.length / 1024) });
   } catch (err) {
     console.error("Flyer image upload failed:", err);
     const message = err instanceof Error ? err.message : String(err);
