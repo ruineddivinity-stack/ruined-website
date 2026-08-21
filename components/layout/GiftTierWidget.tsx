@@ -26,22 +26,22 @@ export function GiftTierWidget({ products }: { products: Product[] }) {
   if (count === 0 || dismissed) return null;
 
   return (
-    <div className="w-[min(320px,calc(100vw-3rem))] overflow-hidden rounded-2xl border border-steel-500/40 bg-surface-2/95 shadow-[0_0_30px_-6px_rgba(140,82,199,0.5)] backdrop-blur-md">
-      <div className="flex items-start gap-3 p-4">
-        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-steel-400 to-steel-700 text-base">
+    <div className="w-[min(220px,calc(100vw-2rem))] overflow-hidden rounded-xl border border-steel-500/40 bg-surface-2/95 shadow-[0_0_30px_-6px_rgba(140,82,199,0.5)] backdrop-blur-md sm:w-[min(320px,calc(100vw-3rem))] sm:rounded-2xl">
+      <div className="flex items-start gap-2 p-2.5 sm:gap-3 sm:p-4">
+        <span className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-steel-400 to-steel-700 text-xs sm:h-9 sm:w-9 sm:text-base">
           🎁
           {unlockedTier && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white">
+            <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-[7px] font-bold text-white sm:h-4 sm:w-4 sm:text-[9px]">
               {sortedTiers.indexOf(unlockedTier) + 1}
             </span>
           )}
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-fg">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-fg sm:text-xs">
             Free Gift Rewards
           </p>
-          <p className="mt-0.5 truncate text-[11px] text-fg-muted">
+          <p className="mt-0.5 truncate text-[9px] text-fg-muted sm:text-[11px]">
             {nextTier ? (
               <>
                 Spend{" "}
@@ -68,8 +68,8 @@ export function GiftTierWidget({ products }: { products: Product[] }) {
         </button>
       </div>
 
-      <div className="px-4">
-        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
+      <div className="px-2.5 sm:px-4">
+        <div className="relative h-1 w-full overflow-hidden rounded-full bg-surface-3 sm:h-1.5">
           <div
             className="h-full rounded-full bg-gradient-to-r from-steel-500 to-steel-300 transition-all duration-500"
             style={{ width: `${pct}%` }}
@@ -77,7 +77,7 @@ export function GiftTierWidget({ products }: { products: Product[] }) {
           {sortedTiers.map((t) => (
             <div
               key={t.min}
-              className="absolute top-0 h-1.5 w-px bg-[rgba(3,3,4,0.5)]"
+              className="absolute top-0 h-1 w-px bg-[rgba(3,3,4,0.5)] sm:h-1.5"
               style={{ left: `${Math.min(100, (t.min / maxTier.min) * 100)}%` }}
             />
           ))}
@@ -87,7 +87,7 @@ export function GiftTierWidget({ products }: { products: Product[] }) {
       <button
         type="button"
         onClick={() => window.dispatchEvent(new Event(OPEN_GIFT_TIERS_MODAL_EVENT))}
-        className="btn-shimmer mt-3 flex w-full items-center justify-center gap-2 bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-transform hover:brightness-110"
+        className="btn-shimmer mt-2 flex w-full items-center justify-center gap-2 bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 py-1.5 text-[9px] font-bold uppercase tracking-widest text-black transition-transform hover:brightness-110 sm:mt-3 sm:py-2.5 sm:text-xs"
       >
         View Gift Tiers
       </button>
