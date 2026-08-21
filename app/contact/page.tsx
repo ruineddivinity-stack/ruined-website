@@ -49,7 +49,6 @@ export default function ContactPage() {
             <InfoCard
               title="Address"
               body="18130 Talavera Ridge, San Antonio, TX 78257"
-              note="Local pickup by prior arrangement only — see our FAQ."
             />
             <InfoCard
               title="Hours"
@@ -75,7 +74,7 @@ function InfoCard({
 }: {
   title: string;
   body: string;
-  note: string;
+  note?: string;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-surface/60 p-6">
@@ -83,7 +82,9 @@ function InfoCard({
         {title}
       </h3>
       <p className="mt-2 text-sm font-semibold text-fg">{body}</p>
-      <p className="mt-1 text-xs leading-relaxed text-fg-muted">{note}</p>
+      {note && (
+        <p className="mt-1 text-xs leading-relaxed text-fg-muted">{note}</p>
+      )}
     </div>
   );
 }
