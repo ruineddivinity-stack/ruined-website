@@ -46,18 +46,31 @@ export function Footer() {
             Third-party tested research peptides and compounds. For laboratory
             research use only — not for human consumption.
           </p>
-          <a
-            href="mailto:support@ruinedrx.com"
-            className="mt-4 inline-block text-sm text-fg-muted transition-colors hover:text-fg"
-          >
-            support@ruinedrx.com
-          </a>
-          <a
-            href="tel:+12108021229"
-            className="mt-2 block text-sm text-fg-muted transition-colors hover:text-fg"
-          >
-            (210) 802-1229
-          </a>
+          <div className="mt-4 flex flex-col gap-2.5">
+            <a
+              href="mailto:support@ruinedrx.com"
+              className="flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg"
+            >
+              <MailIcon />
+              support@ruinedrx.com
+            </a>
+            <a
+              href="tel:+12108021229"
+              className="flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-fg"
+            >
+              <PhoneIcon />
+              (210) 802-1229
+            </a>
+            <a
+              href="https://maps.google.com/?q=18130+Talavera+Ridge,+San+Antonio,+TX+78257"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-2 text-sm text-fg-muted transition-colors hover:text-fg"
+            >
+              <MapPinIcon className="mt-0.5 shrink-0" />
+              <span>18130 Talavera Ridge, San Antonio, TX 78257</span>
+            </a>
+          </div>
         </div>
 
         {columns.map((col) => (
@@ -88,5 +101,61 @@ export function Footer() {
         </Container>
       </div>
     </footer>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
+    >
+      <path d="M4.5 4h3.5l1.5 5-2.5 1.5a12 12 0 0 0 6.5 6.5l1.5-2.5 5 1.5v3.5a2 2 0 0 1-2.2 2A18 18 0 0 1 2.5 6.2 2 2 0 0 1 4.5 4Z" />
+    </svg>
+  );
+}
+
+function MapPinIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
   );
 }

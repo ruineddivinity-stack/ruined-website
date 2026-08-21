@@ -47,6 +47,11 @@ export default function ContactPage() {
               note="For local pickup arrangements and general support."
             />
             <InfoCard
+              title="Address"
+              body="18130 Talavera Ridge, San Antonio, TX 78257"
+              note="Local pickup by prior arrangement only — see our FAQ."
+            />
+            <InfoCard
               title="Hours"
               body="Mon – Fri, 9am – 5pm CT"
               note="Orders placed before 2pm ship same-day."
