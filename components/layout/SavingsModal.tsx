@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   BULK_TIERS,
   SPEND_TIERS,
+  GIFT_TIERS,
   AFFILIATE_CODE,
   STACKED_SAVINGS_PCT,
 } from "@/lib/discounts";
@@ -132,7 +133,33 @@ export function SavingsModal() {
               </div>
             </Section>
 
-            <Section number={3} title="Affiliate Codes">
+            <Section number={3} title="Free Gifts">
+              <Row icon={GiftIcon}>
+                <span className="font-semibold text-fg">
+                  Unlock a free item as your cart grows
+                </span>
+              </Row>
+              <p className="mt-1 text-xs text-fg-muted">
+                Automatically added at checkout &mdash; no code needed.
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {[...GIFT_TIERS].reverse().map((tier) => (
+                  <div
+                    key={tier.min}
+                    className="flex items-center justify-between rounded-xl border border-steel-600/50 bg-steel-700/15 px-3 py-2.5 transition-colors hover:border-steel-500"
+                  >
+                    <span className="text-sm font-bold text-fg">
+                      Spend ${tier.min}+
+                    </span>
+                    <span className="text-right text-xs font-semibold text-steel-300">
+                      {tier.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
+            <Section number={4} title="Affiliate Codes">
               <Row icon={GiftIcon}>
                 <span className="font-semibold text-fg">
                   Get an extra 10% off your order
@@ -142,15 +169,29 @@ export function SavingsModal() {
                 Codes stack with bulk discounts and kits.
               </p>
               <ul className="mt-3 flex flex-col gap-1.5 text-xs text-fg-muted">
-                <li>
-                  &bull; Use code &ldquo;
-                  <span className="font-semibold text-fg">
-                    {AFFILIATE_CODE}
-                  </span>
-                  &rdquo; at checkout for 10% off
-                </li>
+                <li>&bull; New here? Join the list for your 10% off code</li>
                 <li>&bull; Or use an affiliate code from our community</li>
               </ul>
+            </Section>
+
+            <Section number={5} title="Refer a Friend">
+              <Row icon={GiftIcon}>
+                <span className="font-semibold text-fg">
+                  Give 10% off, get $10 store credit
+                </span>
+              </Row>
+              <p className="mt-1 text-xs text-fg-muted">
+                Every account gets a personal referral link &mdash; when a
+                friend orders with it, they save 10% and $10 in store credit
+                lands in your account automatically.
+              </p>
+              <Link
+                href="/account/referrals"
+                onClick={close}
+                className="mt-2 inline-flex w-fit items-center gap-1.5 text-xs font-semibold text-steel-300 hover:text-steel-200"
+              >
+                Get your referral link &rarr;
+              </Link>
             </Section>
           </div>
 

@@ -7,6 +7,7 @@ import { useCart } from "@/lib/cart-context";
 import type { Product } from "@/lib/types";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
+import { GiftProgress } from "@/components/cart/GiftProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import { calculateDiscounts, BULK_TIERS } from "@/lib/discounts";
@@ -127,6 +128,7 @@ export function CartClient({ products }: { products: Product[] }) {
 
         <div className="mt-5 flex flex-col gap-4">
           <FreeShippingProgress subtotal={subtotal} />
+          <GiftProgress subtotal={subtotal} />
           <SpendDiscountProgress subtotal={subtotal} />
         </div>
 

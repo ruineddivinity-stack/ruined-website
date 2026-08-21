@@ -400,6 +400,7 @@ export type CreateOrderInput = {
   isPickup?: boolean;
   customerId?: number;
   customerNote?: string;
+  metaData?: { key: string; value: string }[];
 };
 
 type WcCreatedOrder = {
@@ -453,6 +454,10 @@ export async function createOrder(input: CreateOrderInput): Promise<{
 
   if (input.couponCode) {
     payload.coupon_lines = [{ code: input.couponCode }];
+  }
+
+  if (input.metaData && input.metaData.length > 0) {
+    payload.meta_data = input.metaData;
   }
 
   if (input.isPickup) {

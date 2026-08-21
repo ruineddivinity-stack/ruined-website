@@ -6,10 +6,12 @@ import {
   isShippingMethod,
   PICKUP_LABEL,
   BULK_TIERS,
+  getGiftTier,
 } from "@/lib/discounts";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
 import { resolveCartLines } from "@/lib/cart-lines";
+import { getReferralBalance, redeemReferralCredit } from "@/lib/referral";
 
 type CheckoutRequestBody = {
   items: { slug: string; qty: number; variationId?: number }[];
@@ -26,6 +28,8 @@ type CheckoutRequestBody = {
   };
   shippingMethod?: string;
   fulfillmentMethod?: string;
+  useStoreCredit?: boolean;
+  referralCode?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -127,16 +131,64 @@ export async function POST(request: Request) {
     });
   }
 
+  // Free-gift tiers: inject the real product as a line item (so fulfillment sees
+  // it) with an offsetting fee line so it doesn't add to the charge. Skip any
+  // item that's out of stock rather than failing checkout over a missing gift.
+  const giftTier = getGiftTier(discounts.subtotal);
+  const giftLineItems: { productId: number; quantity: number; variationId?: number }[] = [];
+  if (giftTier) {
+    for (const item of giftTier.items) {
+      const product = products.find((p) => p.slug === item.slug);
+      if (!product) continue;
+      const variation = item.variationLabel
+        ? (product.variations?.find((v) => v.label === item.variationLabel) ?? null)
+        : null;
+      if (item.variationLabel && !variation) continue;
+      const inStock = variation ? variation.inStock : product.inStock;
+      if (!inStock) continue;
+      const price = variation ? variation.price : product.price;
+      giftLineItems.push({
+        productId: product.id,
+        quantity: 1,
+        variationId: variation?.id,
+      });
+      feeLines.push({
+        name: `Free gift: ${product.name}${variation ? ` (${variation.label})` : ""}`,
+        amount: -price,
+      });
+    }
+  }
+
   const session = await getSession();
+
+  // Store credit is re-verified server-side against the live balance — never
+  // trust the client-reported amount, and it only ever offsets up to what's
+  // actually owed (post-discount, pre-shipping).
+  let creditApplied = 0;
+  if (body.useStoreCredit && session) {
+    const balance = await getReferralBalance(session.username);
+    creditApplied = Math.min(balance, discounts.total);
+    if (creditApplied > 0) {
+      feeLines.push({ name: "Store credit", amount: -creditApplied });
+    }
+  }
+
+  const metaData: { key: string; value: string }[] = [];
+  if (body.referralCode && body.referralCode.trim()) {
+    metaData.push({ key: "_ruined_referred_by", value: body.referralCode.trim() });
+  }
 
   let order;
   try {
     order = await createOrder({
-      lineItems: lines.map((l) => ({
-        productId: l.product.id,
-        quantity: l.qty,
-        variationId: l.variationId,
-      })),
+      lineItems: [
+        ...lines.map((l) => ({
+          productId: l.product.id,
+          quantity: l.qty,
+          variationId: l.variationId,
+        })),
+        ...giftLineItems,
+      ],
       feeLines,
       couponCode: validCoupon?.code,
       shippingTotal,
@@ -157,6 +209,7 @@ export async function POST(request: Request) {
         email: body.email,
       },
       customerId: session?.id,
+      metaData,
     });
   } catch (err) {
     console.error("Order creation failed", err);
@@ -172,6 +225,16 @@ export async function POST(request: Request) {
       { error: chargeResult.error, orderId: order.id },
       { status: 402 },
     );
+  }
+
+  // Only debit the credit ledger once payment has actually succeeded, so a
+  // failed or cancelled charge never burns the customer's balance.
+  if (creditApplied > 0 && session) {
+    try {
+      await redeemReferralCredit(session.username, creditApplied);
+    } catch (err) {
+      console.error("Failed to redeem store credit after successful charge", err);
+    }
   }
 
   return NextResponse.json({

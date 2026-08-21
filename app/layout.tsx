@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { cookies, headers } from "next/headers";
 import { inter } from "./fonts";
+import { ReferralCapture } from "@/lib/referral-capture";
 import { StarField } from "@/components/layout/StarField";
 import { LightRefraction } from "@/components/layout/LightRefraction";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
@@ -9,6 +11,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { FloatingCartButton } from "@/components/layout/FloatingCartButton";
 import { SavingsModal } from "@/components/layout/SavingsModal";
+import { WelcomePopup } from "@/components/layout/WelcomePopup";
 import { AgeGate } from "@/components/layout/AgeGate";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Providers } from "./providers";
@@ -56,6 +59,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <CartDrawer products={products} />
           <FloatingCartButton />
           <SavingsModal />
+          <WelcomePopup ageGateOpen={ageGateOpen} />
+          <Suspense fallback={null}>
+            <ReferralCapture />
+          </Suspense>
         </Providers>
       </body>
     </html>

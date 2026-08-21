@@ -24,6 +24,39 @@ export const SPEND_TIERS = [
   { min: 300, amount: 30 },
 ] as const;
 
+export type GiftItem = { slug: string; variationLabel?: string };
+
+/** Free-gift tiers — non-cumulative, the customer gets the single highest one they clear. */
+export const GIFT_TIERS: { min: number; label: string; items: GiftItem[] }[] = [
+  {
+    min: 250,
+    label: "Free GHK-CU 100MG + BAC Water",
+    items: [
+      { slug: "ghk-cu", variationLabel: "100MG" },
+      { slug: "hospira-b-a-c-water-10ml" },
+    ],
+  },
+  {
+    min: 200,
+    label: "Free GHK-CU 50MG",
+    items: [{ slug: "ghk-cu", variationLabel: "50MG" }],
+  },
+  {
+    min: 150,
+    label: "Free Shipping + Free BAC Water",
+    items: [{ slug: "hospira-b-a-c-water-10ml" }],
+  },
+  {
+    min: 100,
+    label: "Free BAC Water",
+    items: [{ slug: "hospira-b-a-c-water-10ml" }],
+  },
+];
+
+export function getGiftTier(subtotal: number) {
+  return GIFT_TIERS.find((t) => subtotal >= t.min) ?? null;
+}
+
 export const AFFILIATE_CODE = "RX";
 export const AFFILIATE_RATE = 0.1;
 

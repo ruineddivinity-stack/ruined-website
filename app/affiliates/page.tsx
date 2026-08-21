@@ -105,6 +105,34 @@ export default function AffiliatesPage() {
         </Container>
       </section>
 
+      <section className="py-16">
+        <Container>
+          <Reveal>
+            <div className="rounded-3xl border border-steel-500/30 bg-surface-2 p-6 sm:p-8">
+              <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-steel-400">
+                    Not a Creator or Influencer?
+                  </p>
+                  <h2 className="mt-2 font-display text-2xl font-black uppercase tracking-tight text-fg sm:text-3xl">
+                    Just Refer a Friend Instead
+                  </h2>
+                  <p className="mt-3 max-w-lg text-sm leading-relaxed text-fg-muted">
+                    Every account automatically gets a personal referral
+                    link &mdash; no application, no approval queue. Share it,
+                    your friend saves 10%, and $10 in store credit lands in
+                    your account the moment their order goes through.
+                  </p>
+                </div>
+                <Button href="/account/referrals" className="shrink-0">
+                  Get My Referral Link
+                </Button>
+              </div>
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
       <section id="how-it-works" className="scroll-mt-[150px] py-24">
         <Container>
           <Reveal>

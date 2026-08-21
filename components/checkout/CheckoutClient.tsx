@@ -6,9 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
+import { getStoredReferralCode } from "@/lib/referral-capture";
 import type { Product } from "@/lib/types";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
+import { GiftProgress } from "@/components/cart/GiftProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
 import {
@@ -59,6 +61,8 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("standard");
   const [fulfillment, setFulfillment] = useState<FulfillmentMethod>("ship");
+  const [creditBalance, setCreditBalance] = useState(0);
+  const [useCredit, setUseCredit] = useState(true);
   const isPickup = fulfillment === "pickup";
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +71,13 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       errorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [error]);
+
+  useEffect(() => {
+    fetch("/api/account/store-credit")
+      .then((res) => res.json())
+      .then((data) => setCreditBalance(Number(data.balance) || 0))
+      .catch(() => setCreditBalance(0));
+  }, []);
 
   const lines = resolveCartLines(items, products);
 
@@ -83,7 +94,8 @@ export function CheckoutClient({ products }: { products: Product[] }) {
     isPickup || lines.length === 0 || discounts.freeShipping
       ? 0
       : SHIPPING_METHODS[shippingMethod].price;
-  const total = discounts.total + shippingCost;
+  const creditApplied = useCredit ? Math.min(creditBalance, discounts.total) : 0;
+  const total = Math.max(0, discounts.total - creditApplied) + shippingCost;
 
   const formValid =
     email.trim() !== "" &&
@@ -116,6 +128,8 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           shipping,
           shippingMethod,
           fulfillmentMethod: fulfillment,
+          useStoreCredit: useCredit && creditBalance > 0,
+          referralCode: getStoredReferralCode(),
         }),
       });
 
@@ -338,6 +352,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
         <div className="mt-6 flex flex-col gap-4">
           <FreeShippingProgress subtotal={subtotal} />
+          <GiftProgress subtotal={subtotal} />
           <SpendDiscountProgress subtotal={subtotal} />
         </div>
 
@@ -351,6 +366,22 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             onApply={setCoupon}
           />
         </div>
+
+        {creditBalance > 0 && (
+          <label className="mt-4 flex cursor-pointer items-center justify-between rounded-xl border border-steel-600/50 bg-steel-700/15 px-4 py-3 text-sm">
+            <span className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={useCredit}
+                onChange={(e) => setUseCredit(e.target.checked)}
+                className="accent-steel-500"
+              />
+              <span className="text-fg">
+                Use ${creditBalance.toFixed(2)} store credit
+              </span>
+            </span>
+          </label>
+        )}
 
         <div className="mt-6 flex flex-col gap-3 border-t border-border-soft pt-5 text-sm">
           <div className="flex justify-between text-fg-muted">
@@ -379,6 +410,12 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             <div className="flex justify-between text-steel-300">
               <span>Affiliate code &ldquo;{discounts.affiliateCode}&rdquo;</span>
               <span>-${discounts.affiliateAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {creditApplied > 0 && (
+            <div className="flex justify-between text-steel-300">
+              <span>Store credit</span>
+              <span>-${creditApplied.toFixed(2)}</span>
             </div>
           )}
           {isPickup ? (

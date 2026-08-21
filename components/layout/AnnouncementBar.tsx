@@ -1,5 +1,5 @@
 const messages = [
-  { label: "CODE RX FOR 10% OFF", icon: TagIcon },
+  { label: "NEW HERE? GET 10% OFF ↓", icon: TagIcon },
   { label: "SHIPS WITHIN 24-48 HOURS", icon: TruckIcon },
   { label: "99% PURITY", icon: StarIcon },
   { label: "3RD PARTY TESTED", icon: ShieldIcon },
