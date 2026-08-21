@@ -35,7 +35,7 @@ export function wrapBroadcastHtml({
   unsubscribeUrl: string;
 }): string {
   const addressLine = MAILING_ADDRESS ? `<br />${MAILING_ADDRESS}` : "";
-  const logoWhite = `${SITE_URL}/logo-email-white.png`;
+  const logoBlack = `${SITE_URL}/logo-email-black.png`;
 
   return `<!doctype html>
 <html lang="en">
@@ -45,16 +45,16 @@ export function wrapBroadcastHtml({
 <meta name="color-scheme" content="light" />
 <meta name="supported-color-schemes" content="light" />
 </head>
-<body style="margin:0;padding:0;background:#0a0b0d;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0b0d;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#f2f2f4;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f4;padding:32px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #26292e;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e5ea;">
 
           <!-- Header -->
           <tr>
-            <td align="center" style="padding:36px 24px;background-color:#030304;">
-              <img src="${logoWhite}" width="190" alt="RUINED" style="display:block;margin:0 auto;height:auto;max-width:190px;border:0;" />
+            <td align="center" style="padding:32px 24px 20px;">
+              <img src="${logoBlack}" width="140" alt="RUINED" style="display:block;margin:0 auto;height:auto;max-width:140px;border:0;" />
             </td>
           </tr>
           <tr>
@@ -70,13 +70,13 @@ export function wrapBroadcastHtml({
 
           <!-- Footer -->
           <tr>
-            <td style="padding:24px 28px;background-color:#030304;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#8b8f96;text-align:center;">
+            <td style="padding:20px 28px 28px;border-top:1px solid #e5e5ea;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#8b8f96;text-align:center;">
               RUINED — Research-grade compounds, verified to the batch.${addressLine}
               <br /><br />
-              <a href="${DOMAIN_URL}" style="color:#a3eef4;">${DOMAIN_DISPLAY}</a>
+              <a href="${DOMAIN_URL}" style="color:#8b8f96;">${DOMAIN_DISPLAY}</a>
               <br /><br />
               You're receiving this because you subscribed at ruinedrx.com.
-              <a href="${unsubscribeUrl}" style="color:#a3eef4;">Unsubscribe</a>
+              <a href="${unsubscribeUrl}" style="color:#8b8f96;">Unsubscribe</a>
             </td>
           </tr>
 
