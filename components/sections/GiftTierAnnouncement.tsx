@@ -1,7 +1,7 @@
 "use client";
 
 import { GIFT_TIERS } from "@/lib/discounts";
-import { OPEN_SAVINGS_MODAL_EVENT } from "@/components/layout/SavingsModal";
+import { OPEN_GIFT_TIERS_MODAL_EVENT } from "@/components/layout/GiftTiersModal";
 
 const sortedTiers = [...GIFT_TIERS].sort((a, b) => a.min - b.min);
 const lowestTier = sortedTiers[0];
@@ -11,7 +11,7 @@ export function GiftTierAnnouncement({ className = "" }: { className?: string })
   return (
     <button
       type="button"
-      onClick={() => window.dispatchEvent(new Event(OPEN_SAVINGS_MODAL_EVENT))}
+      onClick={() => window.dispatchEvent(new Event(OPEN_GIFT_TIERS_MODAL_EVENT))}
       className={`holo-border-static group relative flex w-full flex-col items-center gap-3 overflow-hidden rounded-2xl px-5 py-4 text-center backdrop-blur-md transition-transform duration-300 hover:scale-[1.01] sm:flex-row sm:justify-between sm:text-left ${className}`}
     >
       <div className="flex items-center gap-3">

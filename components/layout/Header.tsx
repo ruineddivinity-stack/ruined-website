@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { CartButton } from "@/components/layout/CartButton";
+import { GiftButton } from "@/components/layout/GiftButton";
 import { AccountButton } from "@/components/layout/AccountButton";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { getSession } from "@/lib/session";
@@ -58,6 +59,7 @@ export async function Header() {
             Shop Now
           </Button>
           <AccountButton href={session ? "/account" : "/login"} />
+          <GiftButton />
           <CartButton />
           <MobileNav accountHref={session ? "/account" : "/login"} />
         </div>

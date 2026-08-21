@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { SUBSCRIBED_STORAGE_KEY } from "@/components/layout/WelcomePopup";
+
+const perks = [
+  "Restock alerts, the instant a batch is back",
+  "Early access to new compound drops",
+  "Subscriber-only bulk & kit deals",
+];
 
 export function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -28,17 +35,38 @@ export function NewsletterForm() {
       return;
     }
 
+    try {
+      window.localStorage.setItem(SUBSCRIBED_STORAGE_KEY, "1");
+    } catch {
+      // ignore
+    }
     setSubscribed(true);
   };
 
   if (subscribed) {
     return (
-      <div className="flex flex-col gap-2 rounded-2xl border border-steel-500/30 bg-surface px-5 py-6 text-center">
-        <p className="text-sm font-semibold text-fg">You&rsquo;re on the list.</p>
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-steel-500/30 bg-surface px-6 py-8 text-center">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-steel-700/30 text-steel-300">
+          <CheckIcon />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-fg">You&rsquo;re on the list.</p>
+          <p className="mt-1 font-display text-xl font-black uppercase tracking-tight text-gradient-holo">
+            VIP &mdash; 10% Off Forever
+          </p>
+        </div>
         <p className="text-xs text-fg-muted">
-          We&rsquo;ll email <span className="text-fg">{email}</span> the moment
-          there&rsquo;s a restock or new batch drop.
+          We&rsquo;ll email <span className="text-fg">{email}</span> your
+          lifetime code, plus you&rsquo;re now locked in for:
         </p>
+        <ul className="flex w-full flex-col gap-2 text-left text-xs text-fg-muted">
+          {perks.map((perk) => (
+            <li key={perk} className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-steel-400" />
+              {perk}
+            </li>
+          ))}
+        </ul>
       </div>
     );
   }
@@ -80,5 +108,22 @@ export function NewsletterForm() {
         {loading ? "Joining…" : "Join Notifications"}
       </Button>
     </form>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
   );
 }

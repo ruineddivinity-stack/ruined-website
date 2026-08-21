@@ -7,6 +7,7 @@ import { AGE_GATE_COOKIE } from "@/lib/age-gate";
 import { SUBSCRIBER_CODE } from "@/lib/discounts";
 
 export const OPEN_WELCOME_POPUP_EVENT = "ruined:open-welcome-popup";
+export const SUBSCRIBED_STORAGE_KEY = "ruined-subscribed";
 
 const SEEN_KEY = "ruined-welcome-seen";
 const REVEAL_DELAY_MS = 2500;
@@ -98,6 +99,7 @@ export function WelcomePopup({ ageGateOpen }: { ageGateOpen: boolean }) {
       setCoupon({ code: SUBSCRIBER_CODE, discountType: "percent", amount: 10 });
       try {
         window.localStorage.setItem(SEEN_KEY, "1");
+        window.localStorage.setItem(SUBSCRIBED_STORAGE_KEY, "1");
       } catch {
         // ignore
       }

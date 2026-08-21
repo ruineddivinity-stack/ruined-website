@@ -6,20 +6,28 @@ import {
   BULK_TIERS,
   SPEND_TIERS,
   GIFT_TIERS,
-  AFFILIATE_CODE,
   SUBSCRIBER_CODE,
   STACKED_SAVINGS_PCT,
 } from "@/lib/discounts";
-import { OPEN_WELCOME_POPUP_EVENT } from "@/components/layout/WelcomePopup";
+import { OPEN_WELCOME_POPUP_EVENT, SUBSCRIBED_STORAGE_KEY } from "@/components/layout/WelcomePopup";
+import { OPEN_GIFT_TIERS_MODAL_EVENT } from "@/components/layout/GiftTiersModal";
 
 export const OPEN_SAVINGS_MODAL_EVENT = "ruined:open-savings-modal";
 
 export function SavingsModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const close = () => setIsOpen(false);
 
   useEffect(() => {
-    const open = () => setIsOpen(true);
+    const open = () => {
+      try {
+        setIsSubscribed(window.localStorage.getItem(SUBSCRIBED_STORAGE_KEY) === "1");
+      } catch {
+        setIsSubscribed(false);
+      }
+      setIsOpen(true);
+    };
     window.addEventListener(OPEN_SAVINGS_MODAL_EVENT, open);
     return () => window.removeEventListener(OPEN_SAVINGS_MODAL_EVENT, open);
   }, []);
@@ -28,7 +36,7 @@ export function SavingsModal() {
     <>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={() => window.dispatchEvent(new Event(OPEN_SAVINGS_MODAL_EVENT))}
         className="flex items-center gap-2 rounded-full border border-steel-500/40 bg-surface-2/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fg shadow-[0_0_20px_2px_rgba(31,200,221,0.3)] backdrop-blur transition-transform hover:scale-105"
       >
         <span className="relative flex h-2 w-2">
@@ -150,23 +158,19 @@ export function SavingsModal() {
                 </span>
               </Row>
               <p className="mt-1 text-xs text-fg-muted">
-                Drops right into your cart as you shop &mdash; no code needed.
+                Drops right into your cart as you shop &mdash; no code needed,
+                up to {[...GIFT_TIERS].sort((a, b) => b.min - a.min)[0].label}.
               </p>
-              <div className="mt-3 flex flex-col gap-2">
-                {[...GIFT_TIERS].reverse().map((tier) => (
-                  <div
-                    key={tier.min}
-                    className="flex items-center justify-between rounded-xl border border-steel-600/50 bg-steel-700/15 px-3 py-2.5 transition-colors hover:border-steel-500"
-                  >
-                    <span className="text-sm font-bold text-fg">
-                      Spend ${tier.min}+
-                    </span>
-                    <span className="text-right text-xs font-semibold text-steel-300">
-                      {tier.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  close();
+                  window.dispatchEvent(new Event(OPEN_GIFT_TIERS_MODAL_EVENT));
+                }}
+                className="mt-2 inline-flex w-fit items-center gap-1.5 text-xs font-semibold text-steel-300 hover:text-steel-200"
+              >
+                See all gift tiers &rarr;
+              </button>
             </Section>
 
             <Section number={4} title="Unlock Your Code">
@@ -180,30 +184,45 @@ export function SavingsModal() {
                 once it&rsquo;s stacked in.
               </p>
 
-              <button
-                type="button"
-                onClick={() => {
-                  close();
-                  window.dispatchEvent(new Event(OPEN_WELCOME_POPUP_EVENT));
-                }}
-                className="group mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-steel-500/40 bg-steel-700/15 px-4 py-3 text-left transition-colors hover:border-steel-500"
-              >
-                <span className="flex items-center gap-2.5">
-                  <LockIcon />
-                  <span
-                    aria-hidden
-                    className="select-none font-display text-sm font-black tracking-[0.2em] text-fg blur-[5px] transition-all duration-300 group-hover:blur-[4px]"
-                  >
-                    {SUBSCRIBER_CODE}
+              {isSubscribed ? (
+                <div className="mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-emerald-400/50 bg-emerald-500/10 px-4 py-3">
+                  <span className="flex items-center gap-2.5">
+                    <CheckIcon />
+                    <span className="font-display text-sm font-black tracking-[0.2em] text-fg">
+                      {SUBSCRIBER_CODE}
+                    </span>
                   </span>
-                </span>
-                <span className="shrink-0 text-xs font-bold uppercase tracking-wide text-steel-300 group-hover:text-steel-200">
-                  Subscribe to Reveal
-                </span>
-              </button>
+                  <span className="shrink-0 text-xs font-bold uppercase tracking-wide text-emerald-300">
+                    Unlocked
+                  </span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    close();
+                    window.dispatchEvent(new Event(OPEN_WELCOME_POPUP_EVENT));
+                  }}
+                  className="group mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-steel-500/40 bg-steel-700/15 px-4 py-3 text-left transition-colors hover:border-steel-500"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <LockIcon />
+                    <span
+                      aria-hidden
+                      className="select-none font-display text-sm font-black tracking-[0.2em] text-fg blur-[5px] transition-all duration-300 group-hover:blur-[4px]"
+                    >
+                      {SUBSCRIBER_CODE}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs font-bold uppercase tracking-wide text-steel-300 group-hover:text-steel-200">
+                    Subscribe to Reveal
+                  </span>
+                </button>
+              )}
               <p className="mt-2 text-xs text-fg-muted">
-                Every subscriber gets a lifetime 10% code by email &mdash; or
-                use an affiliate code from our community.
+                {isSubscribed
+                  ? "Already stacked in on this order — use it any time at checkout."
+                  : "Every subscriber gets a lifetime 10% code by email — or use an affiliate code from our community."}
               </p>
             </Section>
 
@@ -266,7 +285,9 @@ function StackedSavings({
       <span className="font-bold text-steel-300">Save {basePct}%</span>
       <span className="text-fg-faint">or up to</span>
       <span className="font-bold text-gradient-holo">{stackedPct}%</span>
-      <span className="text-fg-faint">with code {AFFILIATE_CODE}</span>
+      <span className="text-fg-faint">
+        with an affiliate code or your lifetime subscriber code
+      </span>
     </div>
   );
 }
@@ -331,6 +352,24 @@ function TagIcon({ className }: { className?: string }) {
     <svg {...iconProps(className)}>
       <path d="M12.6 3H5a2 2 0 0 0-2 2v7.6a2 2 0 0 0 .59 1.41l8.4 8.4a2 2 0 0 0 2.82 0l7.6-7.6a2 2 0 0 0 0-2.82l-8.4-8.4A2 2 0 0 0 12.6 3Z" />
       <circle cx="8.5" cy="8.5" r="1.5" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0 text-emerald-300"
+    >
+      <path d="M20 6 9 17l-5-5" />
     </svg>
   );
 }

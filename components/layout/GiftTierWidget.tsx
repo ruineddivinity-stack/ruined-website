@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { resolveCartLines } from "@/lib/cart-lines";
 import { GIFT_TIERS } from "@/lib/discounts";
-import { OPEN_SAVINGS_MODAL_EVENT } from "@/components/layout/SavingsModal";
+import { OPEN_GIFT_TIERS_MODAL_EVENT } from "@/components/layout/GiftTiersModal";
 import type { Product } from "@/lib/types";
 
 const sortedTiers = [...GIFT_TIERS].sort((a, b) => a.min - b.min);
@@ -86,7 +86,7 @@ export function GiftTierWidget({ products }: { products: Product[] }) {
 
       <button
         type="button"
-        onClick={() => window.dispatchEvent(new Event(OPEN_SAVINGS_MODAL_EVENT))}
+        onClick={() => window.dispatchEvent(new Event(OPEN_GIFT_TIERS_MODAL_EVENT))}
         className="btn-shimmer mt-3 flex w-full items-center justify-center gap-2 bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-transform hover:brightness-110"
       >
         View Gift Tiers

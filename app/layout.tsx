@@ -10,6 +10,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { GiftTierWidget } from "@/components/layout/GiftTierWidget";
+import { GiftTiersModal } from "@/components/layout/GiftTiersModal";
 import { SavingsModal } from "@/components/layout/SavingsModal";
 import { WelcomePopup } from "@/components/layout/WelcomePopup";
 import { AgeGate } from "@/components/layout/AgeGate";
@@ -61,6 +62,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <GiftTierWidget products={products} />
             <SavingsModal />
           </div>
+          <GiftTiersModal products={products} />
           <WelcomePopup ageGateOpen={ageGateOpen} />
           <Suspense fallback={null}>
             <ReferralCapture />
