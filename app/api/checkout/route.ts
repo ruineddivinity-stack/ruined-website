@@ -135,7 +135,12 @@ export async function POST(request: Request) {
   // it) with an offsetting fee line so it doesn't add to the charge. Skip any
   // item that's out of stock rather than failing checkout over a missing gift.
   const giftTier = getGiftTier(discounts.subtotal);
-  const giftLineItems: { productId: number; quantity: number; variationId?: number }[] = [];
+  const giftLineItems: {
+    productId: number;
+    quantity: number;
+    variationId?: number;
+    metaData: { key: string; value: string }[];
+  }[] = [];
   if (giftTier) {
     for (const item of giftTier.items) {
       const product = products.find((p) => p.slug === item.slug);
@@ -151,6 +156,9 @@ export async function POST(request: Request) {
         productId: product.id,
         quantity: 1,
         variationId: variation?.id,
+        // Shows directly under the item in the WooCommerce order/packing-slip
+        // view, so fulfillment can tell at a glance this wasn't paid for.
+        metaData: [{ key: "🎁 Free Gift", value: `Unlocked at $${giftTier.min}+ spend` }],
       });
       feeLines.push({
         name: `Free gift: ${product.name}${variation ? ` (${variation.label})` : ""}`,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode, type ComponentType } from "react";
+import { useState, useEffect, type ReactNode, type ComponentType } from "react";
 import Link from "next/link";
 import {
   BULK_TIERS,
@@ -10,23 +10,31 @@ import {
   STACKED_SAVINGS_PCT,
 } from "@/lib/discounts";
 
+export const OPEN_SAVINGS_MODAL_EVENT = "ruined:open-savings-modal";
+
 export function SavingsModal() {
   const [isOpen, setIsOpen] = useState(false);
   const close = () => setIsOpen(false);
+
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    window.addEventListener(OPEN_SAVINGS_MODAL_EVENT, open);
+    return () => window.removeEventListener(OPEN_SAVINGS_MODAL_EVENT, open);
+  }, []);
 
   return (
     <>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 z-40 flex items-center gap-2 rounded-full border border-steel-500/40 bg-surface-2/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fg shadow-[0_0_20px_2px_rgba(31,200,221,0.3)] backdrop-blur transition-transform hover:scale-105"
+        className="flex items-center gap-2 rounded-full border border-steel-500/40 bg-surface-2/95 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-fg shadow-[0_0_20px_2px_rgba(31,200,221,0.3)] backdrop-blur transition-transform hover:scale-105"
       >
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-steel-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-steel-400" />
         </span>
         <TagIcon />
-        How to Save $
+        <span className="hidden sm:inline">How to Save $</span>
       </button>
 
       <div

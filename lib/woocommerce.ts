@@ -390,7 +390,12 @@ export type OrderAddress = {
 };
 
 export type CreateOrderInput = {
-  lineItems: { productId: number; quantity: number; variationId?: number }[];
+  lineItems: {
+    productId: number;
+    quantity: number;
+    variationId?: number;
+    metaData?: { key: string; value: string }[];
+  }[];
   feeLines?: { name: string; amount: number }[];
   couponCode?: string;
   billing: OrderAddress;
@@ -442,6 +447,7 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       product_id: li.productId,
       quantity: li.quantity,
       ...(li.variationId ? { variation_id: li.variationId } : {}),
+      ...(li.metaData && li.metaData.length > 0 ? { meta_data: li.metaData } : {}),
     })),
   };
 

@@ -57,8 +57,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <Footer />
           <CartDrawer products={products} />
-          <FloatingCartButton />
-          <SavingsModal />
+          <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
+            <SavingsModal />
+            <FloatingCartButton products={products} />
+          </div>
           <WelcomePopup ageGateOpen={ageGateOpen} />
           <Suspense fallback={null}>
             <ReferralCapture />

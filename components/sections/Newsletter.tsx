@@ -2,6 +2,7 @@ import { Container } from "@/components/ui/Container";
 import { HoloBlob } from "@/components/layout/HoloBlob";
 import { NewsletterForm } from "@/components/sections/NewsletterForm";
 import { Reveal } from "@/components/ui/Reveal";
+import { VipBadge } from "@/components/ui/VipBadge";
 
 const perks = [
   {
@@ -73,7 +74,10 @@ export function Newsletter() {
                 </ul>
               </div>
 
-              <NewsletterForm />
+              <div className="flex flex-col gap-4">
+                <VipBadge className="mx-auto lg:mx-0" />
+                <NewsletterForm />
+              </div>
             </div>
           </div>
         </Reveal>
