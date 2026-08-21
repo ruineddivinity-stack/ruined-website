@@ -4,7 +4,7 @@ import { loginWithPassword } from "@/lib/wp-auth";
 import { SESSION_COOKIE } from "@/lib/session";
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json();
+  const { email, password, rememberMe } = await request.json();
 
   if (!email || !password) {
     return NextResponse.json(
@@ -24,7 +24,9 @@ export async function POST(request: Request) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 14,
+    // "Remember me" unchecked → a session cookie that clears when the
+    // browser closes, instead of persisting for two weeks.
+    ...(rememberMe === false ? {} : { maxAge: 60 * 60 * 24 * 14 }),
   });
 
   return NextResponse.json({ success: true });
