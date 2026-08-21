@@ -15,8 +15,8 @@ export const PICKUP_METHOD_ID = "local_pickup";
 export const PICKUP_LABEL = "Pickup — Local Customers Only";
 
 export const BULK_TIERS = {
-  bulk: { min: 3, max: 9, rate: 0.08, label: "3-9 Vials" },
-  kit: { min: 10, rate: 0.2, label: "Kit (10+ Vials)" },
+  bulk: { min: 3, max: 9, rate: 0.1, label: "3-9 Vials" },
+  kit: { min: 10, rate: 0.3, label: "Kit (10+ Vials)" },
 } as const;
 
 export const SPEND_TIERS = [
@@ -35,8 +35,8 @@ export type AppliedCoupon = {
 
 /** Advertised combined savings when a bulk tier is stacked with an affiliate code. */
 export const STACKED_SAVINGS_PCT = {
-  bulk: 18,
-  kit: 30,
+  bulk: 20,
+  kit: 40,
 } as const;
 
 export function getBulkTier(qty: number) {
@@ -58,10 +58,10 @@ export type DiscountLine = {
 
 export type DiscountBreakdown = {
   subtotal: number;
-  /** Sum of 3-9 tier discounts — only lines that individually hit 3-9 qty. */
+  /** 3-9 tier — any mix of vials, applied to whatever isn't already Kit-qualifying. */
   bulkAmount: number;
   bulkQualifies: boolean;
-  /** Sum of 10+ tier discounts — only lines that individually hit 10+ qty. */
+  /** Kit tier — only lines with 10+ of the SAME vial, applied per line. */
   kitAmount: number;
   kitQualifies: boolean;
   spendTier: ReturnType<typeof getSpendTier>;
@@ -80,19 +80,24 @@ export function calculateDiscounts(
 ): DiscountBreakdown {
   const subtotal = lines.reduce((sum, l) => sum + l.subtotal, 0);
 
-  // Bulk/kit pricing requires 3-9 (or 10+) of the SAME line — buying 2 of one
-  // vial and 2 of another doesn't combine to hit the threshold. Each line is
-  // judged on its own quantity, not the cart's combined eligible quantity.
+  // Kit (10+) requires that many of the SAME vial — it's judged per line, not
+  // the cart's combined quantity. The 3-9 tier is looser: it's any mix of
+  // vials, applied to whatever's left over after pulling out lines that
+  // already qualified for Kit (so the same units never get discounted twice).
   const eligibleLines = lines.filter((l) => !l.isBundle);
-  let bulkAmount = 0;
   let kitAmount = 0;
+  let mixedSubtotal = 0;
+  let mixedQty = 0;
   for (const line of eligibleLines) {
     if (line.qty >= BULK_TIERS.kit.min) {
       kitAmount += line.subtotal * BULK_TIERS.kit.rate;
-    } else if (line.qty >= BULK_TIERS.bulk.min) {
-      bulkAmount += line.subtotal * BULK_TIERS.bulk.rate;
+    } else {
+      mixedSubtotal += line.subtotal;
+      mixedQty += line.qty;
     }
   }
+  const bulkAmount =
+    mixedQty >= BULK_TIERS.bulk.min ? mixedSubtotal * BULK_TIERS.bulk.rate : 0;
 
   const spendTier = getSpendTier(subtotal);
   const spendAmount = spendTier?.amount ?? 0;
