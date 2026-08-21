@@ -4,10 +4,10 @@ import { useState } from "react";
 import type { AppliedCoupon } from "@/lib/discounts";
 
 export function PromoCodeInput({
-  applied,
+  coupon,
   onApply,
 }: {
-  applied: boolean;
+  coupon: AppliedCoupon | null;
   onApply: (coupon: AppliedCoupon | null) => void;
 }) {
   const [value, setValue] = useState("");
@@ -33,6 +33,7 @@ export function PromoCodeInput({
           discountType: data.discountType,
           amount: data.amount,
         });
+        setValue("");
       } else {
         onApply(null);
         setError(true);
@@ -45,11 +46,21 @@ export function PromoCodeInput({
     }
   };
 
-  if (applied) {
+  if (coupon) {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-steel-600/50 bg-steel-700/20 px-4 py-3 text-sm text-steel-300">
         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-steel-400" />
-        Affiliate code applied
+        <span className="flex-1">
+          Code &ldquo;{coupon.code}&rdquo; applied
+        </span>
+        <button
+          type="button"
+          onClick={() => onApply(null)}
+          aria-label="Remove code"
+          className="shrink-0 text-steel-300/70 hover:text-fg"
+        >
+          <CloseIcon />
+        </button>
       </div>
     );
   }
@@ -81,5 +92,21 @@ export function PromoCodeInput({
         <p className="mt-2 text-xs text-danger">That code isn&rsquo;t valid.</p>
       )}
     </div>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+    >
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
   );
 }

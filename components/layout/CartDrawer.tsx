@@ -184,7 +184,7 @@ export function CartDrawer({ products }: { products: Product[] }) {
 
             <div className="mt-4">
               <PromoCodeInput
-                applied={discounts.affiliateApplied}
+                coupon={coupon}
                 onApply={setCoupon}
               />
             </div>

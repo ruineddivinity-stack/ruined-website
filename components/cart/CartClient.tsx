@@ -165,7 +165,7 @@ export function CartClient({ products }: { products: Product[] }) {
 
         <div className="mt-5">
           <PromoCodeInput
-            applied={discounts.affiliateApplied}
+            coupon={coupon}
             onApply={setCoupon}
           />
         </div>
