@@ -27,32 +27,35 @@ export async function POST(request: Request) {
     );
   }
 
+  let resized: Buffer;
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const resized = await sharp(buffer)
+    resized = await sharp(buffer)
       .rotate()
       .resize({ width: MAX_WIDTH, withoutEnlargement: true })
       .flatten({ background: "#ffffff" })
       .jpeg({ quality: 80 })
       .toBuffer();
+  } catch (err) {
+    console.error("Flyer image resize failed:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: `Couldn't process that image: ${message}` },
+      { status: 500 },
+    );
+  }
 
+  try {
     const blob = await put(`broadcast-flyers/${crypto.randomUUID()}.jpg`, resized, {
       access: "public",
       contentType: "image/jpeg",
     });
-
     return NextResponse.json({ url: blob.url, sizeKb: Math.round(resized.length / 1024) });
   } catch (err) {
-    console.error("Flyer image processing failed:", err);
-    const message = err instanceof Error ? err.message : "";
-    const isAuthIssue =
-      /token|credential|not authorized|no store/i.test(message);
+    console.error("Flyer image upload failed:", err);
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      {
-        error: isAuthIssue
-          ? "The Blob store isn't connected to this project yet — open the store in the Vercel dashboard, go to its Projects tab, and connect it to this project (then redeploy)."
-          : "Couldn't process that image. Try a different file.",
-      },
+      { error: `Couldn't upload the image: ${message}` },
       { status: 500 },
     );
   }
