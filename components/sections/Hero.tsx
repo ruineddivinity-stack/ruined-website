@@ -35,9 +35,6 @@ export function Hero() {
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Button href="/shop">Shop the Catalog</Button>
-            <Button href="/about" variant="secondary">
-              Our Mission
-            </Button>
           </div>
 
           <ScrollLink

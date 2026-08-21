@@ -58,7 +58,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <Footer />
           <CartDrawer products={products} />
-          <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+          <div className="fixed bottom-6 right-6 z-40 flex flex-wrap items-center justify-end gap-3">
             <GiftTierWidget products={products} />
             <SavingsModal />
           </div>
