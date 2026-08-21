@@ -12,7 +12,10 @@ export function Hero() {
   return (
     <section className="relative -mt-[125px] overflow-hidden bg-[rgba(3,3,4,0.65)] bg-glass pt-[125px] sm:-mt-[130px] sm:pt-[130px]">
       <HoloBlob className="-z-10 -top-40 right-[-10%]" size={560} animated={false} />
-      <Container className="grid min-h-[640px] grid-cols-1 items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
+      <Container className="pt-6 sm:pt-8">
+        <GiftTierAnnouncement />
+      </Container>
+      <Container className="grid min-h-[600px] grid-cols-1 items-center gap-12 py-14 lg:grid-cols-2 lg:py-20">
         <div>
           <div className="flex flex-wrap gap-2">
             <Badge tone="steel">Research-Grade Purity</Badge>
@@ -43,8 +46,6 @@ export function Hero() {
           >
             <VipBadge />
           </ScrollLink>
-
-          <GiftTierAnnouncement className="mt-4" />
 
           <div className="mt-10 flex items-center gap-6 border-t border-border-soft pt-5">
             <Stat value="99%+" label="Avg. purity" />

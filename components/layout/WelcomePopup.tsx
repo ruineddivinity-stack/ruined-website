@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { AGE_GATE_COOKIE } from "@/lib/age-gate";
-import { AFFILIATE_CODE } from "@/lib/discounts";
+import { SUBSCRIBER_CODE } from "@/lib/discounts";
+
+export const OPEN_WELCOME_POPUP_EVENT = "ruined:open-welcome-popup";
 
 const SEEN_KEY = "ruined-welcome-seen";
 const REVEAL_DELAY_MS = 2500;
@@ -64,6 +66,12 @@ export function WelcomePopup({ ageGateOpen }: { ageGateOpen: boolean }) {
     };
   }, [blocked, ageGateOpen]);
 
+  useEffect(() => {
+    const open = () => setVisible(true);
+    window.addEventListener(OPEN_WELCOME_POPUP_EVENT, open);
+    return () => window.removeEventListener(OPEN_WELCOME_POPUP_EVENT, open);
+  }, []);
+
   const dismiss = () => {
     setVisible(false);
     try {
@@ -87,7 +95,7 @@ export function WelcomePopup({ ageGateOpen }: { ageGateOpen: boolean }) {
         setStatus("error");
         return;
       }
-      setCoupon({ code: AFFILIATE_CODE, discountType: "percent", amount: 10 });
+      setCoupon({ code: SUBSCRIBER_CODE, discountType: "percent", amount: 10 });
       try {
         window.localStorage.setItem(SEEN_KEY, "1");
       } catch {
@@ -140,11 +148,11 @@ export function WelcomePopup({ ageGateOpen }: { ageGateOpen: boolean }) {
                 <CheckIcon />
               </span>
               <h2 className="font-display text-xl font-black uppercase tracking-tight text-fg">
-                Code {AFFILIATE_CODE} Applied
+                Code {SUBSCRIBER_CODE} Applied
               </h2>
               <p className="text-xs text-fg-muted">
-                10% off is locked in for your order &mdash; check your inbox
-                for restock alerts and subscriber-only drops.
+                10% off is locked in for your order &mdash; it&rsquo;s yours
+                forever, and it&rsquo;s already on its way to your inbox too.
               </p>
             </div>
           ) : (
@@ -154,11 +162,11 @@ export function WelcomePopup({ ageGateOpen }: { ageGateOpen: boolean }) {
                 NEW HERE?
               </span>
               <h2 className="mt-4 font-display text-2xl font-black uppercase leading-tight tracking-tight text-gradient-holo sm:text-3xl">
-                Get 10% Off
+                Sign Up &amp; Get 10% Off Forever
               </h2>
               <p className="mt-2 text-xs leading-relaxed text-fg-muted">
-                Join the list for your first-order code, plus restock alerts
-                and subscriber-only bulk deals.
+                Join the list for your lifetime code, plus restock alerts and
+                subscriber-only bulk deals.
               </p>
 
               <div className="mt-5 flex flex-col gap-2">

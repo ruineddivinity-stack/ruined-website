@@ -14,7 +14,7 @@ import { resolveCartLines } from "@/lib/cart-lines";
 import { getReferralBalance, redeemReferralCredit } from "@/lib/referral";
 
 type CheckoutRequestBody = {
-  items: { slug: string; qty: number; variationId?: number }[];
+  items: { slug: string; qty: number; variationId?: number; isGift?: boolean }[];
   promoCode?: string;
   sourceId: string;
   email: string;
@@ -66,16 +66,60 @@ export async function POST(request: Request) {
   }
 
   const products = await getAllProducts();
-  const lines = resolveCartLines(body.items, products).filter((l) => l.qty > 0);
+  const allLines = resolveCartLines(body.items, products).filter((l) => l.qty > 0);
 
-  if (lines.length === 0) {
+  if (allLines.length === 0) {
     return NextResponse.json(
       { error: "None of the items in your cart are available anymore." },
       { status: 400 },
     );
   }
 
-  for (const line of lines) {
+  // The client marks which cart lines it believes are free gifts, but that
+  // flag is just a UI hint — never trust it directly, since a tampered
+  // request could mark any item isGift to get it for free. Re-derive the
+  // real gift tier from the PAID lines only, then only let a claimed line
+  // through free if it exactly matches one of that tier's real items;
+  // anything else falls back to being billed at full price like normal.
+  const claimedGiftLines = allLines.filter((l) => l.isGift);
+  const paidLines = allLines.filter((l) => !l.isGift);
+  const paidSubtotal = paidLines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
+  const giftTier = getGiftTier(paidSubtotal);
+  const giftSpecKey = (slug: string, variationLabel?: string | null) =>
+    `${slug}:${variationLabel ?? ""}`;
+  const validGiftKeys = new Set(
+    (giftTier?.items ?? []).map((i) => giftSpecKey(i.slug, i.variationLabel)),
+  );
+
+  const verifiedGiftLines: typeof allLines = [];
+  const reclassifiedAsPaid: typeof allLines = [];
+  const usedGiftKeys = new Set<string>();
+  for (const line of claimedGiftLines) {
+    const key = giftSpecKey(line.product.slug, line.variation?.label);
+    const isLegitGift = validGiftKeys.has(key) && !usedGiftKeys.has(key) && line.qty === 1;
+    if (!isLegitGift) {
+      reclassifiedAsPaid.push(line);
+      continue;
+    }
+    usedGiftKeys.add(key);
+    if (!line.inStock) {
+      // A legitimate gift that's out of stock is just dropped — never
+      // charged, never blocks checkout.
+      continue;
+    }
+    verifiedGiftLines.push(line);
+  }
+
+  const billableLines = [...paidLines, ...reclassifiedAsPaid];
+
+  if (billableLines.length === 0) {
+    return NextResponse.json(
+      { error: "Your cart doesn't have anything to check out." },
+      { status: 400 },
+    );
+  }
+
+  for (const line of billableLines) {
     if (!line.inStock) {
       const label = line.variation ? ` (${line.variation.label})` : "";
       return NextResponse.json(
@@ -97,7 +141,7 @@ export async function POST(request: Request) {
   }
 
   const discounts = calculateDiscounts(
-    lines.map((l) => ({
+    billableLines.map((l) => ({
       subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
@@ -131,40 +175,30 @@ export async function POST(request: Request) {
     });
   }
 
-  // Free-gift tiers: inject the real product as a line item (so fulfillment sees
-  // it) with an offsetting fee line so it doesn't add to the charge. Skip any
-  // item that's out of stock rather than failing checkout over a missing gift.
-  const giftTier = getGiftTier(discounts.subtotal);
+  // Verified gift lines: real product/variation, real price charged by
+  // WooCommerce off the product's own listing — offset by a matching fee
+  // line so the net charge is $0, with a line-item note so it's unmistakable
+  // in the order/packing-slip view during fulfillment.
   const giftLineItems: {
     productId: number;
     quantity: number;
     variationId?: number;
     metaData: { key: string; value: string }[];
   }[] = [];
-  if (giftTier) {
-    for (const item of giftTier.items) {
-      const product = products.find((p) => p.slug === item.slug);
-      if (!product) continue;
-      const variation = item.variationLabel
-        ? (product.variations?.find((v) => v.label === item.variationLabel) ?? null)
-        : null;
-      if (item.variationLabel && !variation) continue;
-      const inStock = variation ? variation.inStock : product.inStock;
-      if (!inStock) continue;
-      const price = variation ? variation.price : product.price;
-      giftLineItems.push({
-        productId: product.id,
-        quantity: 1,
-        variationId: variation?.id,
-        // Shows directly under the item in the WooCommerce order/packing-slip
-        // view, so fulfillment can tell at a glance this wasn't paid for.
-        metaData: [{ key: "🎁 Free Gift", value: `Unlocked at $${giftTier.min}+ spend` }],
-      });
-      feeLines.push({
-        name: `Free gift: ${product.name}${variation ? ` (${variation.label})` : ""}`,
-        amount: -price,
-      });
-    }
+  for (const line of verifiedGiftLines) {
+    const price = line.variation ? line.variation.price : line.product.price;
+    giftLineItems.push({
+      productId: line.product.id,
+      quantity: 1,
+      variationId: line.variationId,
+      metaData: [
+        { key: "🎁 Free Gift", value: `Unlocked at $${giftTier?.min ?? 0}+ spend` },
+      ],
+    });
+    feeLines.push({
+      name: `Free gift: ${line.product.name}${line.variation ? ` (${line.variation.label})` : ""}`,
+      amount: -price,
+    });
   }
 
   const session = await getSession();
@@ -190,7 +224,7 @@ export async function POST(request: Request) {
   try {
     order = await createOrder({
       lineItems: [
-        ...lines.map((l) => ({
+        ...billableLines.map((l) => ({
           productId: l.product.id,
           quantity: l.qty,
           variationId: l.variationId,

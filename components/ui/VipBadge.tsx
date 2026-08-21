@@ -11,7 +11,13 @@ export function VipBadge({ className = "" }: { className?: string }) {
         <BellIcon />
         VIP Restock Alerts
       </span>
-      <span className="rounded-full bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-black">
+      <span
+        className="animate-[gradient-shift_5s_ease-in-out_infinite] rounded-full bg-[length:200%_100%] px-4 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-[0_0_18px_2px_rgba(140,82,199,0.55)]"
+        style={{
+          backgroundImage:
+            "linear-gradient(110deg, var(--color-holo-violet), var(--color-holo-blue), var(--color-holo-pink))",
+        }}
+      >
         Get 10% Off Forever
       </span>
     </span>

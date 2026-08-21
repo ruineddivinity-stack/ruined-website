@@ -60,6 +60,9 @@ export function getGiftTier(subtotal: number) {
 export const AFFILIATE_CODE = "RX";
 export const AFFILIATE_RATE = 0.1;
 
+/** The lifetime 10%-off code emailed to anyone who joins the subscriber list. */
+export const SUBSCRIBER_CODE = "RUINEDLIFE";
+
 export type AppliedCoupon = {
   code: string;
   discountType: string;
@@ -87,6 +90,8 @@ export type DiscountLine = {
   qty: number;
   /** Bundle products are excluded from bulk/kit quantity discounts. */
   isBundle: boolean;
+  /** Free-gift lines are excluded from bulk/kit quantity discounts too. */
+  isGift?: boolean;
 };
 
 export type DiscountBreakdown = {
@@ -117,7 +122,7 @@ export function calculateDiscounts(
   // the cart's combined quantity. The 3-9 tier is looser: it's any mix of
   // vials, applied to whatever's left over after pulling out lines that
   // already qualified for Kit (so the same units never get discounted twice).
-  const eligibleLines = lines.filter((l) => !l.isBundle);
+  const eligibleLines = lines.filter((l) => !l.isBundle && !l.isGift);
   let kitAmount = 0;
   let mixedSubtotal = 0;
   let mixedQty = 0;

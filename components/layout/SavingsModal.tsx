@@ -7,8 +7,10 @@ import {
   SPEND_TIERS,
   GIFT_TIERS,
   AFFILIATE_CODE,
+  SUBSCRIBER_CODE,
   STACKED_SAVINGS_PCT,
 } from "@/lib/discounts";
+import { OPEN_WELCOME_POPUP_EVENT } from "@/components/layout/WelcomePopup";
 
 export const OPEN_SAVINGS_MODAL_EVENT = "ruined:open-savings-modal";
 
@@ -148,7 +150,7 @@ export function SavingsModal() {
                 </span>
               </Row>
               <p className="mt-1 text-xs text-fg-muted">
-                Automatically added at checkout &mdash; no code needed.
+                Drops right into your cart as you shop &mdash; no code needed.
               </p>
               <div className="mt-3 flex flex-col gap-2">
                 {[...GIFT_TIERS].reverse().map((tier) => (
@@ -167,19 +169,42 @@ export function SavingsModal() {
               </div>
             </Section>
 
-            <Section number={4} title="Affiliate Codes">
+            <Section number={4} title="Unlock Your Code">
               <Row icon={GiftIcon}>
                 <span className="font-semibold text-fg">
-                  Get an extra 10% off your order
+                  Stack an extra 10% on top of everything above
                 </span>
               </Row>
               <p className="mt-1 text-xs text-fg-muted">
-                Codes stack with bulk discounts and kits.
+                That&rsquo;s up to {STACKED_SAVINGS_PCT.kit}% off a Kit order
+                once it&rsquo;s stacked in.
               </p>
-              <ul className="mt-3 flex flex-col gap-1.5 text-xs text-fg-muted">
-                <li>&bull; New here? Join the list for your 10% off code</li>
-                <li>&bull; Or use an affiliate code from our community</li>
-              </ul>
+
+              <button
+                type="button"
+                onClick={() => {
+                  close();
+                  window.dispatchEvent(new Event(OPEN_WELCOME_POPUP_EVENT));
+                }}
+                className="group mt-3 flex w-full items-center justify-between gap-3 rounded-xl border border-steel-500/40 bg-steel-700/15 px-4 py-3 text-left transition-colors hover:border-steel-500"
+              >
+                <span className="flex items-center gap-2.5">
+                  <LockIcon />
+                  <span
+                    aria-hidden
+                    className="select-none font-display text-sm font-black tracking-[0.2em] text-fg blur-[5px] transition-all duration-300 group-hover:blur-[4px]"
+                  >
+                    {SUBSCRIBER_CODE}
+                  </span>
+                </span>
+                <span className="shrink-0 text-xs font-bold uppercase tracking-wide text-steel-300 group-hover:text-steel-200">
+                  Subscribe to Reveal
+                </span>
+              </button>
+              <p className="mt-2 text-xs text-fg-muted">
+                Every subscriber gets a lifetime 10% code by email &mdash; or
+                use an affiliate code from our community.
+              </p>
             </Section>
 
             <Section number={5} title="Refer a Friend">
@@ -306,6 +331,25 @@ function TagIcon({ className }: { className?: string }) {
     <svg {...iconProps(className)}>
       <path d="M12.6 3H5a2 2 0 0 0-2 2v7.6a2 2 0 0 0 .59 1.41l8.4 8.4a2 2 0 0 0 2.82 0l7.6-7.6a2 2 0 0 0 0-2.82l-8.4-8.4A2 2 0 0 0 12.6 3Z" />
       <circle cx="8.5" cy="8.5" r="1.5" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0 text-steel-300"
+    >
+      <rect x="4" y="10" width="16" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
     </svg>
   );
 }

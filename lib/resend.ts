@@ -2,6 +2,7 @@ import "server-only";
 import { Resend } from "resend";
 import { unsubscribeToken } from "./subscribers";
 import { wrapBroadcastHtml } from "./email-template";
+import { SUBSCRIBER_CODE } from "./discounts";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "RUINED <news@ruinedrx.com>";
@@ -107,6 +108,37 @@ export async function sendPayoutRequestEmail({
 
   if (error) {
     console.error("Payout notification email error:", error);
+  }
+}
+
+export async function sendWelcomeEmail(email: string): Promise<void> {
+  if (!RESEND_API_KEY) {
+    console.error("Skipped welcome email — missing RESEND_API_KEY.");
+    return;
+  }
+
+  const token = unsubscribeToken(email);
+  const unsubscribeUrl = `${SITE_URL}/api/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;">You're on the list. From here on, it's restock alerts, early access to new drops, and subscriber-only bulk deals — first, before anyone else sees them.</p>
+    <p style="margin:0 0 8px;">Your lifetime 10% off code:</p>
+    <p style="margin:0 0 20px;text-align:center;">
+      <span style="display:inline-block;padding:14px 28px;border-radius:10px;background:#111318;color:#ffffff;font-size:20px;font-weight:800;letter-spacing:0.08em;">${SUBSCRIBER_CODE}</span>
+    </p>
+    <p style="margin:0;">Use it at checkout any time — it doesn't expire, and it stacks with bulk and kit pricing.</p>
+  `;
+
+  const resend = new Resend(RESEND_API_KEY);
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: [email],
+    subject: "Your 10% off code — welcome to RUINED",
+    html: wrapBroadcastHtml({ bodyHtml, unsubscribeUrl }),
+  });
+
+  if (error) {
+    console.error("Welcome email error:", error);
   }
 }
 

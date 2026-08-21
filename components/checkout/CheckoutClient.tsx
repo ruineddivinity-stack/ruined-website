@@ -87,6 +87,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
+      isGift: l.isGift,
     })),
     coupon,
   );
@@ -305,7 +306,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </h2>
 
         <div className="mt-5 flex flex-col gap-4">
-          {lines.map(({ product, qty, variation, variationId, unitPrice }) => {
+          {lines.map(({ product, qty, variation, variationId, unitPrice, isGift }) => {
             const image = variation?.image ?? product.image;
             return (
               <div
@@ -339,11 +340,18 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                         {variation.label}
                       </span>
                     )}
+                    {isGift && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/60 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+                        🎁 Gift
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-fg-faint">Qty {qty}</p>
                 </div>
-                <p className="text-sm font-semibold text-fg">
-                  ${(unitPrice * qty).toFixed(2)}
+                <p
+                  className={`text-sm font-semibold ${isGift ? "text-emerald-300" : "text-fg"}`}
+                >
+                  {isGift ? "Free" : `$${(unitPrice * qty).toFixed(2)}`}
                 </p>
               </div>
             );

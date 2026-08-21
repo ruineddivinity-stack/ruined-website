@@ -24,6 +24,7 @@ export function CartClient({ products }: { products: Product[] }) {
       subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
+      isGift: l.isGift,
     })),
     coupon,
   );
@@ -40,12 +41,12 @@ export function CartClient({ products }: { products: Product[] }) {
   return (
     <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3">
       <div className="flex flex-col gap-4 lg:col-span-2">
-        {lines.map(({ product, qty, variation, variationId, unitPrice }) => {
+        {lines.map(({ product, qty, variation, variationId, unitPrice, unitRegularPrice, isGift }) => {
           const image = variation?.image ?? product.image;
           return (
             <div
               key={`${product.slug}:${variationId ?? "base"}`}
-              className="flex items-center gap-5 rounded-2xl border border-border bg-surface/60 p-5"
+              className={`flex items-center gap-5 rounded-2xl border p-5 ${isGift ? "border-steel-500/50 bg-steel-700/10" : "border-border bg-surface/60"}`}
             >
               {image ? (
                 <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-[#eef1f3]">
@@ -75,47 +76,73 @@ export function CartClient({ products }: { products: Product[] }) {
                 >
                   {product.name}
                 </Link>
-                {(variation?.label ?? product.size) && (
-                  <span className="mt-1.5 flex w-fit items-center rounded-full border border-steel-500/50 bg-steel-700/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-steel-300">
-                    {variation?.label ?? product.size}
-                  </span>
-                )}
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {(variation?.label ?? product.size) && (
+                    <span className="flex w-fit items-center rounded-full border border-steel-500/50 bg-steel-700/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-steel-300">
+                      {variation?.label ?? product.size}
+                    </span>
+                  )}
+                  {isGift && (
+                    <span className="flex w-fit items-center gap-1 rounded-full border border-emerald-400/60 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+                      🎁 Free Gift
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div className="flex items-center rounded-full border border-border">
-                <button
-                  type="button"
-                  onClick={() => updateQty(product.slug, qty - 1, variationId)}
-                  className="flex h-9 w-9 items-center justify-center text-fg-muted hover:text-fg"
-                  aria-label="Decrease quantity"
-                >
-                  &minus;
-                </button>
-                <span className="w-6 text-center text-sm font-semibold text-fg">
-                  {qty}
+              {isGift ? (
+                <span className="w-9 text-center text-sm text-fg-faint">
+                  &times;{qty}
                 </span>
+              ) : (
+                <div className="flex items-center rounded-full border border-border">
+                  <button
+                    type="button"
+                    onClick={() => updateQty(product.slug, qty - 1, variationId)}
+                    className="flex h-9 w-9 items-center justify-center text-fg-muted hover:text-fg"
+                    aria-label="Decrease quantity"
+                  >
+                    &minus;
+                  </button>
+                  <span className="w-6 text-center text-sm font-semibold text-fg">
+                    {qty}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => updateQty(product.slug, qty + 1, variationId)}
+                    className="flex h-9 w-9 items-center justify-center text-fg-muted hover:text-fg"
+                    aria-label="Increase quantity"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+
+              {isGift ? (
+                <div className="w-16 text-right">
+                  <p className="text-xs text-fg-faint line-through">
+                    ${(unitRegularPrice * qty).toFixed(2)}
+                  </p>
+                  <p className="text-sm font-semibold text-emerald-300">Free</p>
+                </div>
+              ) : (
+                <p className="w-16 text-right text-sm font-semibold text-fg">
+                  ${(unitPrice * qty).toFixed(2)}
+                </p>
+              )}
+
+              {isGift ? (
+                <span className="w-[18px]" aria-hidden />
+              ) : (
                 <button
                   type="button"
-                  onClick={() => updateQty(product.slug, qty + 1, variationId)}
-                  className="flex h-9 w-9 items-center justify-center text-fg-muted hover:text-fg"
-                  aria-label="Increase quantity"
+                  onClick={() => removeItem(product.slug, variationId)}
+                  aria-label="Remove item"
+                  className="text-fg-faint hover:text-danger"
                 >
-                  +
+                  <CloseIcon />
                 </button>
-              </div>
-
-              <p className="w-16 text-right text-sm font-semibold text-fg">
-                ${(unitPrice * qty).toFixed(2)}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => removeItem(product.slug, variationId)}
-                aria-label="Remove item"
-                className="text-fg-faint hover:text-danger"
-              >
-                <CloseIcon />
-              </button>
+              )}
             </div>
           );
         })}

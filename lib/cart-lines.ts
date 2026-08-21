@@ -10,6 +10,7 @@ export type CartLine = {
   unitRegularPrice: number;
   onSale: boolean;
   inStock: boolean;
+  isGift: boolean;
 };
 
 export function resolveCartLines(
@@ -31,12 +32,13 @@ export function resolveCartLines(
         qty: item.qty,
         variationId: item.variationId,
         variation,
-        unitPrice: variation ? variation.price : product.price,
+        unitPrice: item.isGift ? 0 : variation ? variation.price : product.price,
         unitRegularPrice: variation
           ? variation.regularPrice
           : product.regularPrice,
         onSale: variation ? variation.onSale : product.onSale,
         inStock: variation ? variation.inStock : product.inStock,
+        isGift: Boolean(item.isGift),
       };
     })
     .filter((line): line is CartLine => line !== null);

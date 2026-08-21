@@ -12,36 +12,26 @@ export function GiftTierAnnouncement({ className = "" }: { className?: string })
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_SAVINGS_MODAL_EVENT))}
-      className={`flex w-fit items-center gap-2.5 rounded-full border border-steel-500/30 bg-steel-700/15 px-4 py-2.5 text-left text-xs font-semibold text-fg-muted transition-all duration-300 hover:-translate-y-0.5 hover:border-steel-500 ${className}`}
+      className={`holo-border-static group relative flex w-full flex-col items-center gap-3 overflow-hidden rounded-2xl px-5 py-4 text-center backdrop-blur-md transition-transform duration-300 hover:scale-[1.01] sm:flex-row sm:justify-between sm:text-left ${className}`}
     >
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-steel-700/50 to-steel-700/10 text-steel-300">
-        <GiftIcon />
-      </span>
-      <span>
-        Spend <span className="font-bold text-fg">${lowestTier.min}+</span>{" "}
-        and unlock free gifts &mdash; up to{" "}
-        <span className="font-bold text-gradient-holo">{bestTier.label}</span>
+      <div className="flex items-center gap-3">
+        <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-steel-400 to-steel-700 text-xl">
+          <span
+            aria-hidden
+            className="absolute inline-flex h-full w-full animate-ping rounded-full bg-steel-400 opacity-30"
+          />
+          <span className="relative">🎁</span>
+        </span>
+        <p className="text-sm font-semibold text-fg sm:text-base">
+          Spend <span className="font-black text-gradient-holo">${lowestTier.min}+</span>{" "}
+          and unlock free gifts &mdash; up to{" "}
+          <span className="font-black text-gradient-holo">{bestTier.label}</span>
+        </p>
+      </div>
+
+      <span className="shrink-0 rounded-full border border-steel-500/50 bg-steel-700/25 px-4 py-2 text-xs font-bold uppercase tracking-widest text-steel-300 transition-colors group-hover:border-steel-400 group-hover:text-steel-200">
+        See Gift Tiers &rarr;
       </span>
     </button>
-  );
-}
-
-function GiftIcon() {
-  return (
-    <svg
-      width={14}
-      height={14}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="4" y="9" width="16" height="11" rx="1.5" />
-      <path d="M4 13h16M12 9v11" />
-      <path d="M12 9c-1.8 0-3.2-1.2-3.2-2.8S9.2 3.5 10.5 3.5c1.6 0 2.5 2.2 2.5 2.2" />
-      <path d="M12 9c1.8 0 3.2-1.2 3.2-2.8S13.8 3.5 12.5 3.5c-1.6 0-2.5 2.2-2.5 2.2" />
-    </svg>
   );
 }
