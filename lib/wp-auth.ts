@@ -106,6 +106,13 @@ export async function registerUser(
   // ("Invalid Auth Code") regardless of whether the code value is correct.
   const authKeyField = process.env.WP_REGISTER_AUTH_KEY_FIELD;
   const authKeyValue = process.env.WP_REGISTER_AUTH_KEY;
+  if (!authKeyField || !authKeyValue) {
+    console.warn(
+      "registerUser: WP_REGISTER_AUTH_KEY_FIELD and/or WP_REGISTER_AUTH_KEY " +
+        "env vars are missing — if the WordPress site requires an auth code " +
+        "on register, every signup will fail with 'Invalid Auth Code'.",
+    );
+  }
 
   const res = await wpFetch(`${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/users`, {
     method: "POST",
