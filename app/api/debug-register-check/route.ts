@@ -5,7 +5,7 @@ import { wpFetch } from "@/lib/wp-origin-fetch";
 // vars without exposing their actual values, and the RAW response our own
 // wpFetch mechanism gets from WORDPRESS_URL for a harmless GET. Delete after use.
 export async function GET() {
-  const marker = "raw-body-capture-v1";
+  const marker = "plain-fetch-compare-v1";
   const field = process.env.WP_REGISTER_AUTH_KEY_FIELD;
   const value = process.env.WP_REGISTER_AUTH_KEY;
   const wpUrl = process.env.WOOCOMMERCE_URL;
@@ -91,6 +91,29 @@ export async function GET() {
     registerFakeFieldRaw = { fetchError: err instanceof Error ? err.message : String(err) };
   }
 
+  // Same real payload, but via PLAIN global fetch — no custom undici Agent
+  // at all — to isolate whether the Agent itself (not just the DNS lookup
+  // logic) is responsible, since wp.ruinedrx.com never triggers the DNS
+  // pin anyway (that only applies to the apex "ruinedrx.com" hostname).
+  let registerPlainFetchRaw: unknown = null;
+  try {
+    const testEmail = `debug-plainfetch-${Date.now()}@ruined-dev.test`;
+    const res = await fetch(`${wpUrl}/wp-json/simple-jwt-login/v1/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: testEmail,
+        password: "TestPassword123",
+        ...(field && value ? { [field]: value } : {}),
+      }),
+      cache: "no-store",
+    });
+    const text = await res.text();
+    registerPlainFetchRaw = { status: res.status, bodyPreview: text.slice(0, 500), testEmail };
+  } catch (err) {
+    registerPlainFetchRaw = { fetchError: err instanceof Error ? err.message : String(err) };
+  }
+
   // Login endpoint, but via the exact same wpFetch call shape used above,
   // for a clean side-by-side against the failing/succeeding register calls.
   let loginRaw: unknown = null;
@@ -120,6 +143,7 @@ export async function GET() {
     registerRaw,
     registerNoAuthRaw,
     registerFakeFieldRaw,
+    registerPlainFetchRaw,
     loginRaw,
   });
 }
