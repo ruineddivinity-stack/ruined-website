@@ -32,14 +32,14 @@ export const GIFT_TIERS: { min: number; label: string; items: GiftItem[] }[] = [
     min: 250,
     label: "Free GHK-CU 100MG + BAC Water",
     items: [
-      { slug: "ghk-cu-100mg" },
+      { slug: "ghk-cu", variationLabel: "100MG" },
       { slug: "hospira-b-a-c-water-10ml" },
     ],
   },
   {
     min: 200,
     label: "Free GHK-CU 50MG",
-    items: [{ slug: "ghk-cu-50mg" }],
+    items: [{ slug: "ghk-cu", variationLabel: "50MG" }],
   },
   {
     min: 150,
