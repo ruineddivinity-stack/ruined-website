@@ -34,15 +34,18 @@ export function BundleBuilderClient({ products }: { products: Product[] }) {
     return () => observer.disconnect();
   }, []);
 
+  // A product can belong to more than one WooCommerce category — filter by
+  // the full list, not just its primary one, so e.g. a "Blends" product
+  // tagged "Growth Hormones" too still shows up under both.
   const categories = useMemo(
-    () => ["All", ...Array.from(new Set(products.map((p) => p.category)))],
+    () => ["All", ...Array.from(new Set(products.flatMap((p) => p.categories)))],
     [products],
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return products.filter((p) => {
-      const matchesCategory = category === "All" || p.category === category;
+      const matchesCategory = category === "All" || p.categories.includes(category);
       const matchesQuery =
         q.length === 0 ||
         p.name.toLowerCase().includes(q) ||

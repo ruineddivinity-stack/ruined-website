@@ -6,8 +6,11 @@ import { Reveal } from "@/components/ui/Reveal";
 import type { Product } from "@/lib/types";
 
 export function ShopClient({ products }: { products: Product[] }) {
+  // A product can belong to more than one WooCommerce category — filter by
+  // the full list, not just its primary one, so e.g. a "Blends" product
+  // tagged "Growth Hormones" too still shows up under both.
   const categories = useMemo(
-    () => ["All", ...Array.from(new Set(products.map((p) => p.category)))],
+    () => ["All", ...Array.from(new Set(products.flatMap((p) => p.categories)))],
     [products],
   );
   const [active, setActive] = useState("All");
@@ -16,7 +19,7 @@ export function ShopClient({ products }: { products: Product[] }) {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return products.filter((p) => {
-      const matchesCategory = active === "All" || p.category === active;
+      const matchesCategory = active === "All" || p.categories.includes(active);
       const matchesQuery =
         q.length === 0 ||
         p.name.toLowerCase().includes(q) ||
