@@ -5,7 +5,15 @@ import { QuickAddButton } from "@/components/product/QuickAddButton";
 import { isBackInStock } from "@/lib/back-in-stock";
 import type { Product } from "@/lib/types";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  /** Set for the first handful of above-the-fold cards so their image gets
+   * an early fetch instead of the default lazy-load. */
+  priority?: boolean;
+}) {
   const badge = product.type === "bundle" ? "Bundle" : product.onSale ? "Sale" : null;
   const hasVariations = !!product.variations && product.variations.length > 0;
   const backInStock = isBackInStock(product.slug);
@@ -35,6 +43,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.name}
             fill
+            priority={priority}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(min-width: 1024px) 25vw, 50vw"
           />

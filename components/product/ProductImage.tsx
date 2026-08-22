@@ -38,6 +38,7 @@ export function ProductImage({
           src={image}
           alt={product.name}
           fill
+          priority
           className="rounded-[2rem] object-cover"
           sizes="(min-width: 1024px) 40vw, 90vw"
         />
