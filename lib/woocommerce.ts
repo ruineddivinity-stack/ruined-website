@@ -1,4 +1,6 @@
 import "server-only";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import type { BundledItem, Order, Product, ProductVariation } from "./types";
 import { wpFetch } from "./wp-origin-fetch";
 import { PICKUP_METHOD_ID } from "./discounts";
@@ -269,42 +271,60 @@ function mapWcProduct(
   };
 }
 
-export async function getAllProducts(): Promise<Product[]> {
-  const wcProducts = await wcFetch<WcProduct[]>(
-    "products?per_page=100&status=publish&orderby=menu_order&order=asc",
-  );
-  return Promise.all(
-    wcProducts.map(async (wc) => {
+// wpFetch bypasses Next's patched global fetch (it has to, for the DNS-pin
+// workaround above), so none of Next's built-in fetch caching applies here —
+// every call would otherwise be a fresh, uncached round trip to WordPress.
+// unstable_cache adds that caching back (shared across requests, revalidated
+// periodically); the outer React cache() dedupes repeat calls within the
+// same request (e.g. the root layout and a page both asking for products).
+export const getAllProducts = cache(
+  unstable_cache(
+    async (): Promise<Product[]> => {
+      const wcProducts = await wcFetch<WcProduct[]>(
+        "products?per_page=100&status=publish&orderby=menu_order&order=asc",
+      );
+      return Promise.all(
+        wcProducts.map(async (wc) => {
+          const variations =
+            wc.type === "variable" ? await fetchVariations(wc.id) : null;
+          return mapWcProduct(wc, undefined, variations);
+        }),
+      );
+    },
+    ["get-all-products"],
+    { revalidate: 60 },
+  ),
+);
+
+export const getProductBySlug = cache(
+  unstable_cache(
+    async (slug: string): Promise<Product | null> => {
+      const wcProducts = await wcFetch<WcProduct[]>(
+        `products?slug=${encodeURIComponent(slug)}&status=publish`,
+      );
+      const wc = wcProducts[0];
+      if (!wc) return null;
+
       const variations =
         wc.type === "variable" ? await fetchVariations(wc.id) : null;
-      return mapWcProduct(wc, undefined, variations);
-    }),
-  );
-}
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const wcProducts = await wcFetch<WcProduct[]>(
-    `products?slug=${encodeURIComponent(slug)}&status=publish`,
-  );
-  const wc = wcProducts[0];
-  if (!wc) return null;
+      if (!wc.bundled_items?.length) {
+        return mapWcProduct(wc, undefined, variations);
+      }
 
-  const variations =
-    wc.type === "variable" ? await fetchVariations(wc.id) : null;
+      // Reuse the (also cached) full catalog instead of a second full fetch,
+      // just to look up bundled items' images/slugs.
+      const allProducts = await getAllProducts();
+      const imageLookup = new Map(
+        allProducts.map((p) => [p.id, { slug: p.slug, image: p.image }]),
+      );
 
-  if (!wc.bundled_items?.length) {
-    return mapWcProduct(wc, undefined, variations);
-  }
-
-  const allProducts = await wcFetch<WcProduct[]>(
-    "products?per_page=100&status=publish&orderby=menu_order&order=asc",
-  );
-  const imageLookup = new Map(
-    allProducts.map((p) => [p.id, { slug: p.slug, image: p.images[0]?.src ?? null }]),
-  );
-
-  return mapWcProduct(wc, imageLookup, variations);
-}
+      return mapWcProduct(wc, imageLookup, variations);
+    },
+    ["get-product-by-slug"],
+    { revalidate: 60 },
+  ),
+);
 
 type WcOrder = {
   id: number;
