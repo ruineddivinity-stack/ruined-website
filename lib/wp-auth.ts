@@ -99,6 +99,14 @@ export async function registerUser(
 ): Promise<{ jwt: string | null } | { error: string }> {
   if (!WORDPRESS_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
 
+  // Simple JWT Login's "require auth key on register" setting expects the
+  // code under a site-specific field NAME (its randomized "Auth Code Key"
+  // setting) — not a fixed "AUTH_KEY" field. Sending it under the wrong key
+  // is silently ignored by the plugin, so registration fails validation
+  // ("Invalid Auth Code") regardless of whether the code value is correct.
+  const authKeyField = process.env.WP_REGISTER_AUTH_KEY_FIELD;
+  const authKeyValue = process.env.WP_REGISTER_AUTH_KEY;
+
   const res = await wpFetch(`${WORDPRESS_URL}/wp-json/simple-jwt-login/v1/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -106,9 +114,7 @@ export async function registerUser(
       email,
       password,
       ...(displayName ? { display_name: displayName } : {}),
-      ...(process.env.WP_REGISTER_AUTH_KEY
-        ? { AUTH_KEY: process.env.WP_REGISTER_AUTH_KEY }
-        : {}),
+      ...(authKeyField && authKeyValue ? { [authKeyField]: authKeyValue } : {}),
     }),
     cache: "no-store",
   });
