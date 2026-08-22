@@ -20,6 +20,7 @@ type NavLink = {
 const navLinks: NavLink[] = [
   { href: "/", label: "Home", icon: HomeIcon },
   { href: "/shop", label: "Shop", icon: ShopIcon },
+  { href: "/bundle", label: "Bundle Builder", icon: BundleIcon },
   { href: "/coa", label: "COAs", icon: ShieldIcon },
   { href: "/about", label: "About", icon: InfoIcon },
   { href: "/contact", label: "Contact", icon: MailIcon },
@@ -208,6 +209,18 @@ function HomeIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
       <path d="M4 11.5 12 4l8 7.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BundleIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <rect x="3" y="8" width="18" height="4" rx="1" />
+      <path d="M12 8v13" strokeLinecap="round" />
+      <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

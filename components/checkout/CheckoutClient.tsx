@@ -18,9 +18,10 @@ import {
   SHIPPING_METHODS,
   PICKUP_LABEL,
   BULK_TIERS,
+  BUNDLE_DISCOUNT_RATE,
   type ShippingMethod,
 } from "@/lib/discounts";
-import { resolveCartLines } from "@/lib/cart-lines";
+import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
 
 type FulfillmentMethod = "ship" | "pickup";
 import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
@@ -82,15 +83,31 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const lines = resolveCartLines(items, products);
 
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
+  const giftSubtotal = lines
+    .filter((l) => !l.isBundlePick)
+    .reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const discounts = calculateDiscounts(
     lines.map((l) => ({
       subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
       isGift: l.isGift,
+      isBundlePick: l.isBundlePick,
     })),
     coupon,
   );
+
+  const bundleGroups = new Map<string, CartLine[]>();
+  const soloLines: CartLine[] = [];
+  for (const line of lines) {
+    if (line.bundleId) {
+      const group = bundleGroups.get(line.bundleId) ?? [];
+      group.push(line);
+      bundleGroups.set(line.bundleId, group);
+    } else {
+      soloLines.push(line);
+    }
+  }
   const shippingCost =
     isPickup || lines.length === 0 || discounts.freeShipping
       ? 0
@@ -306,7 +323,37 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </h2>
 
         <div className="mt-5 flex flex-col gap-4">
-          {lines.map(({ product, qty, variation, variationId, unitPrice, isGift }) => {
+          {Array.from(bundleGroups.entries()).map(([bundleId, groupLines]) => (
+            <div key={bundleId} className="holo-border-static rounded-xl p-3.5 backdrop-blur-md">
+              <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-fg">
+                🧪 Your Bundle{" "}
+                <span className="text-gradient-holo">{BUNDLE_DISCOUNT_RATE * 100}% Off</span>
+              </span>
+              <div className="mt-2.5 flex flex-col gap-2">
+                {groupLines.map((line) => (
+                  <div
+                    key={`${line.product.slug}:${line.variationId ?? "base"}`}
+                    className="flex items-center justify-between gap-2 text-xs"
+                  >
+                    <span className="truncate text-fg">
+                      {line.product.name}
+                      {line.variation?.label ? ` (${line.variation.label})` : ""}
+                      {line.isGift && (
+                        <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+                          Included Free
+                        </span>
+                      )}
+                    </span>
+                    <span className={line.isGift ? "shrink-0 font-semibold text-emerald-300" : "shrink-0 text-fg-faint"}>
+                      {line.isGift ? "Free" : `$${line.unitPrice.toFixed(2)}`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {soloLines.map(({ product, qty, variation, variationId, unitPrice, isGift }) => {
             const image = variation?.image ?? product.image;
             return (
               <div
@@ -359,8 +406,8 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </div>
 
         <div className="mt-6 flex flex-col gap-4">
-          <FreeShippingProgress subtotal={subtotal} />
-          <GiftProgress subtotal={subtotal} />
+          <FreeShippingProgress subtotal={subtotal} forceUnlocked={discounts.bundleQualifies} />
+          <GiftProgress subtotal={giftSubtotal} hasBundle={discounts.bundleQualifies} />
           <SpendDiscountProgress subtotal={subtotal} />
         </div>
 
@@ -373,6 +420,11 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             coupon={coupon}
             onApply={setCoupon}
           />
+          {discounts.bundleQualifies && (
+            <p className="mt-2 text-[11px] text-fg-faint">
+              Codes don&rsquo;t apply to bundle items — it&rsquo;s already 25% off.
+            </p>
+          )}
         </div>
 
         {creditBalance > 0 && (
@@ -412,6 +464,12 @@ export function CheckoutClient({ products }: { products: Product[] }) {
             <div className="flex justify-between text-steel-300">
               <span>Spend ${discounts.spendTier.min}+ reward</span>
               <span>-${discounts.spendAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {discounts.bundleQualifies && (
+            <div className="flex justify-between text-steel-300">
+              <span>Build-a-Bundle discount ({BUNDLE_DISCOUNT_RATE * 100}%)</span>
+              <span>-${discounts.bundleAmount.toFixed(2)}</span>
             </div>
           )}
           {discounts.affiliateApplied && (

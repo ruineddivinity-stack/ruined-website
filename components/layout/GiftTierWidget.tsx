@@ -11,8 +11,10 @@ const sortedTiers = [...GIFT_TIERS].sort((a, b) => a.min - b.min);
 export function GiftTierWidget({ products }: { products: Product[] }) {
   const { items, count } = useCart();
 
+  // Bundle-picked vials don't count — the tier badge here reflects regular
+  // items only, matching the reward ladder itself.
   const subtotal = resolveCartLines(
-    items.filter((i) => !i.isGift),
+    items.filter((i) => !i.isGift && !i.isBundlePick),
     products,
   ).reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
 

@@ -1,36 +1,43 @@
-import { AFFILIATE_CODE } from "@/lib/discounts";
+import Link from "next/link";
+import { BUNDLE_DISCOUNT_RATE, BUNDLE_VIAL_COUNT } from "@/lib/discounts";
 
 export function BundleTeaser() {
   return (
-    <div className="holo-border-static rounded-2xl px-5 py-5 backdrop-blur-md">
+    <Link
+      href="/bundle"
+      className="holo-border-static block rounded-2xl px-4 py-3.5 backdrop-blur-md transition-transform hover:-translate-y-0.5 sm:px-5 sm:py-5"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="flex items-center gap-2 font-display text-sm font-black uppercase tracking-wide text-fg">
+        <span className="flex items-center gap-2 font-display text-xs font-black uppercase tracking-wide text-fg sm:text-sm">
           <BundleIcon />
-          Build a Bundle for 25% Off
+          Build a Bundle for {BUNDLE_DISCOUNT_RATE * 100}% Off
         </span>
         <span className="flex items-center gap-1.5 rounded-full border border-steel-400/40 bg-steel-600/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-steel-300">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-steel-300" />
-          Coming soon
+          Build yours →
         </span>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <Step icon={FlaskIcon} label="Pick any 4 vials" />
+      <p className="mt-2 text-[11px] leading-relaxed text-fg-muted sm:hidden">
+        Pick any {BUNDLE_VIAL_COUNT} vials, get a free 5th (BAC water) and{" "}
+        {BUNDLE_DISCOUNT_RATE * 100}% off — plus free shipping.
+      </p>
+
+      <div className="mt-4 hidden flex-wrap items-center gap-3 sm:flex">
+        <Step icon={FlaskIcon} label={`Pick any ${BUNDLE_VIAL_COUNT} vials`} />
         <Sign>+</Sign>
         <Step icon={GiftIcon} label="5th item free — BAC water" highlight />
         <Sign>=</Sign>
         <span className="flex items-center gap-2 font-display text-base font-black text-gradient-holo">
           <PercentIcon />
-          25% off the bundle
+          {BUNDLE_DISCOUNT_RATE * 100}% off the bundle
         </span>
       </div>
 
-      <p className="mt-3 text-xs font-semibold text-fg-muted">
-        or{" "}
-        <span className="text-gradient-holo font-black">35% off</span> with
-        code {AFFILIATE_CODE} or your affiliate code
+      <p className="mt-3 hidden text-xs font-semibold text-fg-muted sm:block">
+        Strictly your own pick — plus free shipping on the bundle. Codes
+        don&rsquo;t stack with it.
       </p>
-    </div>
+    </Link>
   );
 }
 

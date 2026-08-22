@@ -23,12 +23,16 @@ export function GiftTiersModal({ products }: { products: Product[] }) {
     return () => window.removeEventListener(OPEN_GIFT_TIERS_MODAL_EVENT, open);
   }, []);
 
+  // Bundle-picked vials don't count here — a bundle is its own self-contained
+  // deal (25% off + a free BAC Water already included), separate from this
+  // regular-item reward ladder.
   const subtotal = resolveCartLines(
-    items.filter((i) => !i.isGift),
+    items.filter((i) => !i.isGift && !i.isBundlePick),
     products,
   ).reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const pct = Math.min(100, (subtotal / maxTier.min) * 100);
   const nextTier = sortedTiers.find((t) => subtotal < t.min);
+  const hasBundle = items.some((i) => i.isBundlePick);
 
   return (
     <>
@@ -80,6 +84,12 @@ export function GiftTiersModal({ products }: { products: Product[] }) {
           <p className="mt-2 text-center text-xs uppercase tracking-widest text-fg-muted">
             The more you spend, the more you get &mdash; automatically
           </p>
+          {hasBundle && (
+            <p className="mt-2 text-center text-[11px] leading-relaxed text-fg-faint">
+              Based on your regular items only — your bundle already
+              includes its own free BAC Water and doesn&rsquo;t count here.
+            </p>
+          )}
 
           <div className="mt-6">
             <p className="text-xs font-medium text-fg-muted">

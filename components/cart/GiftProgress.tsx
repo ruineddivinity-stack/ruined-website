@@ -3,7 +3,15 @@ import { GIFT_TIERS } from "@/lib/discounts";
 const sortedTiers = [...GIFT_TIERS].sort((a, b) => a.min - b.min);
 const maxTier = sortedTiers[sortedTiers.length - 1];
 
-export function GiftProgress({ subtotal }: { subtotal: number }) {
+export function GiftProgress({
+  subtotal,
+  hasBundle = false,
+}: {
+  subtotal: number;
+  /** True when a Build-a-Bundle is also in the cart — shown as a note since
+   * this progress bar is based on regular items only, not the bundle. */
+  hasBundle?: boolean;
+}) {
   const pct = Math.min(100, (subtotal / maxTier.min) * 100);
   const nextTier = sortedTiers.find((t) => subtotal < t.min);
   const highestUnlocked = [...sortedTiers].reverse().find((t) => subtotal >= t.min);
@@ -65,6 +73,13 @@ export function GiftProgress({ subtotal }: { subtotal: number }) {
           );
         })}
       </div>
+
+      {hasBundle && (
+        <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">
+          Based on your regular items only — your bundle&rsquo;s free BAC
+          Water is already included and doesn&rsquo;t count toward this.
+        </p>
+      )}
     </div>
   );
 }

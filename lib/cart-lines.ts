@@ -11,6 +11,8 @@ export type CartLine = {
   onSale: boolean;
   inStock: boolean;
   isGift: boolean;
+  isBundlePick: boolean;
+  bundleId?: string;
 };
 
 export function resolveCartLines(
@@ -39,6 +41,8 @@ export function resolveCartLines(
         onSale: variation ? variation.onSale : product.onSale,
         inStock: variation ? variation.inStock : product.inStock,
         isGift: Boolean(item.isGift),
+        isBundlePick: Boolean(item.isBundlePick),
+        bundleId: item.bundleId,
       };
     })
     .filter((line): line is CartLine => line !== null);

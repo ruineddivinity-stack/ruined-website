@@ -52,11 +52,11 @@ export async function Header() {
             Affiliates
           </Link>
           <Button
-            href="/shop"
+            href="/bundle"
             variant="secondary"
             className="!hidden whitespace-nowrap uppercase tracking-wide md:!inline-flex"
           >
-            Shop Now
+            Bundle Builder
           </Button>
           <AccountButton href={session ? "/account" : "/login"} />
           <GiftButton />

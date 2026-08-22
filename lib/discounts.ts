@@ -32,14 +32,14 @@ export const GIFT_TIERS: { min: number; label: string; items: GiftItem[] }[] = [
     min: 250,
     label: "Free GHK-CU 100MG + BAC Water",
     items: [
-      { slug: "ghk-cu", variationLabel: "100MG" },
+      { slug: "ghk-cu-100mg" },
       { slug: "hospira-b-a-c-water-10ml" },
     ],
   },
   {
     min: 200,
     label: "Free GHK-CU 50MG",
-    items: [{ slug: "ghk-cu", variationLabel: "50MG" }],
+    items: [{ slug: "ghk-cu-50mg" }],
   },
   {
     min: 150,
@@ -56,6 +56,13 @@ export const GIFT_TIERS: { min: number; label: string; items: GiftItem[] }[] = [
 export function getGiftTier(subtotal: number) {
   return GIFT_TIERS.find((t) => subtotal >= t.min) ?? null;
 }
+
+/** Build-a-Bundle: customer picks any 4 vials, gets a free 5th (BAC water)
+ * and a flat 25% off the 4 they picked. Doesn't stack with bulk/kit tiers
+ * or discount codes — it's a closed, self-contained deal. */
+export const BUNDLE_VIAL_COUNT = 4;
+export const BUNDLE_DISCOUNT_RATE = 0.25;
+export const BUNDLE_FREE_ITEM_SLUG = "hospira-b-a-c-water-10ml";
 
 export const AFFILIATE_CODE = "RX";
 export const AFFILIATE_RATE = 0.1;
@@ -92,6 +99,9 @@ export type DiscountLine = {
   isBundle: boolean;
   /** Free-gift lines are excluded from bulk/kit quantity discounts too. */
   isGift?: boolean;
+  /** A vial the customer picked into a Build-a-Bundle — flat 25% off,
+   * excluded from bulk/kit tiers and from discount codes entirely. */
+  isBundlePick?: boolean;
 };
 
 export type DiscountBreakdown = {
@@ -104,6 +114,9 @@ export type DiscountBreakdown = {
   kitQualifies: boolean;
   spendTier: ReturnType<typeof getSpendTier>;
   spendAmount: number;
+  /** Build-a-Bundle — flat 25% off the customer's picked vials. */
+  bundleAmount: number;
+  bundleQualifies: boolean;
   affiliateApplied: boolean;
   affiliateAmount: number;
   affiliateCode: string | null;
@@ -118,11 +131,19 @@ export function calculateDiscounts(
 ): DiscountBreakdown {
   const subtotal = lines.reduce((sum, l) => sum + l.subtotal, 0);
 
+  const bundleLines = lines.filter((l) => l.isBundlePick);
+  const bundleSubtotal = bundleLines.reduce((sum, l) => sum + l.subtotal, 0);
+  const bundleAmount = bundleSubtotal * BUNDLE_DISCOUNT_RATE;
+  const bundleQualifies = bundleSubtotal > 0;
+
   // Kit (10+) requires that many of the SAME vial — it's judged per line, not
   // the cart's combined quantity. The 3-9 tier is looser: it's any mix of
   // vials, applied to whatever's left over after pulling out lines that
   // already qualified for Kit (so the same units never get discounted twice).
-  const eligibleLines = lines.filter((l) => !l.isBundle && !l.isGift);
+  // Bundle picks are excluded entirely — they're a closed, self-contained deal.
+  const eligibleLines = lines.filter(
+    (l) => !l.isBundle && !l.isGift && !l.isBundlePick,
+  );
   let kitAmount = 0;
   let mixedSubtotal = 0;
   let mixedQty = 0;
@@ -140,16 +161,25 @@ export function calculateDiscounts(
   const spendTier = getSpendTier(subtotal);
   const spendAmount = spendTier?.amount ?? 0;
 
-  const preAffiliate = subtotal - bulkAmount - kitAmount - spendAmount;
+  // A discount code stacks independently of the bulk/kit tiers — each is
+  // computed off the same original (non-bundle) subtotal and simply summed,
+  // rather than the code applying to an already-bulk-discounted remainder.
+  // That's what makes "3-9 Vials 10%" + a 10% code genuinely add up to the
+  // "up to 20%" advertised elsewhere (STACKED_SAVINGS_PCT), instead of
+  // quietly compounding down to ~19%. Codes never touch the bundle portion.
+  const couponEligible = Math.max(0, subtotal - bundleSubtotal);
   const affiliateApplied = !!coupon;
   const affiliateAmount = coupon
     ? coupon.discountType === "percent"
-      ? preAffiliate * (coupon.amount / 100)
-      : Math.min(preAffiliate, coupon.amount)
+      ? couponEligible * (coupon.amount / 100)
+      : Math.min(couponEligible, coupon.amount)
     : 0;
 
-  const total = Math.max(0, preAffiliate - affiliateAmount);
-  const freeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const total = Math.max(
+    0,
+    subtotal - bulkAmount - kitAmount - spendAmount - bundleAmount - affiliateAmount,
+  );
+  const freeShipping = subtotal >= FREE_SHIPPING_THRESHOLD || bundleQualifies;
 
   return {
     subtotal,
@@ -159,6 +189,8 @@ export function calculateDiscounts(
     kitQualifies: kitAmount > 0,
     spendTier,
     spendAmount,
+    bundleAmount,
+    bundleQualifies,
     affiliateApplied,
     affiliateAmount,
     affiliateCode: coupon?.code ?? null,

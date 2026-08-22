@@ -10,21 +10,27 @@ import { SpendDiscountProgress } from "@/components/cart/SpendDiscountProgress";
 import { GiftProgress } from "@/components/cart/GiftProgress";
 import { SavingsBadgeRow } from "@/components/cart/SavingsBadgeRow";
 import { PromoCodeInput } from "@/components/cart/PromoCodeInput";
-import { calculateDiscounts, BULK_TIERS } from "@/lib/discounts";
-import { resolveCartLines } from "@/lib/cart-lines";
+import { calculateDiscounts, BULK_TIERS, BUNDLE_DISCOUNT_RATE } from "@/lib/discounts";
+import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
 
 export function CartClient({ products }: { products: Product[] }) {
-  const { items, updateQty, removeItem, coupon, setCoupon } = useCart();
+  const { items, updateQty, removeItem, removeBundle, coupon, setCoupon } = useCart();
 
   const lines = resolveCartLines(items, products);
 
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
+  // Bundle-picked vials already earn their own free item — exclude them so
+  // the tier-gift progress bar doesn't imply a second one is coming.
+  const giftSubtotal = lines
+    .filter((l) => !l.isBundlePick)
+    .reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const discounts = calculateDiscounts(
     lines.map((l) => ({
       subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
       isGift: l.isGift,
+      isBundlePick: l.isBundlePick,
     })),
     coupon,
   );
@@ -38,10 +44,68 @@ export function CartClient({ products }: { products: Product[] }) {
     );
   }
 
+  const bundleGroups = new Map<string, CartLine[]>();
+  const soloLines: CartLine[] = [];
+  for (const line of lines) {
+    if (line.bundleId) {
+      const group = bundleGroups.get(line.bundleId) ?? [];
+      group.push(line);
+      bundleGroups.set(line.bundleId, group);
+    } else {
+      soloLines.push(line);
+    }
+  }
+
   return (
     <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-3">
       <div className="flex flex-col gap-4 lg:col-span-2">
-        {lines.map(({ product, qty, variation, variationId, unitPrice, unitRegularPrice, isGift }) => {
+        {Array.from(bundleGroups.entries()).map(([bundleId, groupLines]) => {
+          // Only the 4 paid vials get the 25% off — the free item is
+          // already $0, not a 25%-off item, so it's excluded from this math.
+          const vialSubtotal = groupLines
+            .filter((l) => !l.isGift)
+            .reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
+          return (
+            <div
+              key={bundleId}
+              className="holo-border-static rounded-2xl p-5 backdrop-blur-md"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-display text-xs font-black uppercase tracking-wide text-fg">
+                  🧪 Your Bundle
+                  <span className="text-gradient-holo">
+                    {BUNDLE_DISCOUNT_RATE * 100}% Off
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeBundle(bundleId)}
+                  className="text-xs font-semibold text-fg-faint hover:text-danger"
+                >
+                  Remove bundle
+                </button>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3">
+                {groupLines.map((line) => (
+                  <BundleItemRow key={`${line.product.slug}:${line.variationId ?? "base"}`} line={line} />
+                ))}
+              </div>
+
+              <div className="mt-4 flex justify-between border-t border-border-soft pt-3 text-xs">
+                <span className="text-fg-muted">4 vials, 25% off</span>
+                <span className="font-semibold text-fg">
+                  ${(vialSubtotal * (1 - BUNDLE_DISCOUNT_RATE)).toFixed(2)}{" "}
+                  <span className="text-fg-faint line-through">
+                    ${vialSubtotal.toFixed(2)}
+                  </span>
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
+        {soloLines.map(({ product, qty, variation, variationId, unitPrice, unitRegularPrice, isGift }) => {
           const image = variation?.image ?? product.image;
           return (
             <div
@@ -154,8 +218,8 @@ export function CartClient({ products }: { products: Product[] }) {
         </h2>
 
         <div className="mt-5 flex flex-col gap-4">
-          <FreeShippingProgress subtotal={subtotal} />
-          <GiftProgress subtotal={subtotal} />
+          <FreeShippingProgress subtotal={subtotal} forceUnlocked={discounts.bundleQualifies} />
+          <GiftProgress subtotal={giftSubtotal} hasBundle={discounts.bundleQualifies} />
           <SpendDiscountProgress subtotal={subtotal} />
         </div>
 
@@ -168,6 +232,11 @@ export function CartClient({ products }: { products: Product[] }) {
             coupon={coupon}
             onApply={setCoupon}
           />
+          {discounts.bundleQualifies && (
+            <p className="mt-2 text-[11px] text-fg-faint">
+              Codes don&rsquo;t apply to bundle items — it&rsquo;s already 25% off.
+            </p>
+          )}
         </div>
 
         <div className="mt-5 flex flex-col gap-3 border-t border-border-soft pt-5 text-sm">
@@ -191,6 +260,12 @@ export function CartClient({ products }: { products: Product[] }) {
             <div className="flex justify-between text-steel-300">
               <span>Spend ${discounts.spendTier.min}+ reward</span>
               <span>-${discounts.spendAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {discounts.bundleQualifies && (
+            <div className="flex justify-between text-steel-300">
+              <span>Build-a-Bundle discount ({BUNDLE_DISCOUNT_RATE * 100}%)</span>
+              <span>-${discounts.bundleAmount.toFixed(2)}</span>
             </div>
           )}
           {discounts.affiliateApplied && (
@@ -222,6 +297,47 @@ export function CartClient({ products }: { products: Product[] }) {
           Continue shopping
         </Link>
       </div>
+    </div>
+  );
+}
+
+function BundleItemRow({ line }: { line: CartLine }) {
+  const { product, variation, unitPrice, unitRegularPrice, isGift } = line;
+  const image = variation?.image ?? product.image;
+  return (
+    <div className="flex items-center gap-3">
+      {image ? (
+        <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-lg bg-[#eef1f3]">
+          <Image src={image} alt={product.name} fill className="object-contain p-1" sizes="36px" />
+        </div>
+      ) : (
+        <div className="h-12 w-9 shrink-0 rounded-lg border border-chrome-500/30 bg-gradient-to-b from-surface-3 to-surface" />
+      )}
+      <div className="flex-1">
+        <p className="text-xs font-semibold text-fg">{product.name}</p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+          {(variation?.label ?? product.size) && (
+            <span className="text-[10px] font-bold uppercase tracking-wide text-steel-300">
+              {variation?.label ?? product.size}
+            </span>
+          )}
+          {isGift && (
+            <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+              Included Free
+            </span>
+          )}
+        </div>
+      </div>
+      {isGift ? (
+        <div className="text-right">
+          <p className="text-[10px] text-fg-faint line-through">
+            ${unitRegularPrice.toFixed(2)}
+          </p>
+          <p className="text-xs font-semibold text-emerald-300">Free</p>
+        </div>
+      ) : (
+        <p className="text-xs font-semibold text-fg">${unitPrice.toFixed(2)}</p>
+      )}
     </div>
   );
 }

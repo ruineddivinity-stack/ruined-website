@@ -395,6 +395,12 @@ export type CreateOrderInput = {
     quantity: number;
     variationId?: number;
     metaData?: { key: string; value: string }[];
+    /** Explicit price override (e.g. "0.00" for a free gift) — bypasses
+     * WooCommerce's default of pricing the line at the product's own listed
+     * price, which matters because a percent coupon computes its discount
+     * off each line's real price, not off any fee-line offset. */
+    subtotal?: string;
+    total?: string;
   }[];
   feeLines?: { name: string; amount: number }[];
   couponCode?: string;
@@ -448,6 +454,8 @@ export async function createOrder(input: CreateOrderInput): Promise<{
       quantity: li.quantity,
       ...(li.variationId ? { variation_id: li.variationId } : {}),
       ...(li.metaData && li.metaData.length > 0 ? { meta_data: li.metaData } : {}),
+      ...(li.subtotal !== undefined ? { subtotal: li.subtotal } : {}),
+      ...(li.total !== undefined ? { total: li.total } : {}),
     })),
   };
 

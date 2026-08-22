@@ -1,9 +1,16 @@
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/discounts";
 
-export function FreeShippingProgress({ subtotal }: { subtotal: number }) {
-  const pct = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+export function FreeShippingProgress({
+  subtotal,
+  forceUnlocked = false,
+}: {
+  subtotal: number;
+  /** True when free shipping is already guaranteed some other way (e.g. a bundle). */
+  forceUnlocked?: boolean;
+}) {
+  const unlocked = forceUnlocked || subtotal >= FREE_SHIPPING_THRESHOLD;
+  const pct = unlocked ? 100 : Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
   const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const unlocked = subtotal >= FREE_SHIPPING_THRESHOLD;
 
   return (
     <div>

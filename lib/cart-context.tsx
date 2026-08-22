@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { AppliedCoupon } from "./discounts";
-import { GIFT_TIERS, getGiftTier } from "./discounts";
+import { GIFT_TIERS, getGiftTier, BUNDLE_FREE_ITEM_SLUG } from "./discounts";
 import { resolveCartLines } from "./cart-lines";
 import type { Product } from "./types";
 
@@ -20,6 +20,16 @@ export type CartItem = {
   variationLabel?: string;
   /** True for a line auto-added by the gift-tier ladder — never user-editable. */
   isGift?: boolean;
+  /** True for a vial (or the free 5th item) picked into a Build-a-Bundle. */
+  isBundlePick?: boolean;
+  /** Shared by every line in one bundle instance — used to add/remove the set as a unit. */
+  bundleId?: string;
+};
+
+export type BundlePick = {
+  slug: string;
+  variationId?: number;
+  variationLabel?: string;
 };
 
 type CartContextValue = {
@@ -37,6 +47,8 @@ type CartContextValue = {
   ) => void;
   removeItem: (slug: string, variationId?: number) => void;
   updateQty: (slug: string, qty: number, variationId?: number) => void;
+  addBundle: (picks: BundlePick[]) => void;
+  removeBundle: (bundleId: string) => void;
   clearCart: () => void;
 };
 
@@ -95,15 +107,30 @@ export function CartProvider({
   useEffect(() => {
     if (!hydrated) return;
     const nonGiftItems = items.filter((i) => !i.isGift);
-    const subtotal = resolveCartLines(nonGiftItems, products).reduce(
-      (sum, l) => sum + l.unitPrice * l.qty,
-      0,
-    );
+    // Bundle-picked vials are excluded from the tier-eligibility subtotal —
+    // they already earn their own free BAC water as part of the bundle deal,
+    // so counting them here would grant a confusing second one on top of it.
+    const subtotal = resolveCartLines(
+      nonGiftItems.filter((i) => !i.isBundlePick),
+      products,
+    ).reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
     const tier = getGiftTier(subtotal);
+
+    // If a bundle is already in the cart, it always includes its own free
+    // BAC Water — never hand out a second, physical one for hitting a
+    // regular-item tier that happens to grant the same product. Any other
+    // (different) item a tier grants — like GHK-CU — still comes through
+    // normally.
+    const bundleAlreadyGrantsBacWater = items.some(
+      (i) => i.isGift && i.bundleId && i.slug === BUNDLE_FREE_ITEM_SLUG,
+    );
 
     const desiredGifts: CartItem[] = [];
     if (tier) {
       for (const spec of tier.items) {
+        if (spec.slug === BUNDLE_FREE_ITEM_SLUG && bundleAlreadyGrantsBacWater) {
+          continue;
+        }
         const product = products.find((p) => p.slug === spec.slug);
         if (!product) continue;
         const variation = spec.variationLabel
@@ -126,11 +153,15 @@ export function CartProvider({
         .map((i) => `${i.slug}:${i.variationId ?? ""}`)
         .sort()
         .join(",");
-    const currentGiftKey = keyOf(items.filter((i) => i.isGift));
+    // Bundle-linked gift lines (the free 5th item a bundle grants) aren't
+    // managed by this tier ladder — leave them alone so this reconciliation
+    // doesn't wipe them out on every cycle.
+    const bundleGiftItems = items.filter((i) => i.isGift && i.bundleId);
+    const currentGiftKey = keyOf(items.filter((i) => i.isGift && !i.bundleId));
     const desiredGiftKey = keyOf(desiredGifts);
 
     if (currentGiftKey !== desiredGiftKey) {
-      setItems([...nonGiftItems, ...desiredGifts]);
+      setItems([...nonGiftItems, ...bundleGiftItems, ...desiredGifts]);
     }
     // Deliberately keyed on the non-gift portion only (via nonGiftItemsKey) —
     // reacting to `items` directly would re-fire on every gift-line write
@@ -144,8 +175,16 @@ export function CartProvider({
     variation?: { id: number; label: string },
   ) => {
     setItems((prev) => {
+      // Never merge into a gift or bundle-picked line for the same
+      // product — those are managed exclusively by the gift ladder and
+      // addBundle/removeBundle. A normal "Add to cart" always gets its own
+      // regular line, even if the same product is also sitting in a bundle.
       const existing = prev.find(
-        (i) => i.slug === slug && i.variationId === variation?.id,
+        (i) =>
+          i.slug === slug &&
+          i.variationId === variation?.id &&
+          !i.isGift &&
+          !i.isBundlePick,
       );
       if (existing) {
         return prev.map((i) =>
@@ -167,7 +206,15 @@ export function CartProvider({
 
   const removeItem = (slug: string, variationId?: number) => {
     setItems((prev) =>
-      prev.filter((i) => !(i.slug === slug && i.variationId === variationId)),
+      prev.filter(
+        (i) =>
+          !(
+            i.slug === slug &&
+            i.variationId === variationId &&
+            !i.isGift &&
+            !i.isBundlePick
+          ),
+      ),
     );
   };
 
@@ -178,9 +225,44 @@ export function CartProvider({
     }
     setItems((prev) =>
       prev.map((i) =>
-        i.slug === slug && i.variationId === variationId ? { ...i, qty } : i,
+        i.slug === slug &&
+        i.variationId === variationId &&
+        !i.isGift &&
+        !i.isBundlePick
+          ? { ...i, qty }
+          : i,
       ),
     );
+  };
+
+  const addBundle = (picks: BundlePick[]) => {
+    const bundleId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `bundle-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const bundleItems: CartItem[] = [
+      ...picks.map((p) => ({
+        slug: p.slug,
+        qty: 1,
+        variationId: p.variationId,
+        variationLabel: p.variationLabel,
+        isBundlePick: true,
+        bundleId,
+      })),
+      {
+        slug: BUNDLE_FREE_ITEM_SLUG,
+        qty: 1,
+        isGift: true,
+        isBundlePick: true,
+        bundleId,
+      },
+    ];
+    setItems((prev) => [...prev, ...bundleItems]);
+    setIsOpen(true);
+  };
+
+  const removeBundle = (bundleId: string) => {
+    setItems((prev) => prev.filter((i) => i.bundleId !== bundleId));
   };
 
   const clearCart = () => {
@@ -206,6 +288,8 @@ export function CartProvider({
         addItem,
         removeItem,
         updateQty,
+        addBundle,
+        removeBundle,
         clearCart,
       }}
     >

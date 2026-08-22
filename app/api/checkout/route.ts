@@ -7,14 +7,25 @@ import {
   PICKUP_LABEL,
   BULK_TIERS,
   getGiftTier,
+  BUNDLE_VIAL_COUNT,
+  BUNDLE_DISCOUNT_RATE,
+  BUNDLE_FREE_ITEM_SLUG,
 } from "@/lib/discounts";
+import { isBundleEligible } from "@/lib/bundle";
 import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
 import { resolveCartLines } from "@/lib/cart-lines";
 import { getReferralBalance, redeemReferralCredit } from "@/lib/referral";
 
 type CheckoutRequestBody = {
-  items: { slug: string; qty: number; variationId?: number; isGift?: boolean }[];
+  items: {
+    slug: string;
+    qty: number;
+    variationId?: number;
+    isGift?: boolean;
+    isBundlePick?: boolean;
+    bundleId?: string;
+  }[];
   promoCode?: string;
   sourceId: string;
   email: string;
@@ -66,35 +77,91 @@ export async function POST(request: Request) {
   }
 
   const products = await getAllProducts();
-  const allLines = resolveCartLines(body.items, products).filter((l) => l.qty > 0);
+  const rawLines = resolveCartLines(body.items, products).filter((l) => l.qty > 0);
 
-  if (allLines.length === 0) {
+  if (rawLines.length === 0) {
     return NextResponse.json(
       { error: "None of the items in your cart are available anymore." },
       { status: 400 },
     );
   }
 
-  // The client marks which cart lines it believes are free gifts, but that
-  // flag is just a UI hint — never trust it directly, since a tampered
-  // request could mark any item isGift to get it for free. Re-derive the
-  // real gift tier from the PAID lines only, then only let a claimed line
-  // through free if it exactly matches one of that tier's real items;
-  // anything else falls back to being billed at full price like normal.
+  // The client marks which lines it believes belong to a Build-a-Bundle, but
+  // that flag is just a UI hint — never trust it directly. Re-derive each
+  // claimed bundle group and only honor it if it's exactly 4 distinct
+  // bundle-eligible vials (+ optionally the one free item) with no
+  // duplicates or tampered products; anything that doesn't validate falls
+  // back to being billed as ordinary lines with no bundle discount.
+  const bundleGroups = new Map<string, typeof rawLines>();
+  for (const line of rawLines) {
+    if (!line.bundleId) continue;
+    const group = bundleGroups.get(line.bundleId) ?? [];
+    group.push(line);
+    bundleGroups.set(line.bundleId, group);
+  }
+  const verifiedBundleIds = new Set<string>();
+  for (const [bundleId, groupLines] of bundleGroups) {
+    const vialLines = groupLines.filter((l) => !l.isGift);
+    const freeLines = groupLines.filter((l) => l.isGift);
+    const distinctSlugs = new Set(vialLines.map((l) => l.product.slug));
+    const valid =
+      vialLines.length === BUNDLE_VIAL_COUNT &&
+      distinctSlugs.size === BUNDLE_VIAL_COUNT &&
+      vialLines.every((l) => l.qty === 1 && isBundleEligible(l.product)) &&
+      freeLines.length <= 1 &&
+      freeLines.every((l) => l.qty === 1 && l.product.slug === BUNDLE_FREE_ITEM_SLUG);
+    if (valid) verifiedBundleIds.add(bundleId);
+  }
+  const allLines = rawLines.map((l) =>
+    l.bundleId && !verifiedBundleIds.has(l.bundleId)
+      ? { ...l, isBundlePick: false, bundleId: undefined }
+      : l,
+  );
+
+  // The client also marks which lines it believes are free gifts, but that
+  // flag is just a UI hint too — never trust it directly, since a tampered
+  // request could mark any item isGift to get it for free. A claimed gift
+  // line is only honored if it's either the verified free item from a
+  // legitimate bundle above, or matches the real spend-tier gift ladder
+  // (re-derived from the PAID lines only); anything else is billed at full
+  // price like normal.
   const claimedGiftLines = allLines.filter((l) => l.isGift);
   const paidLines = allLines.filter((l) => !l.isGift);
-  const paidSubtotal = paidLines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
+  // Bundle-picked vials are excluded from tier-gift eligibility here too —
+  // they already earn their own free item as part of the bundle, so they
+  // shouldn't also count toward unlocking a second one from the spend ladder.
+  const paidSubtotal = paidLines
+    .filter((l) => !l.isBundlePick)
+    .reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
   const giftTier = getGiftTier(paidSubtotal);
   const giftSpecKey = (slug: string, variationLabel?: string | null) =>
     `${slug}:${variationLabel ?? ""}`;
+  // A verified bundle already includes its own free BAC Water — never also
+  // honor a second, tier-based claim for that same product on top of it.
   const validGiftKeys = new Set(
-    (giftTier?.items ?? []).map((i) => giftSpecKey(i.slug, i.variationLabel)),
+    (giftTier?.items ?? [])
+      .filter((i) => !(verifiedBundleIds.size > 0 && i.slug === BUNDLE_FREE_ITEM_SLUG))
+      .map((i) => giftSpecKey(i.slug, i.variationLabel)),
   );
 
   const verifiedGiftLines: typeof allLines = [];
   const reclassifiedAsPaid: typeof allLines = [];
   const usedGiftKeys = new Set<string>();
+  const usedBundleFreebies = new Set<string>();
   for (const line of claimedGiftLines) {
+    const isBundleFreebie =
+      line.bundleId &&
+      verifiedBundleIds.has(line.bundleId) &&
+      line.product.slug === BUNDLE_FREE_ITEM_SLUG &&
+      line.qty === 1 &&
+      !usedBundleFreebies.has(line.bundleId);
+    if (isBundleFreebie) {
+      usedBundleFreebies.add(line.bundleId!);
+      if (line.inStock) verifiedGiftLines.push(line);
+      // Out-of-stock bundle freebie is just dropped, same as tier gifts.
+      continue;
+    }
+
     const key = giftSpecKey(line.product.slug, line.variation?.label);
     const isLegitGift = validGiftKeys.has(key) && !usedGiftKeys.has(key) && line.qty === 1;
     if (!isLegitGift) {
@@ -145,6 +212,7 @@ export async function POST(request: Request) {
       subtotal: l.unitPrice * l.qty,
       qty: l.qty,
       isBundle: l.product.type === "bundle",
+      isBundlePick: l.isBundlePick,
     })),
     validCoupon,
   );
@@ -174,30 +242,57 @@ export async function POST(request: Request) {
       amount: -discounts.spendAmount,
     });
   }
+  if (discounts.bundleQualifies) {
+    feeLines.push({
+      name: `Build-a-Bundle discount (${BUNDLE_DISCOUNT_RATE * 100}%)`,
+      amount: -discounts.bundleAmount,
+    });
+  }
 
-  // Verified gift lines: real product/variation, real price charged by
-  // WooCommerce off the product's own listing — offset by a matching fee
-  // line so the net charge is $0, with a line-item note so it's unmistakable
-  // in the order/packing-slip view during fulfillment.
+  // Verified gift lines: priced at $0.00 directly (not full price offset by
+  // a fee line) so a discount code applied elsewhere in the order can't
+  // compute its percentage off the gift's real retail price — WooCommerce's
+  // native coupon engine works off each line's own price, blind to fee
+  // lines, so a full-price line + offsetting fee was silently overcharging
+  // whenever a code and a free gift landed in the same order.
   const giftLineItems: {
     productId: number;
     quantity: number;
     variationId?: number;
     metaData: { key: string; value: string }[];
+    subtotal: string;
+    total: string;
   }[] = [];
   for (const line of verifiedGiftLines) {
-    const price = line.variation ? line.variation.price : line.product.price;
+    const isBundleFreebie = line.bundleId && verifiedBundleIds.has(line.bundleId);
     giftLineItems.push({
       productId: line.product.id,
       quantity: 1,
       variationId: line.variationId,
       metaData: [
-        { key: "🎁 Free Gift", value: `Unlocked at $${giftTier?.min ?? 0}+ spend` },
+        {
+          key: "🎁 Free Gift",
+          value: isBundleFreebie
+            ? "Build-a-Bundle 5th item"
+            : `Unlocked at $${giftTier?.min ?? 0}+ spend`,
+        },
       ],
+      subtotal: "0.00",
+      total: "0.00",
     });
+  }
+
+  // A discount code's own WooCommerce-native application applies against
+  // every line item's full price, with no way to scope it away from just
+  // the bundle's lines — so when a verified bundle is in the order, we
+  // compute the code's effect ourselves (already correctly excluding the
+  // bundle's subtotal) as a fee line instead of letting WooCommerce apply it
+  // natively. This keeps "codes don't apply to the bundle" true for the
+  // actual charged amount, not just the on-screen total.
+  if (discounts.bundleQualifies && discounts.affiliateApplied && discounts.affiliateAmount > 0) {
     feeLines.push({
-      name: `Free gift: ${line.product.name}${line.variation ? ` (${line.variation.label})` : ""}`,
-      amount: -price,
+      name: `Code "${discounts.affiliateCode}" discount`,
+      amount: -discounts.affiliateAmount,
     });
   }
 
@@ -228,11 +323,21 @@ export async function POST(request: Request) {
           productId: l.product.id,
           quantity: l.qty,
           variationId: l.variationId,
+          ...(l.isBundlePick
+            ? {
+                metaData: [
+                  {
+                    key: "🧪 Bundle Item",
+                    value: `Build-a-Bundle — ${BUNDLE_DISCOUNT_RATE * 100}% off`,
+                  },
+                ],
+              }
+            : {}),
         })),
         ...giftLineItems,
       ],
       feeLines,
-      couponCode: validCoupon?.code,
+      couponCode: discounts.bundleQualifies ? undefined : validCoupon?.code,
       shippingTotal,
       isPickup,
       shippingMethodTitle: isPickup
