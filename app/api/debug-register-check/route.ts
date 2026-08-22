@@ -5,6 +5,7 @@ import { wpFetch } from "@/lib/wp-origin-fetch";
 // vars without exposing their actual values, and the RAW response our own
 // wpFetch mechanism gets from WORDPRESS_URL for a harmless GET. Delete after use.
 export async function GET() {
+  const marker = "pipelining-fix-v1";
   const field = process.env.WP_REGISTER_AUTH_KEY_FIELD;
   const value = process.env.WP_REGISTER_AUTH_KEY;
   const wpUrl = process.env.WOOCOMMERCE_URL;
@@ -104,6 +105,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
+    marker,
     wpUrl,
     fieldSet: !!field,
     fieldLength: field?.length ?? 0,
