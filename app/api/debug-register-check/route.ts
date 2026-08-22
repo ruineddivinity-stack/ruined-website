@@ -69,6 +69,24 @@ export async function GET() {
     registerNoAuthRaw = { fetchError: err instanceof Error ? err.message : String(err) };
   }
 
+  // Same 3-key shape as the real register call, but with a plain, non-hex
+  // dummy field name/value — isolates whether it's specifically the
+  // hex-string SHAPE of the real auth key/value tripping something up.
+  let registerFakeFieldRaw: unknown = null;
+  try {
+    const testEmail = `debug-fakefield-${Date.now()}@ruined-dev.test`;
+    const res = await wpFetch(`${wpUrl}/wp-json/simple-jwt-login/v1/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: testEmail, password: "TestPassword123", some_plain_field: "plainvalue" }),
+      cache: "no-store",
+    });
+    const text = await res.text();
+    registerFakeFieldRaw = { status: res.status, bodyPreview: text.slice(0, 500), testEmail };
+  } catch (err) {
+    registerFakeFieldRaw = { fetchError: err instanceof Error ? err.message : String(err) };
+  }
+
   // Login endpoint, but via the exact same wpFetch call shape used above,
   // for a clean side-by-side against the failing/succeeding register calls.
   let loginRaw: unknown = null;
@@ -96,6 +114,7 @@ export async function GET() {
     raw,
     registerRaw,
     registerNoAuthRaw,
+    registerFakeFieldRaw,
     loginRaw,
   });
 }
