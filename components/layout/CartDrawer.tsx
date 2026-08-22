@@ -81,7 +81,7 @@ export function CartDrawer({ products }: { products: Product[] }) {
           animate={isOpen ? { opacity: [0, 1, 0.6] } : { opacity: 0 }}
           transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
         />
-        <div className="flex items-center justify-between border-b border-border-soft px-6 py-5">
+        <div className="flex items-center justify-between border-b border-border-soft px-6 py-4">
           <h2 className="font-display text-lg font-black uppercase tracking-wide text-fg">
             Your Cart
           </h2>
@@ -96,18 +96,19 @@ export function CartDrawer({ products }: { products: Product[] }) {
         </div>
 
         {lines.length > 0 && (
-          <div className="flex flex-col gap-4 border-b border-border-soft px-6 py-4">
+          <div className="flex flex-col gap-3 border-b border-border-soft px-6 py-3">
+            <SavingsBadgeRow scroll />
             <FreeShippingProgress subtotal={subtotal} forceUnlocked={discounts.bundleQualifies} />
             <GiftProgress subtotal={giftSubtotal} hasBundle={discounts.bundleQualifies} />
             <SpendDiscountProgress subtotal={subtotal} />
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {lines.length === 0 ? (
             <p className="text-sm text-fg-muted">Your cart is empty.</p>
           ) : (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               {Array.from(bundleGroups.entries()).map(([bundleId, groupLines]) => (
                 <div
                   key={bundleId}
@@ -239,17 +240,13 @@ export function CartDrawer({ products }: { products: Product[] }) {
         </div>
 
         {lines.length > 0 && (
-          <div className="border-t border-border-soft px-6 py-5">
-            <SavingsBadgeRow />
+          <div className="border-t border-border-soft px-6 py-4">
+            <PromoCodeInput
+              coupon={coupon}
+              onApply={setCoupon}
+            />
 
-            <div className="mt-4">
-              <PromoCodeInput
-                coupon={coupon}
-                onApply={setCoupon}
-              />
-            </div>
-
-            <div className="mt-4 flex flex-col gap-1.5 text-sm">
+            <div className="mt-3 flex flex-col gap-1.5 text-sm">
               <div className="flex justify-between text-fg-muted">
                 <span>Subtotal</span>
                 <span className="text-fg">${subtotal.toFixed(2)}</span>
@@ -293,14 +290,14 @@ export function CartDrawer({ products }: { products: Product[] }) {
             <Link
               href="/checkout"
               onClick={closeCart}
-              className="mt-4 flex w-full items-center justify-center rounded-full bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 px-6 py-3 text-sm font-semibold text-black transition-transform hover:brightness-110"
+              className="mt-3 flex w-full items-center justify-center rounded-full bg-gradient-to-b from-chrome-100 via-chrome-300 to-chrome-500 px-6 py-3 text-sm font-semibold text-black transition-transform hover:brightness-110"
             >
               Checkout
             </Link>
             <Link
               href="/cart"
               onClick={closeCart}
-              className="mt-3 block text-center text-xs text-fg-muted hover:text-fg"
+              className="mt-2 block text-center text-xs text-fg-muted hover:text-fg"
             >
               View full cart
             </Link>
