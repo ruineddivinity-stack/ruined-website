@@ -5,7 +5,7 @@ import { wpFetch } from "@/lib/wp-origin-fetch";
 // vars without exposing their actual values, and the RAW response our own
 // wpFetch mechanism gets from WORDPRESS_URL for a harmless GET. Delete after use.
 export async function GET() {
-  const marker = "pipelining-fix-v1";
+  const marker = "raw-body-capture-v1";
   const field = process.env.WP_REGISTER_AUTH_KEY_FIELD;
   const value = process.env.WP_REGISTER_AUTH_KEY;
   const wpUrl = process.env.WOOCOMMERCE_URL;
@@ -29,14 +29,15 @@ export async function GET() {
   let registerRaw: unknown = null;
   try {
     const testEmail = `debug-route-${Date.now()}@ruined-dev.test`;
+    const outgoingBody = JSON.stringify({
+      email: testEmail,
+      password: "TestPassword123",
+      ...(field && value ? { [field]: value } : {}),
+    });
     const res = await wpFetch(`${wpUrl}/wp-json/simple-jwt-login/v1/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: testEmail,
-        password: "TestPassword123",
-        ...(field && value ? { [field]: value } : {}),
-      }),
+      body: outgoingBody,
       cache: "no-store",
     });
     const text = await res.text();
@@ -48,6 +49,8 @@ export async function GET() {
       location: res.headers.get("location"),
       bodyPreview: text.slice(0, 500),
       testEmail,
+      outgoingBody,
+      outgoingBodyLength: outgoingBody.length,
     };
   } catch (err) {
     registerRaw = { fetchError: err instanceof Error ? err.message : String(err) };
