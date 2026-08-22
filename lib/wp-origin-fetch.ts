@@ -26,6 +26,14 @@ const originAgent = new Agent({
       );
     }) as never,
   },
+  // This dispatcher is a module-level singleton reused across every wpFetch
+  // call — including across warm serverless invocations on Vercel. HTTP/1.1
+  // pipelining (undici's default) can misalign a kept-alive connection under
+  // bursty/irregular traffic, causing one request to receive a response (or
+  // have its own body processed) as if it were a different one. Disabling
+  // it trades a little connection reuse efficiency for never getting a
+  // response that doesn't belong to the request that asked for it.
+  pipelining: 0,
 });
 
 export function wpFetch(
