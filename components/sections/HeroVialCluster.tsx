@@ -11,7 +11,7 @@ type Vial = {
   alt: string;
   glowColors: [string, string, string];
   className: string;
-  displayWidth: number;
+  widthClass: string;
   floatDuration: number;
   floatDelay: number;
   zIndex: number;
@@ -29,7 +29,7 @@ const vials: Vial[] = [
       "var(--color-holo-pink)",
     ],
     className: "left-[2%] top-[32%]",
-    displayWidth: 197,
+    widthClass: "w-[158px] sm:w-[197px]",
     floatDuration: 4.6,
     floatDelay: 0,
     zIndex: 10,
@@ -45,7 +45,7 @@ const vials: Vial[] = [
       "var(--color-holo-gold)",
     ],
     className: "left-1/2 top-0 -translate-x-1/2",
-    displayWidth: 176,
+    widthClass: "w-[141px] sm:w-[176px]",
     floatDuration: 5.2,
     floatDelay: 0.4,
     zIndex: 20,
@@ -61,7 +61,7 @@ const vials: Vial[] = [
       "var(--color-holo-violet)",
     ],
     className: "right-[2%] top-[28%]",
-    displayWidth: 209,
+    widthClass: "w-[167px] sm:w-[209px]",
     floatDuration: 4.9,
     floatDelay: 0.8,
     zIndex: 10,
@@ -202,8 +202,7 @@ function Vial({ vial }: { vial: Vial }) {
           alt={vial.alt}
           width={vial.width}
           height={vial.height}
-          style={{ width: vial.displayWidth, height: "auto" }}
-          className="relative select-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.55)]"
+          className={`relative h-auto select-none drop-shadow-[0_20px_40px_rgba(0,0,0,0.55)] ${vial.widthClass}`}
           priority
         />
       </motion.div>
@@ -213,7 +212,7 @@ function Vial({ vial }: { vial: Vial }) {
 
 export function HeroVialCluster() {
   return (
-    <div className="relative mx-auto h-[440px] w-full max-w-md sm:h-[480px]">
+    <div className="relative mx-auto h-[390px] w-full max-w-md sm:h-[480px]">
       {vials.map((vial) => (
         <Vial key={vial.src} vial={vial} />
       ))}

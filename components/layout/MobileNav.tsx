@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useCart } from "@/lib/cart-context";
-import { AFFILIATE_CODE, AFFILIATE_RATE } from "@/lib/discounts";
+import { AFFILIATE_RATE } from "@/lib/discounts";
 
 const overlayVariants = { closed: { opacity: 0 }, open: { opacity: 1 } };
 const panelVariants = { closed: { x: "100%" }, open: { x: "0%" } };
@@ -157,19 +157,16 @@ export function MobileNav({ accountHref }: { accountHref: string }) {
 
         <div className="mt-auto p-4">
           <Link
-            href="/cart"
+            href="/#vip-notifications"
             onClick={() => setOpen(false)}
             className="flex items-center gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-4 py-3.5 transition-colors hover:border-steel-500 hover:bg-steel-700/25"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-steel-600/40 text-steel-300">
-              <TagIcon className="h-4 w-4" />
+              <MailIcon className="h-4 w-4" />
             </span>
             <span className="flex-1">
               <span className="block text-sm font-semibold text-fg">
-                Affiliate Code &ldquo;{AFFILIATE_CODE}&rdquo;
-              </span>
-              <span className="block text-xs text-steel-300">
-                Get {AFFILIATE_RATE * 100}% off your order
+                Get {AFFILIATE_RATE * 100}% Off Your Order Forever
               </span>
             </span>
           </Link>
@@ -279,15 +276,6 @@ function UserIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" />
-    </svg>
-  );
-}
-
-function TagIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
-      <path d="M20 12.5 12.5 20a1.5 1.5 0 0 1-2.1 0L4 13.6a1.5 1.5 0 0 1 0-2.1L11.5 4H18a2 2 0 0 1 2 2v6.5Z" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="15.5" cy="8.5" r="1.25" />
     </svg>
   );
 }
