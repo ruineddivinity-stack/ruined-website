@@ -12,7 +12,6 @@ import {
   BUNDLE_FREE_ITEM_SLUG,
 } from "@/lib/discounts";
 import { isBundleEligible } from "@/lib/bundle";
-import { chargeOrderWithSquare } from "@/lib/square";
 import { getSession } from "@/lib/session";
 import { resolveCartLines } from "@/lib/cart-lines";
 import { getReferralBalance, redeemReferralCredit } from "@/lib/referral";
@@ -27,7 +26,6 @@ type CheckoutRequestBody = {
     bundleId?: string;
   }[];
   promoCode?: string;
-  sourceId: string;
   email: string;
   shipping: {
     firstName: string;
@@ -48,12 +46,6 @@ export async function POST(request: Request) {
 
   if (!body.items || body.items.length === 0) {
     return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
-  }
-  if (!body.sourceId) {
-    return NextResponse.json(
-      { error: "Missing payment details." },
-      { status: 400 },
-    );
   }
 
   const isPickup = body.fulfillmentMethod === "pickup";
@@ -357,6 +349,12 @@ export async function POST(request: Request) {
       },
       customerId: session?.id,
       metaData,
+      // No live payment processor right now — the order is created
+      // "on-hold" and the customer pays manually via CashApp, confirmed by
+      // staff. See lib/discounts.ts CASHAPP_TAG.
+      paymentMethod: "cashapp_manual",
+      paymentMethodTitle: "CashApp (Manual)",
+      status: "on-hold",
     });
   } catch (err) {
     console.error("Order creation failed", err);
@@ -366,21 +364,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const chargeResult = await chargeOrderWithSquare(order.id, body.sourceId);
-  if ("error" in chargeResult) {
-    return NextResponse.json(
-      { error: chargeResult.error, orderId: order.id },
-      { status: 402 },
-    );
-  }
-
-  // Only debit the credit ledger once payment has actually succeeded, so a
-  // failed or cancelled charge never burns the customer's balance.
+  // There's no separate payment-success step to hook this to anymore since
+  // payment is manual — debit the credit ledger as soon as the order (which
+  // already bills the reduced, credit-applied total) exists.
   if (creditApplied > 0 && session) {
     try {
       await redeemReferralCredit(session.username, creditApplied);
     } catch (err) {
-      console.error("Failed to redeem store credit after successful charge", err);
+      console.error("Failed to redeem store credit after order creation", err);
     }
   }
 

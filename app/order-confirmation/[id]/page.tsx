@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { getOrder } from "@/lib/woocommerce";
 import { ClearCartOnMount } from "@/components/checkout/ClearCartOnMount";
+import { CASHAPP_TAG } from "@/lib/discounts";
 
 export const metadata: Metadata = {
   title: "Order Confirmed | RUINED",
@@ -27,6 +28,7 @@ export default async function OrderConfirmationPage(
   }
 
   const isPaid = PAID_STATUSES.has(order.status);
+  const isAwaitingCashApp = !isPaid && order.paymentMethod === "cashapp_manual";
 
   return (
     <div className="py-20">
@@ -44,12 +46,18 @@ export default async function OrderConfirmationPage(
           </span>
 
           <h1 className="mt-5 font-display text-2xl font-black uppercase tracking-tight text-fg">
-            {isPaid ? "Order Confirmed" : "Confirming Your Payment"}
+            {isPaid
+              ? "Order Confirmed"
+              : isAwaitingCashApp
+                ? "Order Placed — Awaiting Payment"
+                : "Confirming Your Payment"}
           </h1>
           <p className="mt-2 text-sm text-fg-muted">
             {isPaid
               ? `Thanks for your order — a confirmation has been sent to your email.`
-              : `We're finalizing your payment with Square. This page will update shortly — feel free to refresh.`}
+              : isAwaitingCashApp
+                ? "Send your payment via CashApp using the details below — we'll confirm it and get your order moving."
+                : "We're confirming your order. This page will update shortly — feel free to refresh."}
           </p>
 
           <div className="mt-6 flex flex-col gap-1.5 rounded-2xl border border-border-soft bg-surface px-5 py-4 text-left">
@@ -70,6 +78,26 @@ export default async function OrderConfirmationPage(
             <span>Order #{order.number}</span>
             <span>${order.total.toFixed(2)}</span>
           </div>
+
+          {isAwaitingCashApp && (
+            <div className="mt-6 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-left text-sm leading-relaxed text-fg">
+              <p className="font-semibold">Send payment via CashApp</p>
+              <p className="mt-1.5 text-fg-muted">
+                Send{" "}
+                <span className="font-semibold text-fg">
+                  ${order.total.toFixed(2)}
+                </span>{" "}
+                to <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
+                and put{" "}
+                <span className="font-semibold text-fg">
+                  Order #{order.number}
+                </span>{" "}
+                in the payment note &mdash; and only your order number, no
+                other details. Your order ships once we&rsquo;ve confirmed
+                the payment.
+              </p>
+            </div>
+          )}
 
           {order.isPickup && (
             <div className="mt-6 rounded-2xl border border-border-soft bg-surface px-5 py-4 text-left">

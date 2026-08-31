@@ -19,12 +19,14 @@ import {
   PICKUP_LABEL,
   BULK_TIERS,
   BUNDLE_DISCOUNT_RATE,
+  CASHAPP_TAG,
   type ShippingMethod,
 } from "@/lib/discounts";
 import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
+import { CashAppIcon } from "@/components/checkout/CashAppIcon";
+import { CashAppPaymentPanel } from "@/components/checkout/CashAppPaymentPanel";
 
 type FulfillmentMethod = "ship" | "pickup";
-import { SquarePaymentForm } from "@/components/checkout/SquarePaymentForm";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL",
@@ -64,6 +66,11 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [fulfillment, setFulfillment] = useState<FulfillmentMethod>("ship");
   const [creditBalance, setCreditBalance] = useState(0);
   const [useCredit, setUseCredit] = useState(true);
+  const [placedOrder, setPlacedOrder] = useState<{
+    orderId: number;
+    orderKey: string;
+    total: number;
+  } | null>(null);
   const isPickup = fulfillment === "pickup";
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -125,7 +132,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         shipping.state.trim() !== "" &&
         shipping.postcode.trim() !== ""));
 
-  const handleToken = async (sourceId: string) => {
+  const handlePlaceOrder = async () => {
     setError(null);
 
     if (!formValid) {
@@ -141,7 +148,6 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         body: JSON.stringify({
           items: items,
           promoCode: coupon?.code ?? "",
-          sourceId,
           email,
           shipping,
           shippingMethod,
@@ -154,17 +160,37 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       const body = await res.json().catch(() => ({}));
 
       if (!res.ok || !body.success) {
-        setError(body.error ?? "Payment could not be processed. Please try again.");
+        setError(body.error ?? "Your order couldn't be placed. Please try again.");
         setSubmitting(false);
         return;
       }
 
-      router.push(`/order-confirmation/${body.orderId}?key=${body.orderKey}`);
+      setPlacedOrder({ orderId: body.orderId, orderKey: body.orderKey, total });
+      setSubmitting(false);
     } catch {
       setError("Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };
+
+  const handleConfirmPayment = () => {
+    if (!placedOrder) return;
+    router.push(
+      `/order-confirmation/${placedOrder.orderId}?key=${placedOrder.orderKey}`,
+    );
+  };
+
+  if (placedOrder) {
+    return (
+      <div className="mt-16">
+        <CashAppPaymentPanel
+          amount={placedOrder.total}
+          orderNumber={String(placedOrder.orderId)}
+          onConfirm={handleConfirmPayment}
+        />
+      </div>
+    );
+  }
 
   if (lines.length === 0) {
     return (
@@ -180,6 +206,22 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   return (
     <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
       <div className="flex flex-col gap-10 lg:col-span-2">
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-5 py-4 text-sm leading-relaxed text-amber-200">
+          <p className="font-semibold text-amber-100">
+            A quick note on payment
+          </p>
+          <p className="mt-1.5">
+            The payment processing industry has been going through changes
+            recently, and we&rsquo;re currently setting up a new card
+            processor. Card payments are temporarily unavailable and will be
+            back shortly &mdash; sorry for the inconvenience!{" "}
+            <span className="font-semibold text-amber-100">
+              CashApp is available in the meantime
+            </span>{" "}
+            &mdash; details below in the Payment step.
+          </p>
+        </div>
+
         {error && (
           <div
             ref={errorRef}
@@ -301,16 +343,36 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
         <FormSection step={4} title="Payment" last>
           <div className="sm:col-span-2">
-            <SquarePaymentForm
-              amount={total}
+            <div className="flex items-start gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg">
+              <CashAppIcon className="mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold">Pay with CashApp</p>
+                <p className="mt-1.5 text-fg-muted">
+                  Place your order below and we&rsquo;ll show you a QR code
+                  and payment details for sending{" "}
+                  <span className="font-semibold text-fg">
+                    ${total.toFixed(2)}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
+                  on CashApp.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
               disabled={!formValid || submitting}
-              onToken={handleToken}
-              onError={setError}
-            />
+              onClick={handlePlaceOrder}
+              className="mt-4 w-full justify-center disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            >
+              {submitting ? "Placing Order…" : `Place Order — $${total.toFixed(2)}`}
+            </Button>
+
             {!formValid && (
               <p className="mt-3 text-xs text-fg-faint">
-                Fill in your contact and shipping details above to enable
-                payment.
+                Fill in your contact and shipping details above to place your
+                order.
               </p>
             )}
           </div>

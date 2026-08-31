@@ -51,4 +51,5 @@ export type Order = {
   total: number;
   lineItems: OrderLineItem[];
   isPickup: boolean;
+  paymentMethod: string;
 };

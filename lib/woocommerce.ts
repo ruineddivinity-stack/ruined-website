@@ -334,6 +334,7 @@ type WcOrder = {
   total: string;
   line_items: { name: string; quantity: number; total: string }[];
   shipping_lines?: { method_id: string }[];
+  payment_method: string;
 };
 
 type WcCoupon = {
@@ -432,6 +433,9 @@ export type CreateOrderInput = {
   customerId?: number;
   customerNote?: string;
   metaData?: { key: string; value: string }[];
+  paymentMethod?: string;
+  paymentMethodTitle?: string;
+  status?: string;
 };
 
 type WcCreatedOrder = {
@@ -463,10 +467,10 @@ export async function createOrder(input: CreateOrderInput): Promise<{
   currency: string;
 }> {
   const payload: Record<string, unknown> = {
-    payment_method: "ruined_square_hosted",
-    payment_method_title: "Credit / Debit Card",
+    payment_method: input.paymentMethod ?? "ruined_square_hosted",
+    payment_method_title: input.paymentMethodTitle ?? "Credit / Debit Card",
     set_paid: false,
-    status: "pending",
+    status: input.status ?? "pending",
     billing: mapAddress(input.billing),
     shipping: mapAddress(input.shipping ?? input.billing),
     line_items: input.lineItems.map((li) => ({
@@ -544,6 +548,7 @@ export async function getOrder(
         total: Number.parseFloat(li.total) || 0,
       })),
       isPickup: wc.shipping_lines?.some((l) => l.method_id === PICKUP_METHOD_ID) ?? false,
+      paymentMethod: wc.payment_method,
       orderKey: wc.order_key,
       currency: wc.currency,
     };
@@ -569,5 +574,6 @@ export async function getCustomerOrders(customerId: number): Promise<Order[]> {
       total: Number.parseFloat(li.total) || 0,
     })),
     isPickup: o.shipping_lines?.some((l) => l.method_id === PICKUP_METHOD_ID) ?? false,
+    paymentMethod: o.payment_method,
   }));
 }
