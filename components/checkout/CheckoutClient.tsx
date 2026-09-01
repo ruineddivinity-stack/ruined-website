@@ -25,8 +25,10 @@ import {
 import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
 import { CashAppIcon } from "@/components/checkout/CashAppIcon";
 import { CashAppPaymentPanel } from "@/components/checkout/CashAppPaymentPanel";
+import { CardBrandIcons } from "@/components/checkout/CardBrandIcons";
 
 type FulfillmentMethod = "ship" | "pickup";
+type PaymentMethod = "card" | "cashapp";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL",
@@ -71,6 +73,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
     orderKey: string;
     total: number;
   } | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const isPickup = fulfillment === "pickup";
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -154,6 +157,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           fulfillmentMethod: fulfillment,
           useStoreCredit: useCredit && creditBalance > 0,
           referralCode: getStoredReferralCode(),
+          paymentMethod,
         }),
       });
 
@@ -162,6 +166,13 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       if (!res.ok || !body.success) {
         setError(body.error ?? "Your order couldn't be placed. Please try again.");
         setSubmitting(false);
+        return;
+      }
+
+      if (body.checkoutUrl) {
+        // Full navigation, not router.push — this is an external
+        // Square-hosted checkout page, not a route in this app.
+        window.location.href = body.checkoutUrl;
         return;
       }
 
@@ -206,22 +217,6 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   return (
     <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-3">
       <div className="flex flex-col gap-10 lg:col-span-2">
-        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-5 py-4 text-sm leading-relaxed text-amber-200">
-          <p className="font-semibold text-amber-100">
-            A quick note on payment
-          </p>
-          <p className="mt-1.5">
-            The payment processing industry has been going through changes
-            recently, and we&rsquo;re currently setting up a new card
-            processor. Card payments are temporarily unavailable and will be
-            back shortly &mdash; sorry for the inconvenience!{" "}
-            <span className="font-semibold text-amber-100">
-              CashApp is available in the meantime
-            </span>{" "}
-            &mdash; details below in the Payment step.
-          </p>
-        </div>
-
         {error && (
           <div
             ref={errorRef}
@@ -343,22 +338,58 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
         <FormSection step={4} title="Payment" last>
           <div className="sm:col-span-2">
-            <div className="flex items-start gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg">
-              <CashAppIcon className="mt-0.5 shrink-0" />
-              <div>
-                <p className="font-semibold">Pay with CashApp</p>
-                <p className="mt-1.5 text-fg-muted">
-                  Place your order below and we&rsquo;ll show you a QR code
-                  and payment details for sending{" "}
-                  <span className="font-semibold text-fg">
-                    ${total.toFixed(2)}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
-                  on CashApp.
-                </p>
-              </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("card")}
+                className={`flex flex-1 items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                  paymentMethod === "card"
+                    ? "border-steel-500 bg-steel-700/15"
+                    : "border-border hover:border-steel-500/50"
+                }`}
+              >
+                <span className="text-sm font-semibold text-fg">
+                  Credit / Debit Card
+                </span>
+                <CardBrandIcons className="ml-auto" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("cashapp")}
+                className={`flex flex-1 items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                  paymentMethod === "cashapp"
+                    ? "border-steel-500 bg-steel-700/15"
+                    : "border-border hover:border-steel-500/50"
+                }`}
+              >
+                <CashAppIcon />
+                <span className="text-sm font-semibold text-fg">CashApp</span>
+              </button>
             </div>
+
+            {paymentMethod === "card" ? (
+              <div className="mt-4 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg-muted">
+                Place your order below and you&rsquo;ll be taken to a secure
+                checkout page to enter your card details.
+              </div>
+            ) : (
+              <div className="mt-4 flex items-start gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg">
+                <CashAppIcon className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Pay with CashApp</p>
+                  <p className="mt-1.5 text-fg-muted">
+                    Place your order below and we&rsquo;ll show you a QR code
+                    and payment details for sending{" "}
+                    <span className="font-semibold text-fg">
+                      ${total.toFixed(2)}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
+                    on CashApp.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <Button
               type="button"

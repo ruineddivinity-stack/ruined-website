@@ -15,6 +15,7 @@ import { isBundleEligible } from "@/lib/bundle";
 import { getSession } from "@/lib/session";
 import { resolveCartLines } from "@/lib/cart-lines";
 import { getReferralBalance, redeemReferralCredit } from "@/lib/referral";
+import { createSquareBridgeCheckout } from "@/lib/square";
 
 type CheckoutRequestBody = {
   items: {
@@ -39,6 +40,7 @@ type CheckoutRequestBody = {
   fulfillmentMethod?: string;
   useStoreCredit?: boolean;
   referralCode?: string | null;
+  paymentMethod?: "cashapp" | "card";
 };
 
 export async function POST(request: Request) {
@@ -307,6 +309,8 @@ export async function POST(request: Request) {
     metaData.push({ key: "_ruined_referred_by", value: body.referralCode.trim() });
   }
 
+  const wantsCard = body.paymentMethod === "card";
+
   let order;
   try {
     order = await createOrder({
@@ -349,12 +353,23 @@ export async function POST(request: Request) {
       },
       customerId: session?.id,
       metaData,
-      // No live payment processor right now — the order is created
-      // "on-hold" and the customer pays manually via CashApp, confirmed by
-      // staff. See lib/discounts.ts CASHAPP_TAG.
-      paymentMethod: "cashapp_manual",
-      paymentMethodTitle: "CashApp (Manual)",
-      status: "on-hold",
+      ...(wantsCard
+        ? {
+            // A real payment method — placeholder until the Square bridge
+            // trigger below either confirms a checkout link (order stays
+            // "pending" until Square's webhook marks it paid) or fails.
+            paymentMethod: "ruined_square_bridge",
+            paymentMethodTitle: "Credit / Debit Card",
+            status: "pending",
+          }
+        : {
+            // No separate live card processor selected — the order is
+            // created "on-hold" and the customer pays manually via CashApp,
+            // confirmed by staff. See lib/discounts.ts CASHAPP_TAG.
+            paymentMethod: "cashapp_manual",
+            paymentMethodTitle: "CashApp (Manual)",
+            status: "on-hold",
+          }),
     });
   } catch (err) {
     console.error("Order creation failed", err);
@@ -373,6 +388,22 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error("Failed to redeem store credit after order creation", err);
     }
+  }
+
+  if (wantsCard) {
+    const bridgeResult = await createSquareBridgeCheckout(order.id);
+    if ("error" in bridgeResult) {
+      return NextResponse.json(
+        { error: bridgeResult.error, orderId: order.id },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json({
+      success: true,
+      orderId: order.id,
+      orderKey: order.orderKey,
+      checkoutUrl: bridgeResult.checkoutUrl,
+    });
   }
 
   return NextResponse.json({

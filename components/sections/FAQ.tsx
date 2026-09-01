@@ -44,7 +44,7 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We're currently between card processors while we set up a new one, so CashApp is the available payment method at checkout for now. Card payments will be back shortly — see the note on the checkout page for details.",
+    a: "We accept major credit and debit cards at checkout through a secure, encrypted payment processor, as well as CashApp. We never store your card details on our servers.",
   },
   {
     q: "Is there a discount code?",

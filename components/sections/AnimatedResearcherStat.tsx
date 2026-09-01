@@ -25,7 +25,7 @@ export function AnimatedResearcherStat() {
 
   return (
     <div>
-      <div className="flex gap-0.5 text-steel-300">
+      <div className="flex justify-center gap-0.5 text-steel-300 lg:justify-start">
         {Array.from({ length: 5 }).map((_, i) => (
           <StarIcon key={i} className="animate-glow-pulse" style={{ animationDelay: `${i * 0.15}s` }} />
         ))}
