@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
@@ -18,10 +19,12 @@ import {
   PICKUP_LABEL,
   BULK_TIERS,
   BUNDLE_DISCOUNT_RATE,
+  CASHAPP_TAG,
   type ShippingMethod,
 } from "@/lib/discounts";
 import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
-import { CardBrandIcons } from "@/components/checkout/CardBrandIcons";
+import { CashAppIcon } from "@/components/checkout/CashAppIcon";
+import { CashAppPaymentPanel } from "@/components/checkout/CashAppPaymentPanel";
 
 type FulfillmentMethod = "ship" | "pickup";
 
@@ -54,6 +57,7 @@ const EMPTY_SHIPPING: ShippingForm = {
 
 export function CheckoutClient({ products }: { products: Product[] }) {
   const { items, coupon, setCoupon } = useCart();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +66,11 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [fulfillment, setFulfillment] = useState<FulfillmentMethod>("ship");
   const [creditBalance, setCreditBalance] = useState(0);
   const [useCredit, setUseCredit] = useState(true);
+  const [placedOrder, setPlacedOrder] = useState<{
+    orderId: number;
+    orderKey: string;
+    total: number;
+  } | null>(null);
   const isPickup = fulfillment === "pickup";
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -156,14 +165,32 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         return;
       }
 
-      // Full navigation, not router.push — this is an external
-      // Square-hosted checkout page, not a route in this app.
-      window.location.href = body.checkoutUrl;
+      setPlacedOrder({ orderId: body.orderId, orderKey: body.orderKey, total });
+      setSubmitting(false);
     } catch {
       setError("Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };
+
+  const handleConfirmPayment = () => {
+    if (!placedOrder) return;
+    router.push(
+      `/order-confirmation/${placedOrder.orderId}?key=${placedOrder.orderKey}`,
+    );
+  };
+
+  if (placedOrder) {
+    return (
+      <div className="mt-16">
+        <CashAppPaymentPanel
+          amount={placedOrder.total}
+          orderNumber={String(placedOrder.orderId)}
+          onConfirm={handleConfirmPayment}
+        />
+      </div>
+    );
+  }
 
   if (lines.length === 0) {
     return (
@@ -300,16 +327,21 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
         <FormSection step={4} title="Payment" last>
           <div className="sm:col-span-2">
-            <div className="flex items-center gap-3 rounded-xl border border-steel-500 bg-steel-700/15 px-4 py-3">
-              <span className="text-sm font-semibold text-fg">
-                Credit / Debit Card
-              </span>
-              <CardBrandIcons className="ml-auto" />
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg-muted">
-              Place your order below and you&rsquo;ll be taken to a secure
-              checkout page to enter your card details.
+            <div className="flex items-start gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg">
+              <CashAppIcon className="mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold">Pay with CashApp</p>
+                <p className="mt-1.5 text-fg-muted">
+                  Place your order below and we&rsquo;ll show you a QR code
+                  and payment details for sending{" "}
+                  <span className="font-semibold text-fg">
+                    ${total.toFixed(2)}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
+                  on CashApp.
+                </p>
+              </div>
             </div>
 
             <Button

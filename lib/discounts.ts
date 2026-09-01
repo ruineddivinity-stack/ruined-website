@@ -1,5 +1,8 @@
 export const FREE_SHIPPING_THRESHOLD = 150;
 
+/** Manual CashApp payment. */
+export const CASHAPP_TAG = "$ruinedrx";
+
 export const SHIPPING_METHODS = {
   standard: { label: "Standard Shipping", price: 13.99 },
   express: { label: "Express Shipping", price: 34.99 },

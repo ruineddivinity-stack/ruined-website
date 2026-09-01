@@ -15,7 +15,6 @@ import { isBundleEligible } from "@/lib/bundle";
 import { getSession } from "@/lib/session";
 import { resolveCartLines } from "@/lib/cart-lines";
 import { getReferralBalance, redeemReferralCredit } from "@/lib/referral";
-import { createSquareBridgeCheckout } from "@/lib/square";
 
 type CheckoutRequestBody = {
   items: {
@@ -350,12 +349,12 @@ export async function POST(request: Request) {
       },
       customerId: session?.id,
       metaData,
-      // Placeholder until the Square bridge trigger below either confirms a
-      // checkout link (order stays "pending" until Square's webhook marks it
-      // paid) or fails.
-      paymentMethod: "ruined_square_bridge",
-      paymentMethodTitle: "Credit / Debit Card",
-      status: "pending",
+      // No live payment processor right now — the order is created
+      // "on-hold" and the customer pays manually via CashApp, confirmed by
+      // staff. See lib/discounts.ts CASHAPP_TAG.
+      paymentMethod: "cashapp_manual",
+      paymentMethodTitle: "CashApp (Manual)",
+      status: "on-hold",
     });
   } catch (err) {
     console.error("Order creation failed", err);
@@ -376,18 +375,9 @@ export async function POST(request: Request) {
     }
   }
 
-  const bridgeResult = await createSquareBridgeCheckout(order.id);
-  if ("error" in bridgeResult) {
-    return NextResponse.json(
-      { error: bridgeResult.error, orderId: order.id },
-      { status: 502 },
-    );
-  }
-
   return NextResponse.json({
     success: true,
     orderId: order.id,
     orderKey: order.orderKey,
-    checkoutUrl: bridgeResult.checkoutUrl,
   });
 }

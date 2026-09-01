@@ -44,7 +44,7 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept major credit and debit cards at checkout through a secure, encrypted payment processor. We never store your card details on our servers.",
+    a: "CashApp is currently our supported payment method at checkout. Place your order and you'll get simple instructions for sending payment.",
   },
   {
     q: "Is there a discount code?",
