@@ -5,6 +5,7 @@ import { CartButton } from "@/components/layout/CartButton";
 import { GiftButton } from "@/components/layout/GiftButton";
 import { AccountButton } from "@/components/layout/AccountButton";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { HeaderEntrance } from "@/components/layout/HeaderEntrance";
 import { getSession } from "@/lib/session";
 
 const links = [
@@ -18,7 +19,7 @@ export async function Header() {
   const session = await getSession();
 
   return (
-    <header className="relative bg-gradient-to-b from-surface/80 via-surface/25 to-transparent px-4 pb-4 pt-3 sm:pt-4">
+    <HeaderEntrance>
       <div className="relative mx-auto flex h-16 max-w-5xl items-center justify-between rounded-full border border-steel-500/25 bg-surface/70 px-4 shadow-[0_0_30px_-6px_rgba(140,82,199,0.4)] backdrop-blur-xl sm:px-6">
         <Link href="/" className="flex shrink-0 items-center">
           <Image
@@ -64,7 +65,7 @@ export async function Header() {
           <MobileNav accountHref={session ? "/account" : "/login"} />
         </div>
       </div>
-    </header>
+    </HeaderEntrance>
   );
 }
 

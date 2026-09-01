@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
@@ -19,16 +18,12 @@ import {
   PICKUP_LABEL,
   BULK_TIERS,
   BUNDLE_DISCOUNT_RATE,
-  CASHAPP_TAG,
   type ShippingMethod,
 } from "@/lib/discounts";
 import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
-import { CashAppIcon } from "@/components/checkout/CashAppIcon";
-import { CashAppPaymentPanel } from "@/components/checkout/CashAppPaymentPanel";
 import { CardBrandIcons } from "@/components/checkout/CardBrandIcons";
 
 type FulfillmentMethod = "ship" | "pickup";
-type PaymentMethod = "card" | "cashapp";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL",
@@ -59,7 +54,6 @@ const EMPTY_SHIPPING: ShippingForm = {
 
 export function CheckoutClient({ products }: { products: Product[] }) {
   const { items, coupon, setCoupon } = useCart();
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [shipping, setShipping] = useState<ShippingForm>(EMPTY_SHIPPING);
   const [error, setError] = useState<string | null>(null);
@@ -68,12 +62,6 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [fulfillment, setFulfillment] = useState<FulfillmentMethod>("ship");
   const [creditBalance, setCreditBalance] = useState(0);
   const [useCredit, setUseCredit] = useState(true);
-  const [placedOrder, setPlacedOrder] = useState<{
-    orderId: number;
-    orderKey: string;
-    total: number;
-  } | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const isPickup = fulfillment === "pickup";
   const errorRef = useRef<HTMLDivElement>(null);
 
@@ -157,7 +145,6 @@ export function CheckoutClient({ products }: { products: Product[] }) {
           fulfillmentMethod: fulfillment,
           useStoreCredit: useCredit && creditBalance > 0,
           referralCode: getStoredReferralCode(),
-          paymentMethod,
         }),
       });
 
@@ -169,39 +156,14 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         return;
       }
 
-      if (body.checkoutUrl) {
-        // Full navigation, not router.push — this is an external
-        // Square-hosted checkout page, not a route in this app.
-        window.location.href = body.checkoutUrl;
-        return;
-      }
-
-      setPlacedOrder({ orderId: body.orderId, orderKey: body.orderKey, total });
-      setSubmitting(false);
+      // Full navigation, not router.push — this is an external
+      // Square-hosted checkout page, not a route in this app.
+      window.location.href = body.checkoutUrl;
     } catch {
       setError("Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };
-
-  const handleConfirmPayment = () => {
-    if (!placedOrder) return;
-    router.push(
-      `/order-confirmation/${placedOrder.orderId}?key=${placedOrder.orderKey}`,
-    );
-  };
-
-  if (placedOrder) {
-    return (
-      <div className="mt-16">
-        <CashAppPaymentPanel
-          amount={placedOrder.total}
-          orderNumber={String(placedOrder.orderId)}
-          onConfirm={handleConfirmPayment}
-        />
-      </div>
-    );
-  }
 
   if (lines.length === 0) {
     return (
@@ -338,58 +300,17 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
         <FormSection step={4} title="Payment" last>
           <div className="sm:col-span-2">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("card")}
-                className={`flex flex-1 items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
-                  paymentMethod === "card"
-                    ? "border-steel-500 bg-steel-700/15"
-                    : "border-border hover:border-steel-500/50"
-                }`}
-              >
-                <span className="text-sm font-semibold text-fg">
-                  Credit / Debit Card
-                </span>
-                <CardBrandIcons className="ml-auto" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("cashapp")}
-                className={`flex flex-1 items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
-                  paymentMethod === "cashapp"
-                    ? "border-steel-500 bg-steel-700/15"
-                    : "border-border hover:border-steel-500/50"
-                }`}
-              >
-                <CashAppIcon />
-                <span className="text-sm font-semibold text-fg">CashApp</span>
-              </button>
+            <div className="flex items-center gap-3 rounded-xl border border-steel-500 bg-steel-700/15 px-4 py-3">
+              <span className="text-sm font-semibold text-fg">
+                Credit / Debit Card
+              </span>
+              <CardBrandIcons className="ml-auto" />
             </div>
 
-            {paymentMethod === "card" ? (
-              <div className="mt-4 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg-muted">
-                Place your order below and you&rsquo;ll be taken to a secure
-                checkout page to enter your card details.
-              </div>
-            ) : (
-              <div className="mt-4 flex items-start gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg">
-                <CashAppIcon className="mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold">Pay with CashApp</p>
-                  <p className="mt-1.5 text-fg-muted">
-                    Place your order below and we&rsquo;ll show you a QR code
-                    and payment details for sending{" "}
-                    <span className="font-semibold text-fg">
-                      ${total.toFixed(2)}
-                    </span>{" "}
-                    to{" "}
-                    <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
-                    on CashApp.
-                  </p>
-                </div>
-              </div>
-            )}
+            <div className="mt-4 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg-muted">
+              Place your order below and you&rsquo;ll be taken to a secure
+              checkout page to enter your card details.
+            </div>
 
             <Button
               type="button"

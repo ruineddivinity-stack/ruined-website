@@ -40,7 +40,6 @@ type CheckoutRequestBody = {
   fulfillmentMethod?: string;
   useStoreCredit?: boolean;
   referralCode?: string | null;
-  paymentMethod?: "cashapp" | "card";
 };
 
 export async function POST(request: Request) {
@@ -309,8 +308,6 @@ export async function POST(request: Request) {
     metaData.push({ key: "_ruined_referred_by", value: body.referralCode.trim() });
   }
 
-  const wantsCard = body.paymentMethod === "card";
-
   let order;
   try {
     order = await createOrder({
@@ -353,23 +350,12 @@ export async function POST(request: Request) {
       },
       customerId: session?.id,
       metaData,
-      ...(wantsCard
-        ? {
-            // A real payment method — placeholder until the Square bridge
-            // trigger below either confirms a checkout link (order stays
-            // "pending" until Square's webhook marks it paid) or fails.
-            paymentMethod: "ruined_square_bridge",
-            paymentMethodTitle: "Credit / Debit Card",
-            status: "pending",
-          }
-        : {
-            // No separate live card processor selected — the order is
-            // created "on-hold" and the customer pays manually via CashApp,
-            // confirmed by staff. See lib/discounts.ts CASHAPP_TAG.
-            paymentMethod: "cashapp_manual",
-            paymentMethodTitle: "CashApp (Manual)",
-            status: "on-hold",
-          }),
+      // Placeholder until the Square bridge trigger below either confirms a
+      // checkout link (order stays "pending" until Square's webhook marks it
+      // paid) or fails.
+      paymentMethod: "ruined_square_bridge",
+      paymentMethodTitle: "Credit / Debit Card",
+      status: "pending",
     });
   } catch (err) {
     console.error("Order creation failed", err);
@@ -390,25 +376,18 @@ export async function POST(request: Request) {
     }
   }
 
-  if (wantsCard) {
-    const bridgeResult = await createSquareBridgeCheckout(order.id);
-    if ("error" in bridgeResult) {
-      return NextResponse.json(
-        { error: bridgeResult.error, orderId: order.id },
-        { status: 502 },
-      );
-    }
-    return NextResponse.json({
-      success: true,
-      orderId: order.id,
-      orderKey: order.orderKey,
-      checkoutUrl: bridgeResult.checkoutUrl,
-    });
+  const bridgeResult = await createSquareBridgeCheckout(order.id);
+  if ("error" in bridgeResult) {
+    return NextResponse.json(
+      { error: bridgeResult.error, orderId: order.id },
+      { status: 502 },
+    );
   }
 
   return NextResponse.json({
     success: true,
     orderId: order.id,
     orderKey: order.orderKey,
+    checkoutUrl: bridgeResult.checkoutUrl,
   });
 }

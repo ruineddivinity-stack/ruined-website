@@ -1,8 +1,8 @@
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
+import { ScrollLink } from "@/components/ui/ScrollLink";
 import {
-  AFFILIATE_CODE,
   AFFILIATE_RATE,
   BULK_TIERS,
   FREE_SHIPPING_THRESHOLD,
@@ -44,11 +44,25 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept major credit and debit cards at checkout through a secure, encrypted payment processor, as well as CashApp. We never store your card details on our servers.",
+    a: "We accept major credit and debit cards at checkout through a secure, encrypted payment processor. We never store your card details on our servers.",
   },
   {
     q: "Is there a discount code?",
-    a: `Yes — use code "${AFFILIATE_CODE}" at checkout for ${AFFILIATE_RATE * 100}% off any order. It also stacks with bulk pricing: ${BULK_TIERS.bulk.label} saves ${BULK_TIERS.bulk.rate * 100}% on its own, or up to ${STACKED_SAVINGS_PCT.bulk}% combined with the code.`,
+    a: (
+      <>
+        Yes —{" "}
+        <ScrollLink
+          targetId="vip-notifications"
+          className="text-steel-300 underline underline-offset-2 hover:text-steel-200"
+        >
+          join our email list
+        </ScrollLink>{" "}
+        for a lifetime {AFFILIATE_RATE * 100}% off code, sent straight to your
+        inbox. It also stacks with bulk pricing: {BULK_TIERS.bulk.label} saves{" "}
+        {BULK_TIERS.bulk.rate * 100}% on its own, or up to{" "}
+        {STACKED_SAVINGS_PCT.bulk}% combined with your code.
+      </>
+    ),
   },
   {
     q: "Can I become an affiliate?",
