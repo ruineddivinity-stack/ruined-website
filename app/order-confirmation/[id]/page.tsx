@@ -98,18 +98,26 @@ export default async function OrderConfirmationPage(
             </div>
           )}
 
-          {isAwaitingCashApp && (
-            <div className="mt-4 rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 text-left">
-              <p className="text-sm font-black uppercase leading-relaxed text-danger">
-                Do NOT mention peptides or any product names in the CashApp
-                note &mdash; only your order number. Mentioning them will get
-                you a warning and can get you banned from buying.
-              </p>
+          {order.isPickup && (
+            <div className="mt-6 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-left">
+              <p className="text-sm font-semibold text-fg">Pickup Hours</p>
+              <div className="mt-3 flex flex-col gap-1.5 text-xs text-fg-muted">
+                <div className="flex justify-between">
+                  <span>Houston</span>
+                  <span className="font-semibold text-fg">
+                    10AM–1PM, 6PM–9PM
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>San Antonio</span>
+                  <span className="font-semibold text-fg">5PM–10PM</span>
+                </div>
+              </div>
             </div>
           )}
 
           {order.isPickup && (
-            <div className="mt-6 rounded-2xl border border-border-soft bg-surface px-5 py-4 text-left">
+            <div className="mt-4 rounded-2xl border border-border-soft bg-surface px-5 py-4 text-left">
               <p className="text-sm font-semibold text-fg">
                 Have questions about your pickup?
               </p>
