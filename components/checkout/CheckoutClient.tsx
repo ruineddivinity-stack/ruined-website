@@ -344,6 +344,14 @@ export function CheckoutClient({ products }: { products: Product[] }) {
               </div>
             </div>
 
+            <div className="mt-4 rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 text-left">
+              <p className="text-sm font-black uppercase leading-relaxed text-danger">
+                Do NOT mention peptides or any product names in the CashApp
+                note &mdash; only your order number. Mentioning them will get
+                you a warning and can get you banned from buying.
+              </p>
+            </div>
+
             <Button
               type="button"
               disabled={!formValid || submitting}

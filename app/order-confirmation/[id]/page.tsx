@@ -92,9 +92,18 @@ export default async function OrderConfirmationPage(
                 <span className="font-semibold text-fg">
                   Order #{order.number}
                 </span>{" "}
-                in the payment note &mdash; and only your order number, no
-                other details. Your order ships once we&rsquo;ve confirmed
-                the payment.
+                in the payment note. Your order ships once we&rsquo;ve
+                confirmed the payment.
+              </p>
+            </div>
+          )}
+
+          {isAwaitingCashApp && (
+            <div className="mt-4 rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 text-left">
+              <p className="text-sm font-black uppercase leading-relaxed text-danger">
+                Do NOT mention peptides or any product names in the CashApp
+                note &mdash; only your order number. Mentioning them will get
+                you a warning and can get you banned from buying.
               </p>
             </div>
           )}

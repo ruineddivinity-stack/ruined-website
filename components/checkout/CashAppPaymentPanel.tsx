@@ -65,9 +65,16 @@ export function CashAppPaymentPanel({
       <div className="w-full rounded-2xl border border-border-soft bg-surface px-5 py-4 text-left text-sm leading-relaxed text-fg-muted">
         Put{" "}
         <span className="font-semibold text-fg">Order #{orderNumber}</span> in
-        the CashApp payment note if you can &mdash; and only your order
-        number, no other details. Once you&rsquo;ve sent it, tap confirm
-        below and we&rsquo;ll take it from there.
+        the CashApp payment note. Once you&rsquo;ve sent it, tap confirm below
+        and we&rsquo;ll take it from there.
+      </div>
+
+      <div className="w-full rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 text-left">
+        <p className="text-sm font-black uppercase leading-relaxed text-danger">
+          Do NOT mention peptides or any product names in the CashApp note
+          &mdash; only your order number. Mentioning them will get you a
+          warning and can get you banned from buying.
+        </p>
       </div>
 
       <Button type="button" onClick={onConfirm} className="w-full justify-center">
