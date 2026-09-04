@@ -2,12 +2,12 @@
 
 import { motion } from "framer-motion";
 
-const ACTIVE_PCT = 50;
+const ACTIVE_PCT = 100;
 
 const stages = [
   { pct: 0, label: "Sample Collected", status: "done" },
-  { pct: ACTIVE_PCT, label: "In Transit to Lab", status: "active" },
-  { pct: 100, label: "HPLC Testing", status: "pending" },
+  { pct: 50, label: "In Transit to Lab", status: "done" },
+  { pct: ACTIVE_PCT, label: "At Freedom Diagnostics", status: "active" },
 ] as const;
 
 export function TestingTracker() {
@@ -15,11 +15,11 @@ export function TestingTracker() {
     <div className="rounded-2xl border border-border bg-surface/60 px-6 pb-8 pt-10 sm:px-10">
       <div className="flex items-center justify-center gap-2">
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-steel-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-steel-400" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
         </span>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-steel-300">
-          Current Batch &mdash; In Transit to Lab
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-300">
+          Current Batch &mdash; Arrived at Freedom Diagnostics, Preparing for Testing
         </p>
       </div>
 
@@ -27,18 +27,19 @@ export function TestingTracker() {
         <div className="relative mx-4 h-px sm:mx-6">
           <div className="absolute inset-0 h-px rounded-full bg-border-soft" />
           <div
-            className="absolute inset-y-0 left-0 h-px rounded-full bg-gradient-to-r from-steel-600 to-steel-400"
+            className="absolute inset-y-0 left-0 h-px rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400"
             style={{ width: `${ACTIVE_PCT}%` }}
           />
 
           <motion.div
             aria-hidden
-            className="absolute -top-[13px] -translate-x-1/2 text-steel-300 drop-shadow-[0_0_8px_rgba(31,200,221,0.6)]"
+            className="absolute -top-[13px] -translate-x-1/2 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]"
             style={{ left: `${ACTIVE_PCT}%` }}
-            animate={{ y: [0, -3, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <TruckIcon />
+            <CheckIcon />
           </motion.div>
 
           {stages.map((s) => (
@@ -49,14 +50,14 @@ export function TestingTracker() {
             >
               {s.status === "active" ? (
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-steel-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-steel-300 bg-steel-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-emerald-300 bg-emerald-500" />
                 </span>
               ) : (
                 <span
                   className={`h-2.5 w-2.5 rounded-full border-2 ${
                     s.status === "done"
-                      ? "border-steel-300 bg-steel-400"
+                      ? "border-emerald-300 bg-emerald-400"
                       : "border-border-soft bg-black"
                   }`}
                 />
@@ -73,8 +74,8 @@ export function TestingTracker() {
               <span
                 key={s.label}
                 className={`absolute top-0 max-w-[6rem] text-[10px] font-semibold uppercase leading-tight tracking-wide ${
-                  s.status === "pending" ? "text-fg-faint" : "text-fg-muted"
-                } ${s.status === "active" ? "text-steel-300" : ""} ${
+                  s.status === "active" ? "text-emerald-300" : "text-fg-muted"
+                } ${
                   isFirst
                     ? "left-0 text-left"
                     : isLast
@@ -93,22 +94,18 @@ export function TestingTracker() {
   );
 }
 
-function TruckIcon() {
+function CheckIcon() {
   return (
-    <svg
-      width={26}
-      height={26}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 7h11v9H3z" />
-      <path d="M14 10h4l3 3v3h-7z" />
-      <circle cx="7.5" cy="18" r="1.6" />
-      <circle cx="17.5" cy="18" r="1.6" />
+    <svg width={26} height={26} viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="11" fill="currentColor" fillOpacity={0.15} />
+      <path
+        d="m7 12.5 3.2 3.2L17 9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
