@@ -6,6 +6,7 @@ import { wpFetch } from "@/lib/wp-origin-fetch";
 
 type CheckoutV2Body = Record<string, unknown> & {
   paymentMethod?: "card" | "cashapp";
+  useStoreCredit?: boolean;
 };
 
 type SisterItem = {
@@ -94,7 +95,6 @@ async function getSisterItemsForOrder(orderId: number): Promise<SisterItem[]> {
       Math.round((Number.parseFloat(String(line.total || "0")) || 0) * 100),
     );
 
-    // Free gift lines do not need to become paid Stripe line items.
     if (amount <= 0) continue;
     if (!productId) throw new Error("Order contains an invalid product line");
 
@@ -211,7 +211,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid checkout request." }, { status: 400 });
   }
 
-  const paymentMethod = body.paymentMethod === "cashapp" ? "cashapp" : "card";
+  if (body.paymentMethod !== "card" && body.paymentMethod !== "cashapp") {
+    return NextResponse.json({ error: "Please select a payment method." }, { status: 400 });
+  }
+
+  const paymentMethod = body.paymentMethod;
+
+  if (paymentMethod === "card" && body.useStoreCredit === true) {
+    return NextResponse.json(
+      {
+        error:
+          "Store credit is temporarily unavailable with card checkout. Turn off store credit or choose CashApp.",
+      },
+      { status: 400 },
+    );
+  }
 
   if (paymentMethod === "card" && (!SISTER_CHECKOUT_URL || !BRIDGE_SHARED_SECRET)) {
     return NextResponse.json(
