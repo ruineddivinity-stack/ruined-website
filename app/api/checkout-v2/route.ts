@@ -300,6 +300,50 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Failed to initialize sister-site card checkout", error);
+
+    const message = error instanceof Error ? error.message : "";
+
+    if (/^Product \d+ is missing a valid Kairo sister checkout SKU/.test(message)) {
+      return NextResponse.json(
+        {
+          error:
+            "One of the products in your cart is not configured for card checkout yet. Please remove it or choose CashApp.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (message === "Order has no configured Kairo checkout items") {
+      return NextResponse.json(
+        {
+          error:
+            "The products in your cart are not configured for card checkout yet. Please choose CashApp or try a mapped product.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (message === "Order contains an invalid product line") {
+      return NextResponse.json(
+        { error: "Your order contains an invalid product line. Please refresh your cart and try again." },
+        { status: 400 },
+      );
+    }
+
+    if (message.startsWith("WooCommerce request failed:")) {
+      return NextResponse.json(
+        { error: "We could not verify the product mapping for card checkout. Please try again." },
+        { status: 502 },
+      );
+    }
+
+    if (message.startsWith("Could not prepare card order:")) {
+      return NextResponse.json(
+        { error: "Your order was created, but card checkout could not be prepared. Please try again." },
+        { status: 502 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Could not initialize secure card checkout. Please try again." },
       { status: 502 },
