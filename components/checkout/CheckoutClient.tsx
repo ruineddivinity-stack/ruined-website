@@ -25,8 +25,10 @@ import {
 import { resolveCartLines, type CartLine } from "@/lib/cart-lines";
 import { CashAppIcon } from "@/components/checkout/CashAppIcon";
 import { CashAppPaymentPanel } from "@/components/checkout/CashAppPaymentPanel";
+import { CardBrandIcons } from "@/components/checkout/CardBrandIcons";
 
 type FulfillmentMethod = "ship" | "pickup";
+type PaymentMethod = "card" | "cashapp";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL",
@@ -64,6 +66,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("standard");
   const [fulfillment, setFulfillment] = useState<FulfillmentMethod>("ship");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [creditBalance, setCreditBalance] = useState(0);
   const [useCredit, setUseCredit] = useState(true);
   const [placedOrder, setPlacedOrder] = useState<{
@@ -115,6 +118,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       soloLines.push(line);
     }
   }
+
   const shippingCost =
     isPickup || lines.length === 0 || discounts.freeShipping
       ? 0
@@ -142,16 +146,17 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/checkout", {
+      const res = await fetch("/api/checkout-v2", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items,
+          items,
           promoCode: coupon?.code ?? "",
           email,
           shipping,
           shippingMethod,
           fulfillmentMethod: fulfillment,
+          paymentMethod,
           useStoreCredit: useCredit && creditBalance > 0,
           referralCode: getStoredReferralCode(),
         }),
@@ -162,6 +167,17 @@ export function CheckoutClient({ products }: { products: Product[] }) {
       if (!res.ok || !body.success) {
         setError(body.error ?? "Your order couldn't be placed. Please try again.");
         setSubmitting(false);
+        return;
+      }
+
+      if (paymentMethod === "card") {
+        if (!body.handoffUrl) {
+          setError("Secure card checkout could not be initialized. Please try again.");
+          setSubmitting(false);
+          return;
+        }
+
+        window.location.assign(body.handoffUrl);
         return;
       }
 
@@ -327,30 +343,87 @@ export function CheckoutClient({ products }: { products: Product[] }) {
 
         <FormSection step={4} title="Payment" last>
           <div className="sm:col-span-2">
-            <div className="flex items-start gap-3 rounded-2xl border border-steel-600/50 bg-steel-700/15 px-5 py-4 text-sm leading-relaxed text-fg">
-              <CashAppIcon className="mt-0.5 shrink-0" />
-              <div>
-                <p className="font-semibold">Pay with CashApp</p>
-                <p className="mt-1.5 text-fg-muted">
-                  Place your order below and we&rsquo;ll show you a QR code
-                  and payment details for sending{" "}
-                  <span className="font-semibold text-fg">
-                    ${total.toFixed(2)}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-semibold text-fg">{CASHAPP_TAG}</span>{" "}
-                  on CashApp.
-                </p>
-              </div>
+            <div className="grid gap-3">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("card")}
+                className={`rounded-2xl border px-5 py-4 text-left transition-colors ${
+                  paymentMethod === "card"
+                    ? "border-steel-500 bg-steel-700/15"
+                    : "border-border bg-surface/40 hover:border-steel-500/50"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`mt-0.5 h-4 w-4 rounded-full border ${
+                          paymentMethod === "card"
+                            ? "border-steel-400 bg-steel-400 shadow-[inset_0_0_0_3px_rgba(0,0,0,0.9)]"
+                            : "border-border"
+                        }`}
+                      />
+                      <p className="font-semibold text-fg">Credit / Debit Card</p>
+                    </div>
+                    <p className="mt-2 pl-6 text-sm leading-relaxed text-fg-muted">
+                      Continue to a secure hosted checkout after placing your order.
+                    </p>
+                    <CardBrandIcons className="mt-3 pl-6" />
+                  </div>
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="mt-0.5 shrink-0 text-steel-300"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 10h18" />
+                  </svg>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("cashapp")}
+                className={`rounded-2xl border px-5 py-4 text-left transition-colors ${
+                  paymentMethod === "cashapp"
+                    ? "border-steel-500 bg-steel-700/15"
+                    : "border-border bg-surface/40 hover:border-steel-500/50"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`mt-1 h-4 w-4 shrink-0 rounded-full border ${
+                      paymentMethod === "cashapp"
+                        ? "border-steel-400 bg-steel-400 shadow-[inset_0_0_0_3px_rgba(0,0,0,0.9)]"
+                        : "border-border"
+                    }`}
+                  />
+                  <CashAppIcon className="mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-fg">Pay with CashApp</p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">
+                      Place your order and we&rsquo;ll show you a QR code and payment
+                      details for sending <span className="font-semibold text-fg">${total.toFixed(2)}</span>{" "}
+                      to <span className="font-semibold text-fg">{CASHAPP_TAG}</span>.
+                    </p>
+                  </div>
+                </div>
+              </button>
             </div>
 
-            <div className="mt-4 rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 text-left">
-              <p className="text-sm font-black uppercase leading-relaxed text-danger">
-                Do NOT mention peptides or any product names in the CashApp
-                note &mdash; only your order number. Mentioning them will get
-                you a warning and can get you banned from buying.
-              </p>
-            </div>
+            {paymentMethod === "cashapp" && (
+              <div className="mt-4 rounded-2xl border-2 border-danger bg-danger/15 px-5 py-4 text-left">
+                <p className="text-sm font-black uppercase leading-relaxed text-danger">
+                  Do NOT mention peptides or any product names in the CashApp
+                  note &mdash; only your order number. Mentioning them will get
+                  you a warning and can get you banned from buying.
+                </p>
+              </div>
+            )}
 
             <Button
               type="button"
@@ -358,13 +431,22 @@ export function CheckoutClient({ products }: { products: Product[] }) {
               onClick={handlePlaceOrder}
               className="mt-4 w-full justify-center disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             >
-              {submitting ? "Placing Order…" : `Place Order — $${total.toFixed(2)}`}
+              {submitting
+                ? paymentMethod === "card"
+                  ? "Opening Secure Checkout…"
+                  : "Placing Order…"
+                : `Place Order — $${total.toFixed(2)}`}
             </Button>
+
+            {paymentMethod === "card" && (
+              <p className="mt-3 text-center text-[11px] leading-relaxed text-fg-faint">
+                You&rsquo;ll briefly pass through our sister checkout before secure payment.
+              </p>
+            )}
 
             {!formValid && (
               <p className="mt-3 text-xs text-fg-faint">
-                Fill in your contact and shipping details above to place your
-                order.
+                Fill in your contact and shipping details above to place your order.
               </p>
             )}
           </div>
@@ -433,9 +515,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                 )}
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <p className="text-sm font-semibold text-fg">
-                      {product.name}
-                    </p>
+                    <p className="text-sm font-semibold text-fg">{product.name}</p>
                     {variation?.label && (
                       <span className="inline-flex items-center rounded-full border border-steel-500/50 bg-steel-700/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-steel-300">
                         {variation.label}
@@ -449,9 +529,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                   </div>
                   <p className="text-xs text-fg-faint">Qty {qty}</p>
                 </div>
-                <p
-                  className={`text-sm font-semibold ${isGift ? "text-emerald-300" : "text-fg"}`}
-                >
+                <p className={`text-sm font-semibold ${isGift ? "text-emerald-300" : "text-fg"}`}>
                   {isGift ? "Free" : `$${(unitPrice * qty).toFixed(2)}`}
                 </p>
               </div>
@@ -470,10 +548,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </div>
 
         <div className="mt-5">
-          <PromoCodeInput
-            coupon={coupon}
-            onApply={setCoupon}
-          />
+          <PromoCodeInput coupon={coupon} onApply={setCoupon} />
           {discounts.bundleQualifies && (
             <p className="mt-2 text-[11px] text-fg-faint">
               Codes don&rsquo;t apply to bundle items — it&rsquo;s already 25% off.
@@ -490,9 +565,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                 onChange={(e) => setUseCredit(e.target.checked)}
                 className="accent-steel-500"
               />
-              <span className="text-fg">
-                Use ${creditBalance.toFixed(2)} store credit
-              </span>
+              <span className="text-fg">Use ${creditBalance.toFixed(2)} store credit</span>
             </span>
           </label>
         )}
@@ -572,9 +645,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
                       />
                       <span className="text-fg">{method.label}</span>
                     </span>
-                    <span className="font-semibold text-fg">
-                      ${method.price.toFixed(2)}
-                    </span>
+                    <span className="font-semibold text-fg">${method.price.toFixed(2)}</span>
                   </label>
                 );
               })}
@@ -588,8 +659,7 @@ export function CheckoutClient({ products }: { products: Product[] }) {
         </div>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-fg-faint">
-          For laboratory research use only. Not for human or animal
-          consumption.
+          For laboratory research use only. Not for human or animal consumption.
         </p>
         <Link
           href="/cart"
@@ -625,9 +695,7 @@ function FormSection({
         <h2 className="font-display text-sm font-black uppercase tracking-widest text-fg">
           {title}
         </h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {children}
-        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
       </div>
     </div>
   );
@@ -650,9 +718,7 @@ function Field({
 }) {
   return (
     <label className={`flex flex-col gap-2 ${full ? "sm:col-span-2" : ""}`}>
-      <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
-        {label}
-      </span>
+      <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">{label}</span>
       <input
         type={type}
         placeholder={placeholder}
@@ -664,18 +730,10 @@ function Field({
   );
 }
 
-function StateSelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
+function StateSelect({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">
-        State
-      </span>
+      <span className="text-xs font-semibold uppercase tracking-widest text-fg-muted">State</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
