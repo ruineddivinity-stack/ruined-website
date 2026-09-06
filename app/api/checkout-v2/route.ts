@@ -8,6 +8,26 @@ type CheckoutV2Body = Record<string, unknown> & {
   paymentMethod?: "card" | "cashapp";
 };
 
+type SisterItem = {
+  sku: string;
+  qty: number;
+  amount: number;
+};
+
+type RawWooOrder = {
+  line_items?: {
+    product_id?: number;
+    variation_id?: number;
+    quantity?: number;
+    total?: string;
+  }[];
+};
+
+type RawWooProduct = {
+  sku?: string;
+  meta_data?: { key?: string; value?: unknown }[];
+};
+
 const WOOCOMMERCE_URL = process.env.WOOCOMMERCE_URL;
 const CONSUMER_KEY = process.env.WOOCOMMERCE_CONSUMER_KEY;
 const CONSUMER_SECRET = process.env.WOOCOMMERCE_CONSUMER_SECRET;
@@ -23,6 +43,76 @@ function authHeader() {
   }
 
   return `Basic ${Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString("base64")}`;
+}
+
+async function wcJson<T>(path: string): Promise<T> {
+  if (!WOOCOMMERCE_URL) throw new Error("Missing WOOCOMMERCE_URL env var");
+
+  const response = await wpFetch(`${WOOCOMMERCE_URL}/wp-json/wc/v3/${path}`, {
+    headers: { Authorization: authHeader() },
+  });
+
+  if (!response.ok) {
+    throw new Error(`WooCommerce request failed: ${response.status}`);
+  }
+
+  return (await response.json()) as T;
+}
+
+function sisterSkuFromProduct(product: RawWooProduct | null | undefined) {
+  if (!product) return "";
+  const configured = product.meta_data?.find(
+    (entry) => entry.key === "_sister_checkout_sku",
+  )?.value;
+  const candidate = String(configured || product.sku || "").trim().toUpperCase();
+  return /^CP-\d{3,}$/.test(candidate) ? candidate : "";
+}
+
+async function resolveSisterSku(productId: number, variationId: number) {
+  if (variationId > 0) {
+    const variation = await wcJson<RawWooProduct>(
+      `products/${productId}/variations/${variationId}`,
+    );
+    const variationSku = sisterSkuFromProduct(variation);
+    if (variationSku) return variationSku;
+  }
+
+  const product = await wcJson<RawWooProduct>(`products/${productId}`);
+  return sisterSkuFromProduct(product);
+}
+
+async function getSisterItemsForOrder(orderId: number): Promise<SisterItem[]> {
+  const raw = await wcJson<RawWooOrder>(`orders/${orderId}`);
+  const items: SisterItem[] = [];
+
+  for (const line of raw.line_items ?? []) {
+    const productId = Number(line.product_id || 0);
+    const variationId = Number(line.variation_id || 0);
+    const qty = Math.max(1, Number(line.quantity || 1));
+    const amount = Math.max(
+      0,
+      Math.round((Number.parseFloat(String(line.total || "0")) || 0) * 100),
+    );
+
+    // Free gift lines do not need to become paid Stripe line items.
+    if (amount <= 0) continue;
+    if (!productId) throw new Error("Order contains an invalid product line");
+
+    const sku = await resolveSisterSku(productId, variationId);
+    if (!sku) {
+      throw new Error(
+        `Product ${productId} is missing a valid Kairo sister checkout SKU (CP-001 format)`,
+      );
+    }
+
+    items.push({ sku, qty, amount });
+  }
+
+  if (items.length === 0) {
+    throw new Error("Order has no configured Kairo checkout items");
+  }
+
+  return items;
 }
 
 async function updateOrderForCard(orderId: number, paymentRef: string) {
@@ -71,6 +161,7 @@ function buildSignedHandoff({
   amount,
   currency,
   paymentRef,
+  items,
 }: {
   request: Request;
   orderId: number;
@@ -78,6 +169,7 @@ function buildSignedHandoff({
   amount: number;
   currency: string;
   paymentRef: string;
+  items: SisterItem[];
 }) {
   if (!SISTER_CHECKOUT_URL || !BRIDGE_SHARED_SECRET) {
     throw new Error("Sister checkout is not configured");
@@ -89,7 +181,7 @@ function buildSignedHandoff({
     payment_ref: paymentRef,
     amount: Math.round(amount * 100),
     currency: currency.toUpperCase(),
-    items: [],
+    items,
     issued_at: now,
     expires_at: now + 300,
     primary_return_url: buildPrimaryReturnUrl(request, orderId, orderKey),
@@ -173,6 +265,7 @@ export async function POST(request: Request) {
   const paymentRef = randomUUID();
 
   try {
+    const items = await getSisterItemsForOrder(order.id);
     await updateOrderForCard(order.id, paymentRef);
 
     const handoffUrl = buildSignedHandoff({
@@ -182,6 +275,7 @@ export async function POST(request: Request) {
       amount: order.total,
       currency: order.currency,
       paymentRef,
+      items,
     });
 
     return NextResponse.json({
