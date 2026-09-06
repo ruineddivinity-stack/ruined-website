@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { CheckoutClient } from "@/components/checkout/CheckoutClient";
+import { SecureCheckoutLoadingWatcher } from "@/components/checkout/SecureCheckoutLoadingWatcher";
 import { getAllProducts } from "@/lib/woocommerce";
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export default async function CheckoutPage() {
 
   return (
     <div className="py-20">
+      <SecureCheckoutLoadingWatcher />
       <Container>
         <h1 className="font-display text-4xl font-black uppercase tracking-tight text-fg">
           Checkout
