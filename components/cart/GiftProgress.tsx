@@ -76,8 +76,8 @@ export function GiftProgress({
 
       {hasBundle && (
         <p className="mt-2 text-[11px] leading-relaxed text-fg-faint">
-          Based on your regular items only — your bundle&rsquo;s free BAC
-          Water is already included and doesn&rsquo;t count toward this.
+          Based on your regular items only — your bundle&rsquo;s free RUINED
+          H₂O is already included and doesn&rsquo;t count toward this.
         </p>
       )}
     </div>

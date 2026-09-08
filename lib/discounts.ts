@@ -33,7 +33,7 @@ export type GiftItem = { slug: string; variationLabel?: string };
 export const GIFT_TIERS: { min: number; label: string; items: GiftItem[] }[] = [
   {
     min: 250,
-    label: "Free GHK-CU 100MG + BAC Water",
+    label: "Free GHK-CU 100MG + RUINED H₂O",
     items: [
       { slug: "ghk-cu", variationLabel: "100MG" },
       { slug: "hospira-b-a-c-water-10ml" },
@@ -46,12 +46,12 @@ export const GIFT_TIERS: { min: number; label: string; items: GiftItem[] }[] = [
   },
   {
     min: 150,
-    label: "Free Shipping + Free BAC Water",
+    label: "Free Shipping + Free RUINED H₂O",
     items: [{ slug: "hospira-b-a-c-water-10ml" }],
   },
   {
     min: 100,
-    label: "Free BAC Water",
+    label: "Free RUINED H₂O",
     items: [{ slug: "hospira-b-a-c-water-10ml" }],
   },
 ];

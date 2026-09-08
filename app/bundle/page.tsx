@@ -7,7 +7,7 @@ import { BUNDLE_DISCOUNT_RATE, BUNDLE_VIAL_COUNT } from "@/lib/discounts";
 
 export const metadata: Metadata = {
   title: "Build a Bundle | RUINED",
-  description: `Pick any ${BUNDLE_VIAL_COUNT} vials and get ${BUNDLE_DISCOUNT_RATE * 100}% off plus a free BAC water.`,
+  description: `Pick any ${BUNDLE_VIAL_COUNT} vials and get ${BUNDLE_DISCOUNT_RATE * 100}% off plus a free RUINED H₂O.`,
 };
 
 export default async function BundlePage() {
@@ -26,7 +26,7 @@ export default async function BundlePage() {
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-fg-muted">
           Choose any {BUNDLE_VIAL_COUNT} vials from the catalog — we&rsquo;ll
           knock {BUNDLE_DISCOUNT_RATE * 100}% off all of them and throw in a
-          free BAC Water, on us. Free shipping too.
+          free RUINED H₂O, on us. Free shipping too.
         </p>
 
         <div className="mt-10">

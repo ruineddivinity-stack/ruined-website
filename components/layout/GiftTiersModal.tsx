@@ -87,7 +87,7 @@ export function GiftTiersModal({ products }: { products: Product[] }) {
           {hasBundle && (
             <p className="mt-2 text-center text-[11px] leading-relaxed text-fg-faint">
               Based on your regular items only — your bundle already
-              includes its own free BAC Water and doesn&rsquo;t count here.
+              includes its own free RUINED H₂O and doesn&rsquo;t count here.
             </p>
           )}
 

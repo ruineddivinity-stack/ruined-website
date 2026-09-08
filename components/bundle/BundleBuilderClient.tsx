@@ -194,7 +194,7 @@ export function BundleBuilderClient({ products }: { products: Product[] }) {
         </div>
 
         <div className="mt-5 flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3.5 py-3 text-xs text-emerald-300">
-          🎁 Free BAC Water (10ml) included
+          🎁 Free RUINED H₂O (10ml) included
         </div>
         <div className="mt-2 flex items-center gap-2 rounded-xl border border-steel-500/30 bg-steel-700/10 px-3.5 py-3 text-xs text-steel-300">
           🚚 Free shipping on this bundle
@@ -204,7 +204,7 @@ export function BundleBuilderClient({ products }: { products: Product[] }) {
           Affiliate codes and other discounts don&rsquo;t apply to bundles —
           it&rsquo;s already {BUNDLE_DISCOUNT_RATE * 100}% off, on its own.
           It also won&rsquo;t count toward the site&rsquo;s other gift-tier
-          rewards — your free BAC Water here is already included.
+          rewards — your free RUINED H₂O here is already included.
         </p>
 
         <div className="mt-5 flex flex-col gap-1.5 border-t border-border-soft pt-5 text-sm">

@@ -18,14 +18,14 @@ export function BundleTeaser() {
       </div>
 
       <p className="mt-2 text-[11px] leading-relaxed text-fg-muted sm:hidden">
-        Pick any {BUNDLE_VIAL_COUNT} vials, get a free 5th (BAC water) and{" "}
+        Pick any {BUNDLE_VIAL_COUNT} vials, get a free 5th (RUINED H₂O) and{" "}
         {BUNDLE_DISCOUNT_RATE * 100}% off — plus free shipping.
       </p>
 
       <div className="mt-4 hidden flex-wrap items-center gap-3 sm:flex">
         <Step icon={FlaskIcon} label={`Pick any ${BUNDLE_VIAL_COUNT} vials`} />
         <Sign>+</Sign>
-        <Step icon={GiftIcon} label="5th item free — BAC water" highlight />
+        <Step icon={GiftIcon} label="5th item free — RUINED H₂O" highlight />
         <Sign>=</Sign>
         <span className="flex items-center gap-2 font-display text-base font-black text-gradient-holo">
           <PercentIcon />
