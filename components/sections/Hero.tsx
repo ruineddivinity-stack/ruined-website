@@ -9,6 +9,7 @@ import { HoloBlob } from "@/components/layout/HoloBlob";
 import { HeroVialCluster } from "@/components/sections/HeroVialCluster";
 import { ScrollLink } from "@/components/ui/ScrollLink";
 import { VipBadge } from "@/components/ui/VipBadge";
+import { HeroBundleBanner } from "@/components/sections/HeroBundleBanner";
 import { GiftTierAnnouncement } from "@/components/sections/GiftTierAnnouncement";
 
 const container: Variants = {
@@ -29,7 +30,7 @@ export function Hero() {
   return (
     <section className="relative -mt-[125px] overflow-hidden bg-[rgba(3,3,4,0.65)] bg-glass pt-[125px] sm:-mt-[130px] sm:pt-[130px]">
       <HoloBlob className="-z-10 -top-40 right-[-10%]" size={560} animated={false} />
-      <Container className="grid min-h-0 grid-cols-1 items-center gap-8 py-10 sm:gap-12 sm:py-14 lg:min-h-[600px] lg:grid-cols-2 lg:py-20">
+      <Container className="grid min-h-0 grid-cols-1 items-center gap-4 py-6 sm:gap-12 sm:py-14 lg:min-h-[600px] lg:grid-cols-2 lg:py-20">
         <motion.div
           variants={container}
           initial="hidden"
@@ -42,24 +43,25 @@ export function Hero() {
 
           <motion.h1
             variants={item}
-            className="mt-5 font-display text-[2.5rem] font-black uppercase leading-[1.05] tracking-tight text-fg sm:mt-6 sm:text-6xl"
+            className="mt-3 font-display text-4xl font-black uppercase leading-[1.05] tracking-tight text-fg sm:mt-6 sm:text-6xl"
           >
             Ruined the standards.
             <br />
             <span className="text-gradient-holo">Elevated your research.</span>
           </motion.h1>
 
-          <motion.div variants={item} className="mt-5 w-full sm:mt-6">
+          <motion.div variants={item} className="mt-3 w-full max-w-lg space-y-2.5 sm:mt-6 sm:space-y-3">
+            <HeroBundleBanner />
             <GiftTierAnnouncement />
           </motion.div>
 
-          <motion.p variants={item} className="mt-3 text-sm text-fg-muted sm:mt-4">
+          <motion.p variants={item} className="mt-2 text-sm text-fg-muted sm:mt-4">
             Third-party tested research peptides, shipped fast.
           </motion.p>
 
           <motion.div
             variants={item}
-            className="mx-auto mt-6 flex w-fit flex-col items-stretch gap-4 sm:mt-8 lg:mx-0"
+            className="mx-auto mt-4 flex w-fit flex-col items-stretch gap-3 sm:mt-8 sm:gap-4 lg:mx-0"
           >
             <Button href="/shop" className="w-full uppercase">
               Shop Now
@@ -75,7 +77,7 @@ export function Hero() {
 
           <motion.div
             variants={item}
-            className="mt-8 flex items-center gap-6 border-t border-border-soft pt-5 sm:mt-10"
+            className="mt-5 flex items-center gap-6 border-t border-border-soft pt-5 sm:mt-10"
           >
             <Stat value="99%+" label="Avg. purity" />
             <AnimatedResearcherStat />

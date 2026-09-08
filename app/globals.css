@@ -244,6 +244,38 @@ body {
   box-shadow: 0 0 28px 2px rgba(138, 92, 242, 0.3);
 }
 
+/* Same prismatic border as .holo-border-static, but with a colored (not flat
+   black) fill and the gradient kept moving — reserved for a promotional
+   banner that specifically wants ongoing motion and a standout fill to catch
+   the eye (unlike a persistent nav element, where constant motion reads as
+   jank; see the note above .holo-border-static). */
+.holo-border-live {
+  position: relative;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(
+        160deg,
+        rgba(138, 92, 242, 0.35),
+        rgba(31, 200, 221, 0.22) 45%,
+        rgba(3, 3, 4, 0.92) 100%
+      )
+      padding-box,
+    linear-gradient(
+        110deg,
+        var(--color-holo-violet) 0%,
+        var(--color-holo-blue) 20%,
+        var(--color-holo-pink) 45%,
+        var(--color-holo-gold) 70%,
+        var(--color-holo-violet) 100%
+      )
+      border-box;
+  background-size:
+    100% 100%,
+    220% 100%;
+  animation: gradient-shift 4.5s ease-in-out infinite;
+  box-shadow: 0 0 32px 4px rgba(138, 92, 242, 0.45);
+}
+
 .chrome-border {
   border-image: linear-gradient(
       180deg,
