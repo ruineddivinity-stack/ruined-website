@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { AnimatedResearcherStat } from "@/components/sections/AnimatedResearcherStat";
 import { HoloBlob } from "@/components/layout/HoloBlob";
-import { HeroVialCluster } from "@/components/sections/HeroVialCluster";
+import { HeroMotion } from "@/components/sections/HeroMotion";
 import { ScrollLink } from "@/components/ui/ScrollLink";
 import { VipBadge } from "@/components/ui/VipBadge";
 import { HeroBundleBanner } from "@/components/sections/HeroBundleBanner";
@@ -92,7 +92,7 @@ export function Hero() {
           className="relative flex items-center justify-center"
         >
           <HoloBlob className="-z-10 -top-16 left-1/2 -translate-x-1/2" size={560} />
-          <HeroVialCluster />
+          <HeroMotion />
         </motion.div>
       </Container>
     </section>
