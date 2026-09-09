@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex">
+  <title>Ruined RX — Orbital Hero</title>
+  <meta name="description" content="Three rotating Ruined RX vials with smooth holographic labels and fluid glass arcs sweeping across the front and returning behind the trio under dynamic studio lighting.">
+  <link rel="icon" href="data:,">
+  <link rel="preload" href="./assets/labels/glp3-50mg.png" as="image">
+  <link rel="preload" href="./assets/labels/tesa-20mg.png" as="image">
+  <link rel="preload" href="./assets/labels/igf1-lr3-1mg.png" as="image">
+  <link rel="preload" href="./assets/materials/holographic-foil-v10.png" as="image">
+  <link rel="stylesheet" href="./style.css?v=8">
+  <style>html,body{background:transparent;min-height:0}.chrome,#loading,#fallback,#notice{display:none!important}#scene{cursor:default;touch-action:pan-y;transition:none}</style>
+</head>
+<body class="embedded">
+  <header class="chrome topbar">
+    <div class="wordmark" aria-label="Ruined RX">RUINED<span>RX</span></div>
+    <div class="top-right"><span class="preview-label">HERO MOTION STUDY</span><button id="expand" class="quiet-button" type="button" aria-label="Enter full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></svg><span>Full screen</span></button></div>
+  </header>
+  <main id="stage" aria-label="Interactive rotating vials and holographic glass">
+    <canvas id="scene" aria-label="TESA 20MG, GLP-3 50MG and IGF1-LR3 1MG vials rotating and gently floating at staggered times, with fixed holographic labels and two fluid glass arcs orbiting in opposite directions around the group"></canvas>
+    <div id="loading" role="status"><span class="loading-line"></span><span>Preparing motion</span></div>
+    <div id="fallback" hidden><p id="error-message">This device could not start the 3D preview.</p><button id="retry" type="button">Try again</button></div>
+    <noscript><p class="no-script">Enable JavaScript to view the motion preview.</p></noscript>
+  </main>
+  <footer class="chrome bottom-bar">
+    <div class="specimen"><span>TESA · GLP-3 · IGF1</span></div>
+    <div class="playback" role="group" aria-label="Animation controls">
+      <button id="play" type="button" aria-label="Pause animation"><svg id="pause-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5v10M13 5v10"/></svg><span id="play-label">Pause</span></button>
+      <span class="divider" aria-hidden="true"></span>
+      <label for="speed">Speed</label>
+      <input id="speed" type="range" min="0.5" max="2" step="0.05" value="1.7" aria-valuetext="1.7 times speed">
+      <output id="speed-value" for="speed">1.7×</output>
+    </div>
+    <span class="hint">Drag to explore</span>
+  </footer>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <script type="module" src="./main.js?v=website-1"></script>
+</body>
+</html>
